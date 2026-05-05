@@ -1,0 +1,408 @@
+# PHÂN CÔNG CÔNG VIỆC - WEBSITE BÁN ĐỒ CÔNG NGHỆ AI
+
+**Dự án:** Website Thương Mại Điện Tử Công Nghệ với AI Chatbot
+**Thời gian:** 7 ngày (hoàn thành toàn bộ)
+
+---
+
+## 👥 TỔNG QUAN NHÓM
+
+| STT | Thành viên | Vai trò | Phụ trách chính |
+|------|-----------|---------|------------------|
+| 1 | **Người 1** | Backend Lead | API, AI Core |
+| 2 | **Người 2** | Database Lead | Database, Vector DB, Seed |
+| 3 | **Người 3** | Frontend Lead | User UI |
+| 4 | **Người 4** | Fullstack | Admin Dashboard, Staff Chat |
+
+---
+
+## 📋 CHI TIẾT CÔNG VIỆC TỪNG NGƯỜI
+
+---
+
+### 👨‍💻 NGƯỜI SỐ 1 - BACKEND LEAD
+**Thư mục:** `backend/app/`
+**Trách nhiệm chính:** Hoàn thiện API Backend và AI Core
+
+#### ✅ Nhiệm vụ bắt buộc (hoàn thành trước ngày 3)
+
+**1. Hoàn thiện Routers/Controllers (trong `routers/`)**
+
+| File | API Endpoints | Trạng thái |
+|------|--------------|------------|
+| `auth.py` | `/api/v1/auth/register`, `/login`, `/me`, `/password` | ⚠️ Cần kiểm tra |
+| `products.py` | `/products/`, `/{id}`, `/featured`, `/search` | ⚠️ Cần kiểm tra |
+| `categories.py` | `/categories/`, `/{id}` | ⚠️ Cần kiểm tra |
+| `cart.py` | `/cart/`, `/add`, `/update/{id}`, `/remove/{id}`, `/clear` | ⚠️ Cần kiểm tra |
+| `orders.py` | `/orders/`, `/{id}`, `/{id}/status` | ⚠️ Cần kiểm tra |
+| `chat.py` | `/chat/`, `/ws/{session_id}` | ⚠️ Cần kiểm tra |
+
+**2. Hoàn thiện Services/Business Logic (trong `services/`)**
+
+| File | Chức năng | Trạng thái |
+|------|-----------|------------|
+| `auth_service.py` | authenticate_user, register_user, create_access_token | ⚠️ Cần kiểm tra |
+| `product_service.py` | CRUD sản phẩm, filter, sort, paginate | ⚠️ Cần kiểm tra |
+| `order_service.py` | Tạo đơn, cập nhật trạng thái, hủy đơn | ⚠️ Cần kiểm tra |
+| `chatbot_service.py` | Intent classification, xử lý tin nhắn | ✅ Đã có |
+| `rag_pipeline.py` | RAG pipeline cho AI | ✅ Đã có |
+| `embedding_service.py` | Text embedding, tìm kiếm | ✅ Đã có |
+
+**3. Cấu hình và Main App**
+
+| File | Chức năng | Trạng thái |
+|------|-----------|------------|
+| `main.py` | Entry point, CORS, routers | ⚠️ Cần kiểm tra |
+| `core/config.py` | Settings, env variables | ⚠️ Cần kiểm tra |
+| `core/security.py` | JWT, password hash | ⚠️ Cần kiểm tra |
+| `core/database.py` | SQLAlchemy setup | ⚠️ Cần kiểm tra |
+
+#### 📝 Hướng dẫn kiểm tra API
+
+```bash
+# 1. Chạy server
+cd backend
+uvicorn app.main:app --reload
+
+# 2. Mở Swagger docs
+# http://localhost:8000/docs
+
+# 3. Test từng endpoint:
+#    - POST /api/v1/auth/register
+#    - POST /api/v1/auth/login
+#    - GET  /api/v1/products/
+#    - POST /api/v1/cart/add
+#    - POST /api/v1/orders/
+#    - POST /api/v1/chat/
+```
+
+#### 🔍 Checklist kiểm tra Backend
+
+- [ ] Chạy `python -m scripts.seed_data` thành công
+- [ ] API `/api/v1/auth/register` trả về 201
+- [ ] API `/api/v1/auth/login` trả về token
+- [ ] API `/api/v1/products/` trả về danh sách (có phân trang)
+- [ ] API `/api/v1/products/{id}` trả về chi tiết sản phẩm
+- [ ] API `/api/v1/cart/add` thêm sản phẩm vào giỏ
+- [ ] API `/api/v1/orders/` tạo đơn hàng thành công
+- [ ] API `/api/v1/chat/` trả lời từ AI chatbot
+- [ ] WebSocket `/api/v1/chat/ws/{session_id}` hoạt động
+
+---
+
+### 👩‍💻 NGƯỜI SỐ 2 - DATABASE LEAD
+**Thư mục:** `backend/`
+**Trách nhiệm chính:** Database, Vector DB, Seed Data
+
+#### ✅ Nhiệm vụ bắt buộc (hoàn thành trước ngày 3)
+
+**1. Kiểm tra Models (trong `app/models/`)**
+
+| File | Entity | Trạng thái |
+|------|--------|------------|
+| `user.py` | User, Role | ⚠️ Cần kiểm tra |
+| `product.py` | Product, Category, Supplier, ProductVariant, ProductImage, Inventory | ⚠️ Cần kiểm tra |
+| `cart.py` | Cart, CartItem | ⚠️ Cần kiểm tra |
+| `order.py` | Order, OrderItem | ⚠️ Cần kiểm tra |
+| `role.py` | Role | ⚠️ Cần kiểm tra |
+
+**2. Kiểm tra Schemas (trong `app/schemas/`)**
+
+| File | DTOs | Trạng thái |
+|------|------|------------|
+| `user.py` | UserCreate, UserLogin, UserResponse, Token | ⚠️ Cần kiểm tra |
+| `product.py` | ProductCreate, ProductUpdate, ProductResponse | ⚠️ Cần kiểm tra |
+| `cart.py` | CartItemCreate, CartResponse | ⚠️ Cần kiểm tra |
+| `order.py` | OrderCreate, OrderResponse | ⚠️ Cần kiểm tra |
+| `chat.py` | ChatMessage, ChatResponse | ⚠️ Cần kiểm tra |
+
+**3. Hoàn thiện Seed Data (`scripts/seed_data.py`)**
+
+```bash
+# Chạy seed data
+python -m scripts.seed_data
+```
+
+**Dữ liệu cần tạo:**
+
+| Bảng | Số lượng | Chi tiết |
+|------|----------|----------|
+| Role | 3 | Admin, Staff, Customer |
+| Supplier | 5 | Apple VN, Samsung VN, Xiaomi VN, ASUS VN, Dell VN |
+| Category | 7 | iPhone, Samsung, Xiaomi, MacBook, Laptop Gaming, Laptop Văn phòng, Phụ kiện |
+| Product | 12+ | Các sản phẩm công nghệ đa dạng |
+| ProductVariant | 20+ | Các biến thể (màu, storage, RAM) |
+| User | 3 | admin, staff01, customer01 |
+| Sample Order | 1 | Đơn hàng mẫu đã hoàn thành |
+
+**4. Nâng cấp Vector DB (Optional - nếu có thời gian)**
+
+| Tính năng | Mô tả | Trạng thái |
+|------------|-------|------------|
+| PostgreSQL + pgvector | Lưu trữ embeddings thực sự | 🔲 Chưa làm |
+| ChromaDB | Vector database độc lập | 🔲 Chưa làm |
+
+#### 📝 Hướng dẫn kiểm tra Database
+
+```bash
+# 1. Kiểm tra database đã tạo chưa
+# File: backend/techstore.db (SQLite)
+
+# 2. Hoặc kiểm tra bằng Python
+python
+>>> from app.core.database import engine
+>>> from app.models import *
+>>> Base.metadata.create_all(bind=engine)
+>>> print("Database OK!")
+
+# 3. Kiểm tra seed data
+python -m scripts.seed_data
+# Output mong đợi:
+# ✓ Roles seeded
+# ✓ Suppliers seeded
+# ✓ Categories seeded
+# ✓ Products seeded
+# ✓ Users seeded
+```
+
+#### 🔍 Checklist Database
+
+- [ ] Chạy `python -m scripts.seed_data` không lỗi
+- [ ] Database file `techstore.db` được tạo
+- [ ] Tất cả bảng được tạo (users, products, orders, etc.)
+- [ ] Có 3 tài khoản test (admin, staff, customer)
+- [ ] Có 12+ sản phẩm với đầy đủ biến thể
+- [ ] Có ít nhất 1 đơn hàng mẫu
+
+---
+
+### 👨‍💻 NGƯỜI SỐ 3 - FRONTEND LEAD
+**Thư mục:** `frontend/`
+**Trách nhiệm chính:** User UI (giao diện người dùng)
+
+#### ✅ Nhiệm vụ bắt buộc (hoàn thành trước ngày 7)
+
+**1. Cài đặt và cấu hình Frontend**
+
+```bash
+cd frontend
+npm install
+```
+
+**2. Hoàn thiện Pages (trong `app/`)**
+
+| File | Trang | Route | Trạng thái |
+|------|-------|-------|------------|
+| `page.tsx` | Trang chủ | `/` | ⚠️ Cần hoàn thiện |
+| `layout.tsx` | Root layout | - | ✅ Đã có |
+| `products/page.tsx` | Danh sách sản phẩm | `/products` | ⚠️ Cần hoàn thiện |
+| `products/[id]/page.tsx` | Chi tiết sản phẩm | `/products/{id}` | 🔲 Chưa làm |
+| `cart/page.tsx` | Giỏ hàng | `/cart` | ⚠️ Cần hoàn thiện |
+| `checkout/page.tsx` | Thanh toán | `/checkout` | 🔲 Chưa làm |
+| `login/page.tsx` | Đăng nhập | `/login` | ⚠️ Cần hoàn thiện |
+| `register/page.tsx` | Đăng ký | `/register` | 🔲 Chưa làm |
+| `orders/page.tsx` | Lịch sử đơn hàng | `/orders` | 🔲 Chưa làm |
+| `orders/[id]/page.tsx` | Chi tiết đơn hàng | `/orders/{id}` | 🔲 Chưa làm |
+| `profile/page.tsx` | Tài khoản | `/profile` | 🔲 Chưa làm |
+
+**3. Hoàn thiện Components (trong `components/`)**
+
+| Component | Mô tả | Trạng thái |
+|-----------|-------|------------|
+| `navbar.tsx` | Navigation bar + user menu | ⚠️ Cần hoàn thiện |
+| `footer.tsx` | Footer | 🔲 Chưa làm |
+| `product-card.tsx` | Card hiển thị sản phẩm | 🔲 Chưa làm |
+| `product-grid.tsx` | Grid sản phẩm có filter | 🔲 Chưa làm |
+| `cart-item.tsx` | Item trong giỏ hàng | 🔲 Chưa làm |
+| `chat/chat-widget.tsx` | AI Chat Widget | ⚠️ Cần hoàn thiện |
+| `ui/button.tsx` | Button component (shadcn) | 🔲 Cần cài đặt |
+| `ui/input.tsx` | Input component (shadcn) | 🔲 Cần cài đặt |
+| `ui/card.tsx` | Card component (shadcn) | 🔲 Cần cài đặt |
+
+**4. Hoàn thiện Hooks và Stores**
+
+| File | Chức năng | Trạng thái |
+|------|-----------|------------|
+| `hooks/useApi.ts` | React Query hooks cho API | ⚠️ Cần hoàn thiện |
+| `stores/index.ts` | Zustand stores (Auth, Cart) | ⚠️ Cần hoàn thiện |
+
+**5. Cài đặt thêm (nếu cần)**
+
+```bash
+# Cài đặt shadcn/ui
+npx shadcn-ui@latest init
+npx shadcn-ui@latest add button input card dialog dropdown-menu
+```
+
+#### 📝 Mock API cho Frontend (nếu Backend chưa xong)
+
+Tạo file `frontend/lib/mock-data.ts`:
+
+```typescript
+// Mock data để develop UI trước khi có backend
+export const mockProducts = [
+  {
+    product_id: 1,
+    name: "iPhone 15 Pro Max 256GB",
+    price: 34990000,
+    original_price: 37990000,
+    discount_percent: 8,
+    rating: 5,
+    is_new: false,
+    is_hot: true,
+  },
+  // ... thêm các sản phẩm khác
+];
+```
+
+#### 🔍 Checklist Frontend User
+
+- [ ] Chạy `npm run dev` không lỗi
+- [ ] Trang chủ hiển thị sản phẩm nổi bật
+- [ ] Trang `/products` có filter và phân trang
+- [ ] Trang `/products/{id}` hiển thị chi tiết sản phẩm
+- [ ] Giỏ hàng thêm/xóa/sửa số lượng hoạt động
+- [ ] Chat widget hiển thị và gửi tin nhắn
+- [ ] Responsive trên mobile
+
+---
+
+### 👩‍💻 NGƯỜI SỐ 4 - FULLSTACK
+**Thư mục:** `frontend/app/admin/` và hỗ trợ `backend/`
+**Trách nhiệm chính:** Admin Dashboard, Staff Chat Interface
+
+#### ✅ Nhiệm vụ bắt buộc (hoàn thành trước ngày 7)
+
+**1. Admin Dashboard Pages (trong `frontend/app/admin/`)**
+
+| File | Trang | Route | Trạng thái |
+|------|-------|-------|------------|
+| `(dashboard)/page.tsx` | Dashboard tổng quan | `/admin` | 🔲 Chưa làm |
+| `(dashboard)/products/page.tsx` | Quản lý sản phẩm | `/admin/products` | 🔲 Chưa làm |
+| `(dashboard)/products/create/page.tsx` | Tạo sản phẩm | `/admin/products/create` | 🔲 Chưa làm |
+| `(dashboard)/products/[id]/edit/page.tsx` | Sửa sản phẩm | `/admin/products/{id}/edit` | 🔲 Chưa làm |
+| `(dashboard)/orders/page.tsx` | Quản lý đơn hàng | `/admin/orders` | 🔲 Chưa làm |
+| `(dashboard)/orders/[id]/page.tsx` | Chi tiết đơn hàng | `/admin/orders/{id}` | 🔲 Chưa làm |
+| `(dashboard)/categories/page.tsx` | Quản lý danh mục | `/admin/categories` | 🔲 Chưa làm |
+| `(dashboard)/users/page.tsx` | Quản lý người dùng | `/admin/users` | 🔲 Chưa làm |
+| `(dashboard)/settings/page.tsx` | Cài đặt | `/admin/settings` | 🔲 Chưa làm |
+
+**2. Staff Chat Interface (trong `frontend/app/staff/`)**
+
+| File | Trang | Route | Mô tả |
+|------|-------|-------|-------|
+| `(chat)/page.tsx` | Staff Chat Dashboard | `/staff/chat` | Dashboard tổng quan |
+| `(chat)/conversation/page.tsx` | Hội thoại khách hàng | `/staff/chat/conversation/{id}` | Chat với khách |
+
+**3. Admin Components (trong `components/admin/`)**
+
+| Component | Mô tả |
+|-----------|-------|
+| `admin-sidebar.tsx` | Sidebar navigation |
+| `stats-card.tsx` | Card thống kê |
+| `chart.tsx` | Biểu đồ (dùng Recharts) |
+| `data-table.tsx` | Bảng dữ liệu (dùng TanStack Table) |
+| `product-form.tsx` | Form tạo/sửa sản phẩm |
+| `order-status.tsx` | Hiển thị trạng thái đơn hàng |
+
+**4. Staff Chat Components (trong `components/staff/`)**
+
+| Component | Mô tả |
+|-----------|-------|
+| `chat-list.tsx` | Danh sách cuộc trò chuyện |
+| `chat-window.tsx` | Cửa sổ chat |
+| `message-bubble.tsx` | Bubble tin nhắn |
+| `transfer-modal.tsx` | Modal chuyển khách cho AI |
+
+**5. WebSocket cho Staff Chat**
+
+```typescript
+// Hỗ trợ WebSocket để nhận tin nhắn từ khách
+// Endpoint: ws://localhost:8000/api/v1/chat/ws/staff/{staff_id}
+```
+
+**6. Hỗ trợ Backend (nếu cần)**
+
+| File | Hỗ trợ | Chi tiết |
+|------|--------|----------|
+| `routers/chat.py` | Thêm endpoint | `POST /staff/chat/transfer` - Chuyển khách |
+| `routers/orders.py` | Thêm endpoint | `PUT /orders/{id}/status` - Cập nhật trạng thái |
+
+#### 📝 Mock Data cho Admin
+
+```typescript
+// frontend/lib/mock-admin.ts
+export const mockStats = {
+  totalOrders: 156,
+  totalRevenue: 2500000000,
+  totalProducts: 45,
+  totalCustomers: 89,
+};
+```
+
+#### 🔍 Checklist Admin & Staff
+
+- [ ] `/admin` Dashboard hiển thị thống kê
+- [ ] `/admin/products` CRUD sản phẩm hoạt động
+- [ ] `/admin/orders` quản lý đơn hàng
+- [ ] `/admin/orders/{id}` cập nhật trạng thái đơn
+- [ ] `/staff/chat` nhận tin nhắn từ khách
+- [ ] Staff có thể reply tin nhắn
+- [ ] Chuyển khách cho AI hoặc giữ lại
+
+---
+
+## 📅 LỊCH TRÌNH GỢI Ý
+
+| Ngày | Người 1 | Người 2 | Người 3 | Người 4 |
+|------|---------|---------|---------|---------|
+| **Ngày 1-2** | Kiểm tra routers, fix bugs | Kiểm tra models, schemas | Setup frontend, components cơ bản | Hỗ trợ Người 1-2 |
+| **Ngày 3** | Test API, viết docs | Hoàn thiện seed data | Pages cơ bản (home, products) | Bắt đầu Admin Dashboard |
+| **Ngày 4-5** | Hỗ trợ team | Hỗ trợ team | Hoàn thiện cart, checkout, orders | Hoàn thiện Admin |
+| **Ngày 6** | Integration testing | Kiểm tra data | Fix UI bugs | Fix bugs |
+| **Ngày 7** | Demo + Bug fixes | Demo + Bug fixes | Demo + Bug fixes | Demo + Bug fixes |
+
+---
+
+## 🔗 LIÊN KẾT CẦN THIẾT
+
+| Module | Frontend gọi API |
+|--------|-----------------|
+| Products | `GET /api/v1/products/` |
+| Cart | `GET /api/v1/cart/` |
+| Orders | `POST /api/v1/orders/` |
+| Auth | `POST /api/v1/auth/login` |
+
+**File cấu hình:**
+```typescript
+// frontend/lib/api.ts
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1",
+});
+```
+
+---
+
+## 🚨 LƯU Ý QUAN TRỌNG
+
+1. **Người 1 & 2:** Phải hoàn thành Backend trước ngày 3 để Người 3-4 có API gọi
+2. **Frontend:** Có thể dùng mock data tạm thời nếu Backend chưa xong
+3. **Git:** Mỗi người làm việc trên branch riêng, merge khi xong feature
+4. **Communication:** Liên lạc qua nhóm để giải quyết blockers nhanh
+
+---
+
+## ✅ KẾT THÚC DỰ ÁN
+
+**Mỗi người cần đảm bảo:**
+1. Code của mình chạy được
+2. Có README.md hướng dẫn sử dụng
+3. Test cơ bản các tính năng chính
+4. Commit và push lên Git
+
+**Demo:** Ngày cuối cùng, mỗi người demo phần của mình trong 5-10 phút.
+
+---
+
+**Ngày tạo:** $(Get-Date -Format "dd/MM/yyyy")
+**Cập nhật lần cuối:** $(Get-Date -Format "dd/MM/yyyy")
