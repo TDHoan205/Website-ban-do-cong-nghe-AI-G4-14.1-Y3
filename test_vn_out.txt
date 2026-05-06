@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "D:\Website-ban-do-cong-nghe-AI-G4-14.1-Y3\test_vn.py", line 14, in <module>
+    sys.stdout.write(f"{status}: {t}\n")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\K1lla\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ee5' in position 10: character maps to <undefined>

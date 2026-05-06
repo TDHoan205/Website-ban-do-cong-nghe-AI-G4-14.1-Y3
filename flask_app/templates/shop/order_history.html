@@ -4,61 +4,73 @@
 <div class="page-header">
     <div class="container">
         <h1 class="page-title"><i class="fas fa-receipt me-2"></i>Lịch sử đơn hàng</h1>
-        <p class="page-subtitle mb-0">Theo dõi và quản lý đơn hàng của bạn</p>
+        <p class="page-subtitle mb-0">Theo dõi và quản lý các đơn hàng của bạn</p>
     </div>
 </div>
 
 <div class="container py-5">
     {% if orders %}
-    <div class="row g-4">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
         {% for order in orders %}
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center" style="padding: 14px 20px;">
-                    <div>
-                        <i class="fas fa-receipt me-2"></i>Đơn hàng #{{ order.order_id }}
-                        <span style="font-size: 0.78rem; opacity: 0.8; margin-left: 8px;">
-                            {{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date else '' }}
-                        </span>
-                    </div>
-                    <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'New' %}bg-primary{% elif order.status == 'Canceled' %}bg-danger{% else %}bg-warning{% endif %}">
-                        {{ order.status }}
+        <div style="background: white; border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div>
+                    <span style="font-weight: 800; font-size: 1rem;">Đơn hàng #{{ order.order_id }}</span>
+                    <span style="font-size: 0.82rem; color: var(--text-muted); margin-left: 12px;">
+                        {{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date else "---" }}
                     </span>
                 </div>
-                <div class="card-body">
-                    {% for item in order.items[:3] %}
-                    <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border);">
-                        {% if item.product and item.product.image_url %}
-                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"
-                             style="width: 48px; height: 48px; object-fit: contain; border-radius: var(--radius-sm); background: var(--surface-alt);" />
-                        {% endif %}
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 0.88rem;">{{ item.product.name if item.product else 'Sản phẩm' }}</div>
-                            <div style="font-size: 0.78rem; color: var(--text-muted);">x{{ item.quantity }}</div>
-                        </div>
-                        <div style="font-weight: 700; color: var(--primary); font-size: 0.88rem;">
-                            {{ ((item.variant.price if item.variant else (item.product.price if item.product else 0)) * item.quantity)|format_vnd }}
-                        </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    {% if order.status == 'Pending' %}
+                    <span class="badge" style="background: #fff3cd; color: #856404;">Đang xử lý</span>
+                    {% elif order.status == 'Confirmed' %}
+                    <span class="badge" style="background: #cfe2ff; color: #084298;">Đã xác nhận</span>
+                    {% elif order.status == 'Shipped' %}
+                    <span class="badge" style="background: #d1e7dd; color: #0f5132;">Đang giao</span>
+                    {% elif order.status == 'Delivered' %}
+                    <span class="badge" style="background: #d4edda; color: #155724;">Đã giao</span>
+                    {% elif order.status == 'Cancelled' %}
+                    <span class="badge" style="background: #f8d7da; color: #721c24;">Đã hủy</span>
+                    {% else %}
+                    <span class="badge" style="background: var(--surface-alt); color: var(--text-secondary);">{{ order.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for item in order.items %}
+                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
+                        <span>{{ item.product_name }}{% if item.variant_name %} ({{ item.variant_name }}){% endif %} <span style="color: var(--text-muted);">x{{ item.quantity }}</span></span>
+                        <span style="font-weight: 600;">{{ "{:,.0f}".format(float(item.subtotal)) }} đ</span>
                     </div>
                     {% endfor %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--border);">
-                        <span style="font-weight: 700; color: var(--text-secondary);">Tổng cộng:</span>
-                        <span style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">{{ order.total_amount|format_vnd }}</span>
-                    </div>
-                    <a href="/shop/order/{{ order.order_id }}" class="btn btn-outline-primary btn-sm w-100 mt-3">
-                        <i class="fas fa-eye me-2"></i>Xem chi tiết
-                    </a>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.82rem; color: var(--text-muted);">
+                    {% if order.customer_address %}
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ order.customer_address[:60] }}{% if order.customer_address|length > 60 %}...{% endif %}
+                    {% endif %}
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">
+                    {{ "{:,.0f}".format(float(order.total_amount)) }} đ
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center" style="padding: 80px 20px; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
-        <i class="fas fa-receipt" style="font-size: 4rem; color: var(--text-muted); opacity: 0.3; margin-bottom: 20px;"></i>
-        <h4 style="font-weight: 700;">Chưa có đơn hàng nào</h4>
-        <p style="color: var(--text-muted);">Bắt đầu mua sắm để tạo đơn hàng đầu tiên!</p>
-        <a href="/shop/products" class="btn btn-primary mt-3"><i class="fas fa-shopping-bag me-2"></i>Mua sắm ngay</a>
+    <div style="text-align: center; padding: 64px 0;">
+        <div style="width: 80px; height: 80px; background: var(--surface-alt); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+            <i class="fas fa-receipt" style="font-size: 2rem; color: var(--text-muted);"></i>
+        </div>
+        <h3 style="font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Chưa có đơn hàng nào</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên!</p>
+        <a href="/" class="btn" style="background: var(--primary); color: white; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; text-decoration: none;">
+            <i class="fas fa-shopping-bag me-2"></i>Bắt đầu mua sắm
+        </a>
     </div>
     {% endif %}
 </div>

@@ -60,7 +60,11 @@ SUP_MAP: Dict[int, Supplier] = {s.supplier_id: s for s in SUPPLIERS}
 # PRODUCTS  (20 realistic tech products)
 # ══════════════════════════════════════════════════════════════
 def _img(name: str) -> str:
-    """Return URL for a product image from the static images folder."""
+    """Return an absolute path from the static mount root.
+
+    Templates render these in <img src="..."> tags.
+    The FastAPI StaticFiles mount is at /static, so paths start from there.
+    """
     return f"/static/images/products/{name}"
 
 PRODUCTS: List[Product] = [

@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title|default('Trang chu') }} - Webstore Shop</title>
+    <title>{{ title|default('Trang chủ') }} - Webstore Shop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/lib/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="/static/css/site.css" />
-    <link rel="stylesheet" href="/static/css/shop-refresh.css" />
-    <link rel="stylesheet" href="/static/css/shop-layout-animations.css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='lib/bootstrap/dist/css/bootstrap.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/site.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/shop-refresh.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/shop-layout-animations.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     {% block extra_styles %}{% endblock %}
     <style>
@@ -1111,8 +1111,8 @@
                     <span class="d-none d-md-inline ms-3"><i class="fas fa-envelope me-1"></i> Webstore@gmail.com</span>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="#" class="me-3"><i class="fas fa-truck me-1"></i> Mien phi van chuyen</a>
-                    <a href="#" class="d-none d-md-inline"><i class="fas fa-shield-alt me-1"></i> Bao hanh 12 thang</a>
+                    <a href="#" class="me-3"><i class="fas fa-truck me-1"></i> Miễn phí vận chuyển</a>
+                    <a href="#" class="d-none d-md-inline"><i class="fas fa-shield-alt me-1"></i> Bảo hành 12 tháng</a>
                 </div>
             </div>
         </div>
@@ -1221,6 +1221,9 @@
 
     <!-- Main Content -->
     <main id="main-content">
+        <script>
+            window.WEBSTORE_STATIC = "{{ url_for('static', path='') }}";
+        </script>
         {% block content %}{% endblock %}
     </main>
 
@@ -1230,7 +1233,7 @@
             <div class="row g-4">
                 <div class="col-lg-4 col-md-6">
                     <div class="footer-brand"><i class="fas fa-store me-2"></i>Web<span>Store</span></div>
-                    <p class="footer-desc">He thong ban hang truc tuyen hien dai, uy tin voi hang ngan san pham chat luong. Mua sam de dang, giao hang nhanh chong.</p>
+                    <p class="footer-desc">Hệ thống bán hàng trực tuyến hiện đại, uy tín với hàng nghìn sản phẩm chất lượng. Mua sắm dễ dàng, giao hàng nhanh chóng.</p>
                     <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -1282,9 +1285,9 @@
         </div>
     </footer>
 
-    <script src="/static/lib/jquery/dist/jquery.js"></script>
-    <script src="/static/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    <script src="/static/js/site.js"></script>
+    <script src="{{ url_for('static', path='lib/jquery/dist/jquery.js') }}"></script>
+    <script src="{{ url_for('static', path='lib/bootstrap/dist/js/bootstrap.bundle.js') }}"></script>
+    <script src="{{ url_for('static', path='js/site.js') }}"></script>
 
     <script>
         // Update cart count
@@ -1329,7 +1332,7 @@
                             data.forEach(function(p) {
                                 var price = new Intl.NumberFormat('vi-VN').format(p.price) + ' dong';
                                 html += '<a href="/shop/product/' + p.productId + '" class="search-result-item">';
-                                html += '<img src="' + (p.imageUrl || '/static/images/products/placeholder.svg') + '" alt="' + p.name + '" onerror="this.src=\'/static/images/products/placeholder.svg\'">';
+                                html += '<img src="' + (p.imageUrl || (WEBSTORE_STATIC + '/images/products/placeholder.svg')) + '" alt="' + p.name + '" onerror="this.src=\'' + WEBSTORE_STATIC + '/images/products/placeholder.svg\'">';
                                 html += '<div class="sr-info">';
                                 html += '<div class="sr-name">' + p.name + '</div>';
                                 html += '<div class="sr-price">' + price + '</div>';

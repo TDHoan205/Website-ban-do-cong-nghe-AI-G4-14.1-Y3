@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title|default('Webstore') }} - He thong quan ly cua hang truc tuyen</title>
+    <title>{{ title|default('Webstore') }} - Hệ thống quản lý cửa hàng trực tuyến</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/lib/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="/static/css/site.css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='lib/bootstrap/dist/css/bootstrap.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/site.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     {% block extra_styles %}{% endblock %}
     <style>
@@ -443,10 +443,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#features">Tinh nang</a>
+                        <a class="nav-link" href="#features">Tính năng</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#about">Gioi thieu</a>
+                        <a class="nav-link" href="#about">Giới thiệu</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/auth/login">Dang nhap</a>
@@ -472,7 +472,7 @@
             <div class="row">
                 <div class="col-lg-4 mb-4">
                     <div class="footer-brand"><i class="fas fa-store me-2"></i>Web<span>Store</span></div>
-                    <p>He thong quan ly cua hang truc tuyen hien dai voi day du tinh nang quan ly san pham, don hang va kho hang.</p>
+                    <p>Hệ thống quản lý cửa hàng trực tuyến hiện đại với đầy đủ tính năng quản lý sản phẩm, đơn hàng và kho hàng.</p>
                     <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -481,47 +481,47 @@
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="footer-title">San Pham</h6>
+                    <h6 class="footer-title">Sản phẩm</h6>
                     <ul class="footer-links">
-                        <li><a href="#">Quan ly San pham</a></li>
-                        <li><a href="#">Danh muc</a></li>
-                        <li><a href="#">Nha cung cap</a></li>
+                        <li><a href="#">Quản lý sản phẩm</a></li>
+                        <li><a href="#">Danh mục</a></li>
+                        <li><a href="#">Nhà cung cấp</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="footer-title">Don Hang</h6>
+                    <h6 class="footer-title">Đơn hàng</h6>
                     <ul class="footer-links">
-                        <li><a href="#">Quan ly Don hang</a></li>
-                        <li><a href="#">Chi tiet Don hang</a></li>
-                        <li><a href="#">Gio hang</a></li>
+                        <li><a href="#">Quản lý đơn hàng</a></li>
+                        <li><a href="#">Chi tiết đơn hàng</a></li>
+                        <li><a href="#">Giỏ hàng</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="footer-title">Ho Tro</h6>
+                    <h6 class="footer-title">Hỗ trợ</h6>
                     <ul class="footer-links">
-                        <li><a href="#">Trung tam tro giup</a></li>
-                        <li><a href="#">Lien he</a></li>
-                        <li><a href="#">Tai lieu</a></li>
+                        <li><a href="#">Trung tâm trợ giúp</a></li>
+                        <li><a href="#">Liên hệ</a></li>
+                        <li><a href="#">Tài liệu</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="footer-title">Cong ty</h6>
+                    <h6 class="footer-title">Công ty</h6>
                     <ul class="footer-links">
-                        <li><a href="#">Ve chung toi</a></li>
-                        <li><a href="#">Tuyen dung</a></li>
-                        <li><a href="#">Bao chi</a></li>
+                        <li><a href="#">Về chúng tôi</a></li>
+                        <li><a href="#">Tuyển dụng</a></li>
+                        <li><a href="#">Báo chí</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Webstore. Tat ca quyen duoc bao luu. | Duoc phat trien voi <i class="fas fa-heart"></i> boi Webstore Team</p>
+                <p>&copy; 2024 Webstore. Tất cả quyền được bảo lưu. | Được phát triển với <i class="fas fa-heart"></i> bởi Webstore Team</p>
             </div>
         </div>
     </footer>
 
-    <script src="/static/lib/jquery/dist/jquery.js"></script>
-    <script src="/static/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    <script src="/static/js/site.js"></script>
+    <script src="{{ url_for('static', path='lib/jquery/dist/jquery.js') }}"></script>
+    <script src="{{ url_for('static', path='lib/bootstrap/dist/js/bootstrap.bundle.js') }}"></script>
+    <script src="{{ url_for('static', path='js/site.js') }}"></script>
 
     <script>
         // Smooth scrolling for anchor links

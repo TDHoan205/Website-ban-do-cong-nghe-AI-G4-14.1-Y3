@@ -1,0 +1,10 @@
+Existing categories:
+  id=11 name='Ð?ng h? thông minh'
+  id=7 name='Ði?n tho?i'
+  id=8 name='Laptop'
+  id=12 name='Ph? ki?n'
+  id=9 name='Tablet'
+  id=10 name='Tai nghe'
+
+After N-prefix insert:
+  id=13 name='Điện thoại'

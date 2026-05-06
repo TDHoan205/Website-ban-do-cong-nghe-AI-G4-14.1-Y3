@@ -1,31 +1,21 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title|default('Không tìm thấy') }} - Webstore</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Be Vietnam Pro', sans-serif; background: linear-gradient(135deg, #023E8A, #0077B6, #00B4D8); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .error-container { text-align: center; color: white; padding: 40px; }
-        .error-code { font-size: 8rem; font-weight: 900; opacity: 0.2; line-height: 1; }
-        .error-title { font-size: 2rem; font-weight: 800; margin-bottom: 16px; }
-        .error-desc { font-size: 1rem; opacity: 0.8; margin-bottom: 32px; }
-        .btn-home { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: white; color: #0077B6; border-radius: 50px; font-weight: 700; text-decoration: none; transition: all 0.3s; }
-        .btn-home:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); color: #005f8a; }
-    </style>
-</head>
-<body>
-    <div class="error-container">
-        <div class="error-code">404</div>
-        <div class="error-title">Trang không tìm thấy!</div>
-        <p class="error-desc">Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển.</p>
-        <a href="/" class="btn-home">
-            <i class="fas fa-home"></i>Quay về trang chủ
-        </a>
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div style="text-align: center; padding: 80px 0;">
+        <div style="font-size: 8rem; font-weight: 900; color: var(--primary-lightest); line-height: 1; margin-bottom: 16px;">404</div>
+        <h1 style="font-weight: 800; font-size: 1.8rem; margin-bottom: 12px;">Không tìm thấy trang!</h1>
+        <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto;">
+            Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển. Vui lòng kiểm tra lại URL.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <a href="/" style="background: var(--primary); color: white; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; text-decoration: none;">
+                <i class="fas fa-home me-2"></i>Về trang chủ
+            </a>
+            <a href="/products" style="background: white; color: var(--primary); padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; text-decoration: none; border: 2px solid var(--primary);">
+                <i class="fas fa-th me-2"></i>Xem sản phẩm
+            </a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

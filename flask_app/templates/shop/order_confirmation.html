@@ -1,0 +1,91 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-check-circle me-2" style="color: var(--success);"></i>Xác nhận đơn hàng</h1>
+        <p class="page-subtitle mb-0">Cảm ơn bạn đã đặt hàng tại TechStore!</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {% if order %}
+            <div style="background: white; border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 80px; height: 80px; background: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i class="fas fa-check" style="font-size: 2.5rem; color: var(--success);"></i>
+                    </div>
+                    <h3 style="font-weight: 800; color: var(--success); margin-bottom: 8px;">Đặt hàng thành công!</h3>
+                    <p style="color: var(--text-secondary);">Mã đơn hàng: <strong>#{{ order.order_id }}</strong></p>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px;">
+                    <h5 style="font-weight: 700; margin-bottom: 16px;"><i class="fas fa-truck me-2"></i>Thông tin giao hàng</h5>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Người nhận</span>
+                            <p style="font-weight: 600; margin: 0;">{{ order.customer_name or "---" }}</p>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Số điện thoại</span>
+                            <p style="font-weight: 600; margin: 0;">{{ order.customer_phone or "---" }}</p>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Địa chỉ giao hàng</span>
+                            <p style="font-weight: 600; margin: 0;">{{ order.customer_address or "---" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px;">
+                    <h5 style="font-weight: 700; margin-bottom: 16px;"><i class="fas fa-box me-2"></i>Chi tiết đơn hàng</h5>
+                    {% for item in order.items %}
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+                        <div>
+                            <span style="font-weight: 600;">{{ item.product_name }}</span>
+                            {% if item.variant_name %}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;"> ({{ item.variant_name }})</span>
+                            {% endif %}
+                            <span style="color: var(--text-muted);"> x{{ item.quantity }}</span>
+                        </div>
+                        <span style="font-weight: 700;">{{ "{:,.0f}".format(float(item.subtotal)) }} đ</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div style="border-top: 2px solid var(--primary); padding-top: 16px; margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 800; font-size: 1.1rem;">Tổng cộng</span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">{{ "{:,.0f}".format(float(order.total_amount)) }} đ</span>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <span class="badge" style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;">
+                            <i class="fas fa-clock me-1"></i>Trạng thái: {{ order.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="/orders" class="btn" style="background: var(--primary); color: white; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; margin-right: 12px;">
+                    <i class="fas fa-list me-2"></i>Xem lịch sử đơn hàng
+                </a>
+                <a href="/" class="btn" style="background: white; color: var(--primary); padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; border: 2px solid var(--primary);">
+                    <i class="fas fa-home me-2"></i>Tiếp tục mua sắm
+                </a>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 48px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--warning); margin-bottom: 16px;"></i>
+                <h3>Không tìm thấy đơn hàng</h3>
+                <a href="/" class="btn" style="background: var(--primary); color: white; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; margin-top: 16px;">
+                    <i class="fas fa-home me-2"></i>Về trang chủ
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

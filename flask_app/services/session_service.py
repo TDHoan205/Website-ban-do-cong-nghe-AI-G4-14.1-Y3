@@ -107,6 +107,31 @@ def remove_from_cart(session_id: str, product_id: int,
     return False
 
 
+def update_cart_item_by_index(session_id: str, index: int, quantity: int) -> Optional[int]:
+    """Update cart item at given list index. Returns corrected quantity or None."""
+    if session_id not in _carts:
+        return None
+    cart = _carts[session_id]
+    if index < 0 or index >= len(cart):
+        return None
+    if quantity <= 0:
+        cart.pop(index)
+        return None
+    cart[index].quantity = quantity
+    return quantity
+
+
+def remove_from_cart_by_index(session_id: str, index: int) -> bool:
+    """Remove cart item at given list index."""
+    if session_id not in _carts:
+        return False
+    cart = _carts[session_id]
+    if index < 0 or index >= len(cart):
+        return False
+    cart.pop(index)
+    return True
+
+
 def clear_cart(session_id: str):
     if session_id in _carts:
         _carts[session_id] = []

@@ -1,119 +1,164 @@
 """
-Admin routes – dashboard and management pages.
+Admin router – dashboard and management pages using real SQL Server database.
 """
-from fastapi import APIRouter, Request, Query
+from fastapi import APIRouter, Request, Query, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy.orm import Session
 from typing import Optional
 
+from ..database import get_db
+from ..services import ProductService, OrderService
+from ..session import is_authenticated, get_account_id
+from ..models import Account
+
 from ..app_config import templates
-from ..services import (
-    get_session, get_dashboard_stats, get_all_products,
-    get_all_categories, get_all_suppliers, get_all_accounts,
-    get_all_orders, get_or_create_session,
-)
+
 
 admin_router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
-def _admin_context(request: Request, title: str = "", active_controller: str = ""):
-    session_id = request.cookies.get("session_id", "")
-    session = get_session(session_id) if session_id else {}
-    username = session.get("username")
-    if not username:
-        return None  # not logged in
+def _require_auth(request: Request, db: Session):
+    """Return account if authenticated, else None."""
+    if not is_authenticated(request):
+        return None
+    token = request.cookies.get("session_token")
+    if not token:
+        return None
+    from ..session import get_session
+    sess = get_session(token)
+    if not sess or sess["account_id"] <= 0:
+        return None
+    return db.query(Account).filter(Account.account_id == sess["account_id"]).first()
+
+
+def _is_admin(account: Optional[Account]) -> bool:
+    if not account:
+        return False
+    return account.role and account.role.role_name == "Admin"
+
+
+def _is_employee(account: Optional[Account]) -> bool:
+    if not account:
+        return False
+    return account.role and account.role.role_name in ("Admin", "Employee")
+
+
+def _admin_context(
+    request: Request,
+    db: Session,
+    title: str = "",
+    active_controller: str = "",
+):
+    account = _require_auth(request, db)
+    if not account:
+        return None
 
     return {
+        "request": request,
         "title": title,
         "active_controller": active_controller,
-        "current_user": username,
-        "is_admin": session.get("role") == "Admin",
-        "is_employee": session.get("role") in ("Admin", "Employee"),
+        "current_user": account.username,
+        "is_admin": _is_admin(account),
+        "is_employee": _is_employee(account),
+        "app_name": "TechStore",
     }
 
 
-def _require_auth(request: Request):
-    session_id = request.cookies.get("session_id", "")
-    session = get_session(session_id) if session_id else {}
-    return session.get("username") is not None
+# ── Dashboard ───────────────────────────────────────────────
 
-
-# ─── Dashboard ────────────────────────────────────────────
 @admin_router.get("/", response_class=HTMLResponse, name="admin.dashboard")
-async def admin_dashboard(request: Request):
-    if not _require_auth(request):
-        return RedirectResponse(url="/auth/login", status_code=302)
-
-    ctx = _admin_context(request, "Dashboard", "Dashboard")
+async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    ctx = _admin_context(request, db, "Dashboard", "Dashboard")
     if ctx is None:
         return RedirectResponse(url="/auth/login", status_code=302)
 
-    stats = get_dashboard_stats()
+    order_svc = OrderService(db)
+    prod_svc = ProductService(db)
+
+    orders = order_svc.get_all_orders()
+    products = prod_svc.get_all_products()
+
+    from datetime import datetime, timedelta
+    today = datetime.now().date()
+
+    # Stats
+    today_orders = [o for o in orders if o.order_date.date() == today]
+    total_revenue = sum(float(o.total_amount) for o in orders)
+    today_revenue = sum(float(o.total_amount) for o in today_orders)
+    pending_orders = [o for o in orders if o.status == "Pending"]
+
     ctx.update({
-        "stats": stats,
-        "top_products": stats.top_products,
-        "recent_orders": stats.recent_orders,
-        "revenue_by_day": stats.revenue_by_day,
+        "stats": {
+            "total_orders": len(orders),
+            "today_orders": len(today_orders),
+            "total_revenue": total_revenue,
+            "today_revenue": today_revenue,
+            "pending_orders": len(pending_orders),
+            "total_products": len(products),
+        },
+        "recent_orders": orders[:10],
     })
-    return templates.TemplateResponse("admin/dashboard.html", {"request": request, **ctx})
+
+    return templates.TemplateResponse("admin/dashboard.html", ctx)
 
 
-# ─── Products management ─────────────────────────────────
+# ── Products ─────────────────────────────────────────────────
+
 @admin_router.get("/products", response_class=HTMLResponse, name="admin.products")
-async def admin_products(request: Request, search: Optional[str] = Query(None)):
-    if not _require_auth(request):
+async def admin_products(request: Request, db: Session = Depends(get_db)):
+    ctx = _admin_context(request, db, "Quản lý sản phẩm", "Products")
+    if ctx is None:
         return RedirectResponse(url="/auth/login", status_code=302)
 
-    ctx = _admin_context(request, "Quản lý Sản Phẩm", "Products")
-    products = get_all_products()
-    if search:
-        q = search.lower()
-        products = [p for p in products if q in p.name.lower()]
+    prod_svc = ProductService(db)
+    products = prod_svc.get_all_products()
+    categories = prod_svc.get_all_categories()
+
     ctx.update({
         "products": products,
-        "search": search or "",
+        "categories": categories,
     })
-    return templates.TemplateResponse("admin/products/index.html", {"request": request, **ctx})
+    return templates.TemplateResponse("admin/products/index.html", ctx)
 
 
-# ─── Categories management ────────────────────────────────
+# ── Categories ───────────────────────────────────────────────
+
 @admin_router.get("/categories", response_class=HTMLResponse, name="admin.categories")
-async def admin_categories(request: Request):
-    if not _require_auth(request):
+async def admin_categories(request: Request, db: Session = Depends(get_db)):
+    ctx = _admin_context(request, db, "Quản lý danh mục", "Categories")
+    if ctx is None:
         return RedirectResponse(url="/auth/login", status_code=302)
 
-    ctx = _admin_context(request, "Quản lý Danh mục", "Categories")
-    ctx["categories"] = get_all_categories()
-    return templates.TemplateResponse("admin/categories/index.html", {"request": request, **ctx})
+    prod_svc = ProductService(db)
+    categories = prod_svc.get_all_categories()
+
+    ctx.update({"categories": categories})
+    return templates.TemplateResponse("admin/categories/index.html", ctx)
 
 
-# ─── Orders management ────────────────────────────────────
+# ── Orders ─────────────────────────────────────────────────
+
 @admin_router.get("/orders", response_class=HTMLResponse, name="admin.orders")
-async def admin_orders(request: Request):
-    if not _require_auth(request):
+async def admin_orders(request: Request, db: Session = Depends(get_db)):
+    ctx = _admin_context(request, db, "Quản lý đơn hàng", "Orders")
+    if ctx is None:
         return RedirectResponse(url="/auth/login", status_code=302)
 
-    ctx = _admin_context(request, "Quản lý Đơn hàng", "Orders")
-    ctx["orders"] = get_all_orders()
-    return templates.TemplateResponse("admin/orders/index.html", {"request": request, **ctx})
+    order_svc = OrderService(db)
+    orders = order_svc.get_all_orders()
+
+    ctx.update({"orders": orders})
+    return templates.TemplateResponse("admin/orders/index.html", ctx)
 
 
-# ─── Accounts management ──────────────────────────────────
+# ── Accounts ────────────────────────────────────────────────
+
 @admin_router.get("/accounts", response_class=HTMLResponse, name="admin.accounts")
-async def admin_accounts(request: Request):
-    if not _require_auth(request):
+async def admin_accounts(request: Request, db: Session = Depends(get_db)):
+    ctx = _admin_context(request, db, "Quản lý tài khoản", "Accounts")
+    if ctx is None:
         return RedirectResponse(url="/auth/login", status_code=302)
 
-    ctx = _admin_context(request, "Quản lý Tài khoản", "Accounts")
-    ctx["accounts"] = get_all_accounts()
-    return templates.TemplateResponse("admin/accounts/index.html", {"request": request, **ctx})
-
-
-# ─── Suppliers management ────────────────────────────────
-@admin_router.get("/suppliers", response_class=HTMLResponse, name="admin.suppliers")
-async def admin_suppliers(request: Request):
-    if not _require_auth(request):
-        return RedirectResponse(url="/auth/login", status_code=302)
-
-    ctx = _admin_context(request, "Quản lý Nhà cung cấp", "Suppliers")
-    ctx["suppliers"] = get_all_suppliers()
-    return templates.TemplateResponse("admin/suppliers/index.html", {"request": request, **ctx})
+    accounts = db.query(Account).all()
+    ctx.update({"accounts": accounts})
+    return templates.TemplateResponse("admin/accounts/index.html", ctx)

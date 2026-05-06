@@ -1,59 +1,98 @@
 """
-Auth routes – login, register, logout.
+Auth router – login, register, logout using real SQL Server database.
 """
-from fastapi import APIRouter, Request, Form, Cookie, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Request, Form, Depends, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from sqlalchemy.orm import Session
 from typing import Optional
 
+from ..database import get_db
+from ..services import AuthService
+from ..session import login, logout, get_session_token, get_session, is_authenticated
+from ..models import Account
+
 from ..app_config import templates
-from ..services import authenticate, get_or_create_session, set_session_user, logout_session, get_session
-
-auth_router = APIRouter(prefix="", tags=["Auth"])
 
 
-@auth_router.get("/auth/login", response_class=HTMLResponse, name="auth.login")
+auth_router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+# ── GET /auth/login ─────────────────────────────────────────────
+@auth_router.get("/login", response_class=HTMLResponse, name="auth.login")
 async def login_page(request: Request, return_url: Optional[str] = None):
-    session_id = request.cookies.get("session_id", "")
-    session = get_session(session_id) if session_id else {}
-    if session.get("username"):
-        return RedirectResponse(url="/shop", status_code=302)
+    if is_authenticated(request):
+        return RedirectResponse(url=return_url or "/shop/", status_code=302)
 
-    ctx = {"title": "Đăng nhập", "return_url": return_url or ""}
-    return templates.TemplateResponse("auth/login.html", {"request": request, **ctx})
+    ctx = {
+        "request": request,
+        "title": "Đăng nhập",
+        "return_url": return_url or "",
+        "error": None,
+    }
+    return templates.TemplateResponse("auth/login.html", ctx)
 
 
-@auth_router.post("/auth/login", name="auth.login_post")
+# ── POST /auth/login ─────────────────────────────────────────────
+@auth_router.post("/login", name="auth.login_post")
 async def login_submit(
     request: Request,
     response: Response,
     username: str = Form(...),
     password: str = Form(...),
     return_url: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
 ):
-    account = authenticate(username, password)
+    auth_svc = AuthService(db)
+    account = auth_svc.authenticate(username, password)
+
     if not account:
-        ctx = {"title": "Đăng nhập", "error": "Tên đăng nhập hoặc mật khẩu không đúng.",
-               "return_url": return_url or ""}
-        return templates.TemplateResponse("auth/login.html", {"request": request, **ctx})
+        ctx = {
+            "request": request,
+            "title": "Đăng nhập",
+            "return_url": return_url or "",
+            "error": "Tên đăng nhập hoặc mật khẩu không đúng.",
+        }
+        return templates.TemplateResponse("auth/login.html", ctx)
 
-    session_id, _ = get_or_create_session(request.cookies.get("session_id"))
-    set_session_user(session_id, account.account_id, account.username, account.role)
+    # Create session
+    guest_uuid = None  # TODO: link guest cart to account on login
+    login(response, account, guest_uuid)
 
-    redirect_url = return_url or (
-        "/admin" if account.role == "Admin" else "/shop"
-    )
-    resp = RedirectResponse(url=redirect_url, status_code=302)
-    resp.set_cookie("session_id", session_id, httponly=True, samesite="lax", max_age=86400)
-    return resp
+    redirect_url = return_url or "/shop/"
+    return RedirectResponse(url=redirect_url, status_code=302)
 
 
-@auth_router.get("/auth/register", response_class=HTMLResponse, name="auth.register")
+# ── GET /auth/logout ─────────────────────────────────────────────
+@auth_router.get("/logout", name="auth.logout")
+async def logout_get(request: Request, response: Response):
+    logout(response, request)
+    return RedirectResponse(url="/shop/", status_code=302)
+
+
+# ── POST /auth/logout ─────────────────────────────────────────────
+@auth_router.post("/logout", name="auth.logout_post")
+async def logout_post(request: Request, response: Response):
+    logout(response, request)
+    return RedirectResponse(url="/shop/", status_code=302)
+
+
+# ── GET /auth/register ─────────────────────────────────────────────
+@auth_router.get("/register", response_class=HTMLResponse, name="auth.register")
 async def register_page(request: Request):
-    ctx = {"title": "Đăng ký"}
-    return templates.TemplateResponse("auth/register.html", {"request": request, **ctx})
+    if is_authenticated(request):
+        return RedirectResponse(url="/shop/", status_code=302)
+
+    ctx = {
+        "request": request,
+        "title": "Đăng ký",
+        "error": None,
+        "success": None,
+    }
+    return templates.TemplateResponse("auth/register.html", ctx)
 
 
-@auth_router.post("/auth/register", name="auth.register_post")
+# ── POST /auth/register ─────────────────────────────────────────────
+@auth_router.post("/register", name="auth.register_post")
 async def register_submit(
     request: Request,
     response: Response,
@@ -61,35 +100,40 @@ async def register_submit(
     email: str = Form(...),
     password: str = Form(...),
     full_name: str = Form(...),
+    db: Session = Depends(get_db),
 ):
-    ctx = {"title": "Đăng ký", "success": "Đăng ký thành công! Vui lòng đăng nhập."}
-    return templates.TemplateResponse("auth/register.html", {"request": request, **ctx})
+    auth_svc = AuthService(db)
 
+    # Check if username already exists
+    if auth_svc.get_account_by_username(username):
+        ctx = {
+            "request": request,
+            "title": "Đăng ký",
+            "error": "Tên đăng nhập đã được sử dụng.",
+            "success": None,
+        }
+        return templates.TemplateResponse("auth/register.html", ctx)
 
-@auth_router.get("/auth/logout", name="auth.logout")
-async def logout(request: Request):
-    session_id = request.cookies.get("session_id")
-    if session_id:
-        logout_session(session_id)
-    resp = RedirectResponse(url="/", status_code=302)
-    resp.delete_cookie("session_id")
-    return resp
+    # Check if email already exists
+    if auth_svc.get_account_by_email(email):
+        ctx = {
+            "request": request,
+            "title": "Đăng ký",
+            "error": "Email đã được sử dụng.",
+            "success": None,
+        }
+        return templates.TemplateResponse("auth/register.html", ctx)
 
+    # Create account
+    account = auth_svc.create_account(
+        username=username,
+        email=email,
+        password=password,
+        full_name=full_name,
+        role_name="Customer",
+    )
 
-@auth_router.get("/auth/forgot-password", response_class=HTMLResponse, name="auth.forgot_password")
-async def forgot_password(request: Request):
-    ctx = {"title": "Quên mật khẩu"}
-    return templates.TemplateResponse("auth/forgot_password.html", {"request": request, **ctx})
+    # Auto-login
+    login(response, account)
 
-
-@auth_router.post("/auth/forgot-password", name="auth.forgot_password_post")
-async def forgot_password_submit(request: Request):
-    ctx = {"title": "Quên mật khẩu",
-           "success": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn."}
-    return templates.TemplateResponse("auth/forgot_password.html", {"request": request, **ctx})
-
-
-@auth_router.get("/auth/reset-password", response_class=HTMLResponse, name="auth.reset_password")
-async def reset_password(request: Request):
-    ctx = {"title": "Đặt lại mật khẩu"}
-    return templates.TemplateResponse("auth/reset_password.html", {"request": request, **ctx})
+    return RedirectResponse(url="/shop/", status_code=302)

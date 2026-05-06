@@ -10,54 +10,158 @@
 
 <div class="container py-5">
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card" style="text-align: center; padding: 32px 20px;">
-                <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                    <i class="fas fa-phone-alt" style="font-size: 1.8rem; color: var(--primary);"></i>
-                </div>
-                <h4 style="font-weight: 700; margin-bottom: 8px;">Hotline</h4>
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">Tư vấn mua hàng và hỗ trợ kỹ thuật</p>
-                <a href="tel:18006601" class="btn btn-primary">1800.6601 (Nhánh 1)</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card" style="text-align: center; padding: 32px 20px;">
-                <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                    <i class="fas fa-envelope" style="font-size: 1.8rem; color: var(--primary);"></i>
-                </div>
-                <h4 style="font-weight: 700; margin-bottom: 8px;">Email</h4>
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">Phản hồi trong vòng 24 giờ</p>
-                <a href="mailto:support@webstore.vn" class="btn btn-primary">Webstore@gmail.com</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card" style="text-align: center; padding: 32px 20px;">
-                <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                    <i class="fas fa-comments" style="font-size: 1.8rem; color: var(--primary);"></i>
-                </div>
-                <h4 style="font-weight: 700; margin-bottom: 8px;">Chat trực tuyến</h4>
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">Tư vấn viên trực tuyến 24/7</p>
-                <button class="btn btn-primary" onclick="alert('Tính năng chat đang được phát triển!')">Bắt đầu chat</button>
-            </div>
-        </div>
-    </div>
+        <div class="col-lg-8">
+            <div style="background: white; border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border); margin-bottom: 20px;">
+                <h5 style="font-weight: 700; margin-bottom: 16px;"><i class="fas fa-comments me-2"></i>Liên hệ hỗ trợ</h5>
 
-    <div class="mt-5">
-        <div class="card">
-            <div class="card-header"><i class="fas fa-question-circle me-2"></i>Câu hỏi thường gặp (FAQ)</div>
-            <div class="card-body">
-                {% set faqs = [
-                    ("Làm sao để đặt hàng?", "Bạn có thể đặt hàng trực tiếp trên website bằng cách chọn sản phẩm, thêm vào giỏ hàng và tiến hành thanh toán."),
-                    ("Thời gian giao hàng là bao lâu?", "Đơn hàng nội thành Hà Nội và TP.HCM sẽ được giao trong 24-48 giờ. Các khu vực khác từ 2-5 ngày làm việc."),
-                    ("Chính sách đổi trả như thế nào?", "Quý khách được đổi trả trong vòng 7 ngày nếu sản phẩm bị lỗi hoặc không đúng như mô tả."),
-                    ("Làm sao để liên hệ với bộ phận kỹ thuật?", "Gọi đường dây nóng 1800.6601 (Nhánh 2) hoặc gửi email về support@webstore.vn.")
-                ] %}
-                {% for q, a in faqs %}
-                <div style="border-bottom: 1px solid var(--border); padding: 16px 0;">
-                    <h6 style="font-weight: 700; color: var(--primary); margin-bottom: 8px;"><i class="fas fa-question-circle me-2"></i>{{ q }}</h6>
-                    <p style="color: var(--text-secondary); margin: 0; font-size: 0.88rem;">{{ a }}</p>
+                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                    <div class="flex-fill">
+                        <label class="form-label">Họ và tên</label>
+                        <input type="text" class="form-control" placeholder="Nguyễn Văn A" />
+                    </div>
+                    <div class="flex-fill">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" placeholder="email@example.com" />
+                    </div>
                 </div>
-                {% endfor %}
+
+                <div class="mb-3">
+                    <label class="form-label">Chủ đề</label>
+                    <select class="form-select">
+                        <option>Tư vấn sản phẩm</option>
+                        <option>Hỗ trợ đơn hàng</option>
+                        <option>Bảo hành / Đổi trả</option>
+                        <option>Phản ánh / Khiếu nại</option>
+                        <option>Khác</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nội dung</label>
+                    <textarea class="form-control" rows="4" placeholder="Mô tả chi tiết vấn đề của bạn..."></textarea>
+                </div>
+
+                <button type="button" class="btn" onclick="alert('Gửi yêu cầu thành công! Chúng tôi sẽ phản hồi trong 24h.')"
+                        style="background: var(--primary); color: white; padding: 10px 24px; border-radius: var(--radius-md); font-weight: 700; border: none;">
+                    <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu
+                </button>
+            </div>
+
+            <!-- FAQ -->
+            <div style="background: white; border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border);">
+                <h5 style="font-weight: 700; margin-bottom: 16px;"><i class="fas fa-question-circle me-2"></i>Câu hỏi thường gặp</h5>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item" style="border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="font-weight: 600; font-size: 0.9rem;">
+                                Làm sao để đặt hàng?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body" style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Chọn sản phẩm bạn muốn mua, nhấn "Thêm vào giỏ hàng", sau đó vào giỏ hàng để tiến hành thanh toán. Điền đầy đủ thông tin giao hàng và chọn phương thức thanh toán phù hợp.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" style="border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" style="font-weight: 600; font-size: 0.9rem;">
+                                Chính sách đổi trả như thế nào?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body" style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Sản phẩm được đổi trả trong vòng 7 ngày nếu còn nguyên tem, hộp. Liên hệ hotline 1900-1234 để được hỗ trợ.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" style="border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" style="font-weight: 600; font-size: 0.9rem;">
+                                Thời gian giao hàng bao lâu?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body" style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Giao hàng nhanh trong 24h tại các thành phố lớn. Giao hàng tiêu chuẩn 2-5 ngày tùy khu vực.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" style="border: 1px solid var(--border); border-radius: var(--radius-md);">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" style="font-weight: 600; font-size: 0.9rem;">
+                                Tôi quên mật khẩu, làm sao?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body" style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Nhấn "Quên mật khẩu" tại trang đăng nhập, nhập email đã đăng ký. Chúng tôi sẽ gửi link đặt lại mật khẩu qua email.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div style="background: white; border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border);">
+                <h5 style="font-weight: 700; margin-bottom: 16px;"><i class="fas fa-phone-alt me-2"></i>Thông tin liên hệ</h5>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 36px; height: 36px; background: var(--primary-lightest); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-phone" style="color: var(--primary); font-size: 0.85rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted);">Hotline</div>
+                            <div style="font-weight: 700;">1900-1234</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 36px; height: 36px; background: var(--primary-lightest); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-envelope" style="color: var(--primary); font-size: 0.85rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted);">Email</div>
+                            <div style="font-weight: 700;">support@techstore.com</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 36px; height: 36px; background: var(--primary-lightest); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-clock" style="color: var(--primary); font-size: 0.85rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted);">Giờ làm việc</div>
+                            <div style="font-weight: 700;">8:00 - 22:00 (Thứ 2 - CN)</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 36px; height: 36px; background: var(--primary-lightest); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--primary); font-size: 0.85rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted);">Địa chỉ</div>
+                            <div style="font-weight: 700;">123 Nguyễn Trãi, Q.1, TP.HCM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border); margin-top: 16px;">
+                <h5 style="font-weight: 700; margin-bottom: 12px;"><i class="fas fa-share-alt me-2"></i>Kết nối với chúng tôi</h5>
+                <div style="display: flex; gap: 8px;">
+                    <a href="#" style="width: 40px; height: 40px; background: #1877f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" style="width: 40px; height: 40px; background: #e4405f; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" style="width: 40px; height: 40px; background: #25d366; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="#" style="width: 40px; height: 40px; background: #0088cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">
+                        <i class="fab fa-telegram-plane"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

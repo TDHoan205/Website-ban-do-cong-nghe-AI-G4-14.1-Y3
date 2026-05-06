@@ -3,7 +3,8 @@ Shop routes – public-facing storefront.
 """
 from ..app_config import templates
 from fastapi import APIRouter, Request, Form, Query
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from datetime import datetime
 from typing import Optional
 
 from ..services import (
@@ -28,6 +29,8 @@ def _make_context(request: Request, title: str = "", active_controller: str = ""
     session = get_session(sid)
     cart = get_cart(sid)
     ctx = {
+        "app_name": "TechStore",
+        "current_year": datetime.now().year,
         "title": title,
         "active_controller": active_controller,
         "current_user": session.get("username"),
@@ -41,18 +44,7 @@ def _make_context(request: Request, title: str = "", active_controller: str = ""
 
 
 # ─── Landing page (/) ────────────────────────────────────
-@shop_router.get("/", response_class=HTMLResponse, name="home.landing")
-async def home_landing(request: Request):
-    categories = get_all_categories()
-    new_products = get_new_products()
-    hot_products = get_hot_products()
-    ctx = _make_context(request, "Trang chủ", active_controller="Landing")
-    ctx.update({
-        "categories": categories,
-        "new_products": new_products,
-        "hot_products": hot_products,
-    })
-    return templates.TemplateResponse("shop/landing.html", {"request": request, **ctx})
+# REMOVED – served by web_router at /
 
 
 # ─── Shop index ─────────────────────────────────────────
@@ -174,3 +166,22 @@ async def shop_profile(request: Request):
 async def shop_support(request: Request):
     ctx = _make_context(request, "Hỗ trợ", active_controller="Support")
     return templates.TemplateResponse("shop/support.html", {"request": request, **ctx})
+
+
+# ─── Checkout (placeholder) ─────────────────────────────
+@shop_router.get("/shop/checkout", response_class=HTMLResponse, name="shop.checkout")
+async def shop_checkout(request: Request):
+    sid = _session_id(request)
+    cart = get_cart(sid)
+    if not cart:
+        return RedirectResponse(url="/shop/cart", status_code=302)
+    total = get_cart_total(sid)
+    ctx = _make_context(request, "Thanh toán", active_controller="Cart")
+    ctx.update({"cart": cart, "total": total})
+    return templates.TemplateResponse("shop/checkout.html", {"request": request, **ctx})
+
+
+# ─── Legacy /shop/ redirects (keep for backwards compat) ─────────
+@shop_router.get("/shop", name="shop.legacy_index")
+async def shop_legacy(request: Request):
+    return RedirectResponse(url="/", status_code=301)

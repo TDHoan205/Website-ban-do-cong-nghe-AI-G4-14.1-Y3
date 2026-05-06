@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title }} - Webstore Admin</title>
+    <title>@ViewData["Title"] - Webstore Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap/dist/css/bootstrap.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         :root {
@@ -249,7 +249,7 @@
         .topbar-user-info strong { font-size: 0.82rem; color: var(--text-primary); }
         .topbar-user-info small { font-size: 0.7rem; color: var(--text-muted); }
         .topbar-user-info { display: none; }
-        @media (min-width: 768px) { .topbar-user-info { display: block; } }
+        @@media (min-width: 768px) { .topbar-user-info { display: block; } }
 
         /* =====================================================
            ADMIN CONTENT
@@ -426,7 +426,7 @@
         .toast-info { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
         .toast .toast-body { padding: 14px 18px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
         .toast .toast-body i { font-size: 1.1rem; }
-        @keyframes slideInRight {
+        @@keyframes slideInRight {
             from { opacity: 0; transform: translateX(80px); }
             to { opacity: 1; transform: translateX(0); }
         }
@@ -444,7 +444,7 @@
         /* =====================================================
            SIDEBAR RESPONSIVE
         ===================================================== */
-        @media (max-width: 991px) {
+        @@media (max-width: 991px) {
             .admin-sidebar {
                 transform: translateX(-100%);
             }
@@ -465,7 +465,7 @@
             min-width: 200px;
             animation: dropIn 0.2s ease;
         }
-        @keyframes dropIn {
+        @@keyframes dropIn {
             from { opacity: 0; transform: translateY(-8px); }
             to { opacity: 1; transform: translateY(0); }
         }
@@ -503,65 +503,67 @@
             <div class="sidebar-section-title">Quản lý</div>
             <ul class="sidebar-nav">
                 <li class="sidebar-nav-item">
-                    <a class="sidebar-link {% if active_controller == 'Home' %}active{% endif %}"
-                       href="{{ url_for('home_bp.index') }}">
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                       asp-controller="Home" asp-action="Index">
                         <i class="fas fa-home"></i>
                         <span>Trang chủ</span>
                     </a>
                 </li>
-                {% if is_admin %}
+                @if (User.IsInRole("Admin"))
+                {
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-link {% if active_controller == 'Products' %}active{% endif %}"
-                           href="{{ url_for('products_bp.index') }}">
+                        <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")"
+                           asp-controller="Products" asp-action="Index">
                             <i class="fas fa-box"></i>
                             <span>Sản phẩm</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-link {% if active_controller == 'Categories' %}active{% endif %}"
-                           href="{{ url_for('categories_bp.index') }}">
+                        <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "active" : "")"
+                           asp-controller="Categories" asp-action="Index">
                             <i class="fas fa-tags"></i>
                             <span>Danh mục</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-link {% if active_controller == 'Suppliers' %}active{% endif %}"
-                           href="{{ url_for('suppliers_bp.index') }}">
+                        <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Suppliers" ? "active" : "")"
+                           asp-controller="Suppliers" asp-action="Index">
                             <i class="fas fa-truck"></i>
                             <span>Nhà cung cấp</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-link {% if active_controller == 'Orders' %}active{% endif %}"
-                           href="{{ url_for('orders_bp.index') }}">
+                        <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Orders" ? "active" : "")"
+                           asp-controller="Orders" asp-action="Index">
                             <i class="fas fa-shopping-bag"></i>
                             <span>Đơn hàng</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-link {% if active_controller == 'OrderItems' %}active{% endif %}"
-                           href="{{ url_for('order_items_bp.index') }}">
+                        <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "OrderItems" ? "active" : "")"
+                           asp-controller="OrderItems" asp-action="Index">
                             <i class="fas fa-list-alt"></i>
                             <span>Chi tiết đơn</span>
                         </a>
                     </li>
-                {% endif %}
-                {% if is_admin %}
+                }
+                @if (User.IsInRole("Admin"))
+                {
                     <div class="sidebar-divider"></div>
                     <div class="sidebar-section-title">Hệ thống</div>
 
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-link {% if active_controller == 'Accounts' %}active{% endif %}"
-                           href="{{ url_for('accounts_bp.index') }}">
+                        <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Accounts" ? "active" : "")"
+                           asp-controller="Accounts" asp-action="Index">
                             <i class="fas fa-user-circle"></i>
                             <span>Tài khoản</span>
                         </a>
                     </li>
-                {% endif %}
+                }
             </ul>
 
             <div class="sidebar-footer-link">
-                <a class="sidebar-link" href="{{ url_for('shop_bp.index') }}">
+                <a class="sidebar-link" asp-controller="Shop" asp-action="Index">
                     <i class="fas fa-external-link-alt"></i>
                     <span>Xem cửa hàng</span>
                 </a>
@@ -577,31 +579,33 @@
                         <i class="fas fa-bars"></i>
                     </button>
                     <div class="topbar-breadcrumb">
-                        <strong>{{ title }}</strong>
+                        <strong>@ViewData["Title"]</strong>
                     </div>
                 </div>
                 <div class="topbar-right">
-                    <a href="{{ url_for('shop_bp.index') }}" class="topbar-btn" title="Xem cửa hàng">
+                    <a asp-controller="Shop" asp-action="Index" class="topbar-btn" title="Xem cửa hàng">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
 
-                    {% if current_user.is_authenticated %}
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
                         <div class="dropdown">
                             <button class="topbar-user dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <div class="topbar-user-avatar">{{ current_user.username[:1]|upper }}</div>
+                                <div class="topbar-user-avatar">@(User.Identity.Name?.Substring(0,1).ToUpper())</div>
                                 <div class="topbar-user-info">
-                                    <strong>{{ current_user.username }}</strong>
-                                    <small>{% if is_admin %}Quản trị viên{% endif %}</small>
+                                    <strong>@User.Identity.Name</strong>
+                                    <small>@(User.IsInRole("Admin") ? "Quản trị viên" : "")</small>
                                 </div>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" role="menu">
-                                {% if is_admin %}
-                                    <li><a class="dropdown-item" href="{{ url_for('shop_bp.index') }}"><i class="fas fa-store"></i>Cửa hàng</a></li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index"><i class="fas fa-store"></i>Cửa hàng</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                {% endif %}
+                                }
                                 <li>
-                                    <form action="{{ url_for('auth_bp.logout') }}" method="post" class="m-0">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item text-danger w-100 text-start">
                                             <i class="fas fa-sign-out-alt"></i>Đăng xuất
                                         </button>
@@ -609,20 +613,20 @@
                                 </li>
                             </ul>
                         </div>
-                    {% endif %}
+                    }
                 </div>
             </header>
 
             <!-- Content -->
             <div class="admin-content">
-                {% block content %}{% endblock %}
+                @RenderBody()
             </div>
         </main>
     </div>
 
-    <script src="{{ url_for('static', filename='lib/jquery/dist/jquery.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/bootstrap/dist/js/bootstrap.bundle.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/site.js') }}"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.admin-sidebar').classList.toggle('open');
@@ -649,6 +653,6 @@
             if (urlParams.get('warning')) showToast(decodeURIComponent(urlParams.get('warning')), 'warning');
         });
     </script>
-    {% block scripts %}{% endblock %}
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

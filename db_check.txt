@@ -1,0 +1,12 @@
+=== Categories (6) ===
+  id=7 name='Điện thoại'
+  id=8 name='Laptop'
+  id=9 name='Tablet'
+  id=10 name='Tai nghe'
+  id=11 name='Đồng hồ thông minh'
+  id=12 name='Phụ kiện'
+
+=== Products sample ===
+  'iPhone 15 Pro Max'
+  'Samsung Galaxy S24 Ultra'
+  'iPhone 14'

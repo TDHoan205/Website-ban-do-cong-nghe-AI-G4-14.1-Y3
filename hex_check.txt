@@ -1,0 +1,10 @@
+id=7 text='Ði?n tho?i'
+  UTF-8 hex: c390693f6e2074686f3f69
+
+After fix:
+  id=7 name='Điện thoại'
+  id=11 name='Đồng hồ thông minh'
+  id=8 name='Laptop'
+  id=12 name='Phụ kiện'
+  id=9 name='Tablet'
+  id=10 name='Tai nghe'

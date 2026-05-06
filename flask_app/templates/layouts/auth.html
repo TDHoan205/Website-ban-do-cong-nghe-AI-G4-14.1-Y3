@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/lib/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="/static/css/site.css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='lib/bootstrap/dist/css/bootstrap.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/site.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     {% block extra_styles %}{% endblock %}
     <style>
@@ -465,7 +465,7 @@
 <body>
     <div class="back-to-home">
         <a href="/shop" class="btn">
-            <i class="fas fa-arrow-left"></i> Ve trang chu
+            <i class="fas fa-arrow-left"></i> Về trang chủ
         </a>
     </div>
 
@@ -475,9 +475,9 @@
         </div>
     </main>
 
-    <script src="/static/lib/jquery/dist/jquery.js"></script>
-    <script src="/static/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    <script src="/static/js/site.js"></script>
+    <script src="{{ url_for('static', path='lib/jquery/dist/jquery.js') }}"></script>
+    <script src="{{ url_for('static', path='lib/bootstrap/dist/js/bootstrap.bundle.js') }}"></script>
+    <script src="{{ url_for('static', path='js/site.js') }}"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -486,7 +486,7 @@
                 form.addEventListener('submit', function() {
                     var submitBtn = this.querySelector('button[type="submit"]');
                     if (submitBtn && !submitBtn.disabled) {
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Dang xu ly...';
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
                         submitBtn.disabled = true;
 
                         // Re-enable after 5 seconds in case of error

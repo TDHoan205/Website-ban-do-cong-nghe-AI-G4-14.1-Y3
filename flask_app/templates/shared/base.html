@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tech Store - Cửa hàng công nghệ với AI tư vấn thông minh 24/7">
+    <title>{% block title %}{{ page_title }}{% endblock %} - {{ app_name }}</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot"></i> {{ app_name|default('TechStore') }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'home' or active_controller == 'Shop' %}active{% endif %}" href="/">
+                            <i class="fas fa-home"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'products' or active_controller == 'Products' %}active{% endif %}" href="/shop/products">
+                            <i class="fas fa-store"></i> Sản phẩm
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'chat' %}active{% endif %}" href="/shop/support">
+                            <i class="fas fa-headset"></i> Hỗ trợ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="/">
+                            <i class="fas fa-info-circle"></i> Giới thiệu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'contact' %}active{% endif %}" href="/">
+                            <i class="fas fa-phone"></i> Liên hệ
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'cart' or active_controller == 'Cart' %}active{% endif %}" href="/shop/cart">
+                            <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                            <span class="badge bg-warning text-dark">{{ cart_count|default(0) }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> Tài khoản
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% if current_user %}
+                                <li><span class="dropdown-item-text text-muted small">{{ current_user }}</span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="/auth/login"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a></li>
+                                <li><a class="dropdown-item" href="/auth/register"><i class="fas fa-user-plus"></i> Đăng ký</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.type or 'info' }} alert-dismissible fade show" role="alert">
+            {{ message.text }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Chatbot Floating Button -->
+    <div class="chatbot-float">
+        <a href="/shop/support" class="btn btn-primary btn-lg rounded-circle" title="Hỗ trợ khách hàng">
+            <i class="fas fa-comments"></i>
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5><i class="fas fa-robot"></i> {{ app_name }}</h5>
+                    <p class="text-white-50 mb-0">Cửa hàng công nghệ với AI tư vấn thông minh 24/7</p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/" class="text-white-50">Trang chủ</a></li>
+                        <li><a href="/shop/products" class="text-white-50">Sản phẩm</a></li>
+                        <li><a href="/shop/support" class="text-white-50">Hỗ trợ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p class="text-white-50 mb-1"><i class="fas fa-envelope"></i> support@techstore.com</p>
+                    <p class="text-white-50 mb-1"><i class="fas fa-phone"></i> 0123-456-789</p>
+                    <p class="text-white-50 mb-0"><i class="fas fa-map-marker-alt"></i> Hà Nội, Việt Nam</p>
+                </div>
+            </div>
+            <hr class="bg-secondary">
+            <p class="text-center text-white-50 mb-0">&copy; {{ current_year }} {{ app_name }}. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', path='js/main.js') }}"></script>
+
+    <script>
+        function updateCartCount() {
+            fetch('/api/cart/count')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var els = document.querySelectorAll('.cart-count-badge');
+                    els.forEach(function(el) { el.textContent = data || 0; });
+                })
+                .catch(function() {});
+        }
+
+        function addToCart(productId, quantity) {
+            quantity = quantity || 1;
+            fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: productId, quantity: quantity })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(response) {
+                if (response.success) {
+                    updateCartCount();
+                    alert(response.message || 'Đã thêm vào giỏ hàng!');
+                } else {
+                    alert(response.message || 'Không thể thêm sản phẩm.');
+                }
+            })
+            .catch(function() { alert('Có lỗi xảy ra.'); });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+    {% block scripts %}{% endblock %}
+
+    {% block extra_js_final %}{% endblock %}
+</body>
+</html>

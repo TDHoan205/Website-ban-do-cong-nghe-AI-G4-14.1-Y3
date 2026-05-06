@@ -1,0 +1,15 @@
+Content-Type: text/html; charset=utf-8
+HTML size: 137556 bytes
+
+Vietnamese text in HTML:
+  OK (Smartphone): 'Điện thoại'
+  OK (Laptop): 'Laptop'
+  OK (Tablet): 'Tablet'
+  OK (Headphones): 'Tai nghe'
+  OK (Smartwatch): 'Đồng hồ thông minh'
+  OK (Accessories): 'Phụ kiện'
+  OK (Category section): 'Danh mục sản phẩm'
+  OK (New products): 'Sản phẩm mới về'
+
+Snippet from page: 'Điện thoại</span>\n  '
+Hex: c49069e1bb876e2074686fe1baa1693c2f7370616e3e0a2020

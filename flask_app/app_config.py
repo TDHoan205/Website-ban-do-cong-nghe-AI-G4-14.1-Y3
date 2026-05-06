@@ -2,9 +2,7 @@
 Shared FastAPI application configuration.
 Avoids circular imports between main.py and routers.
 """
-from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -13,6 +11,31 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Templates – registered once here, shared everywhere
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+
+# ─── url_for helper for Jinja2 (FastAPI-compatible) ────────────────────
+def _static_url(path: str) -> str:
+    """Return the static file URL, e.g. url_for('static', path='images/logo.png')"""
+    return f"/static/{path.lstrip('/')}"
+
+
+def _url_for(name: str, **kwargs) -> str:
+    """
+    Flask-compatible url_for for templates.
+    Supports:
+      url_for('static', path='...') -> /static/...
+      url_for('shop.home') -> /shop/
+    """
+    if name == "static":
+        return _static_url(kwargs.get("path", ""))
+    if name == "shop.home":
+        return "/shop/"
+    if name == "shop.products":
+        return "/shop/products"
+    if name == "shop.cart":
+        return "/shop/cart"
+    # Fallback
+    return "/"
 
 # ─── Custom Jinja2 filters ───────────────────────────────
 def format_vnd(amount: float) -> str:
@@ -70,3 +93,5 @@ templates.env.filters["format_vnd"] = format_vnd
 templates.env.filters["format_currency"] = format_currency
 templates.env.filters["get_category_icon"] = get_category_icon
 templates.env.filters["get_status_badge"] = get_status_badge
+templates.env.globals["url_for"] = _url_for
+templates.env.globals["static_url"] = _static_url

@@ -9,7 +9,7 @@ import urllib
 
 # Cấu hình SQL Server - Sửa theo server của bạn
 SQL_SERVER_CONFIG = {
-    "server": "localhost",
+    "server": "DESKTOP-1TM8FSO",
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication

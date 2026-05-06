@@ -16,7 +16,7 @@
                 <div style="aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; background: var(--surface-alt); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 12px;">
                     <img id="mainImage" src="{{ product.image_url }}" alt="{{ product.name }}"
                          style="max-width: 100%; max-height: 400px; object-fit: contain;"
-                         onerror="this.src='/static/images/products/placeholder.png'" />
+                         onerror="this.src='{{ url_for('static', path='images/products/placeholder.svg') }}'" />
                 </div>
                 {% if product.images %}
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
