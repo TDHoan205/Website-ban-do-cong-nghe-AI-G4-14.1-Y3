@@ -1,552 +1,325 @@
-# 🛒 Website-bán-đồ-Công-Nghệ-AI-G4-14.1-Y3
+<div align="center">
 
-**Website thương mại điện tử bán đồ công nghệ với AI Chatbot hỗ trợ khách hàng**
+# 🛒 Tech Store AI
 
-> Phiên bản Python/FastAPI - Tham khảo từ [Website-ban-do-CN-Webstore-cs](../Website-ban-do-CN-Webstore-cs/README.md)
+### Website Thương Mại Điện Tử Công Nghệ với AI Chatbot Thông Minh
 
----
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![SQL Server](https://img.shields.io/badge/SQL_Server-2019+-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)](https://microsoft.com/sql-server)
+[![Gemini AI](https://img.shields.io/badge/Gemini_AI-Google-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-## 📋 Mapping C# → Python
+*Được xây dựng theo mô hình MVC — tương tự ASP.NET Core nhưng bằng Python*
 
-| C# (ASP.NET Core) | Python (FastAPI) | Mô tả |
-|-------------------|------------------|-------|
-| `Models/*.cs` | `models/*.py` | Entity/Database models |
-| `ViewModels/*.cs` | `schemas/*.py` | DTOs (Data Transfer Objects) |
-| `Controllers/*.cs` | `routers/*.py` | API Endpoints |
-| `Services/*.cs` | `services/*.py` | Business Logic Layer |
-| `Data/Context.cs` | `core/database.py` | Database connection |
-| `appsettings.json` | `core/config.py` | Configuration |
-| `Program.cs` | `main.py` | Entry point |
+</div>
 
 ---
 
-## 📁 Cấu Trúc Thư Mục Chi Tiết
+## ✨ Tính năng nổi bật
+
+| 🛍️ Mua sắm | 🔐 Tài khoản | 🤖 AI Chatbot | 🖥️ Quản trị |
+|:---:|:---:|:---:|:---:|
+| Duyệt & tìm kiếm sản phẩm | Đăng ký / Đăng nhập | Tư vấn sản phẩm thông minh | Dashboard thống kê |
+| Lọc theo danh mục | Quản lý hồ sơ | Hiểu ngôn ngữ tự nhiên | Quản lý kho hàng |
+| Giỏ hàng & Thanh toán | Lịch sử đơn hàng | RAG từ dữ liệu thực | Duyệt & xử lý đơn |
+| Đánh giá sản phẩm | Phân quyền (Admin/Staff/Customer) | Hỗ trợ 24/7 | Quản lý người dùng |
+
+---
+
+## 🏗️ Kiến trúc ứng dụng
+
+### Tổng quan MVC
 
 ```
-Website-ban-do-cong-nghe-AI-G4-14.1-Y3/
-│
-├── backend/                          # FastAPI Backend
-│   │
-│   ├── app/
-│   │   ├── __init__.py             # Package init (empty)
-│   │   │
-│   │   ├── main.py                 # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   # Tương ứng: Program.cs trong C#
-│   │   │   # Mục đích: Entry point của ứng dụng FastAPI
-│   │   │   # Chức năng:
-│   │   │   #   - Khởi tạo FastAPI app
-│   │   │   #   - Đăng ký CORS
-│   │   │   #   - Mount routers (API endpoints)
-│   │   │   #   - Khởi tạo database tables
-│   │   │   #   - Chạy server
-│   │   │   # API: http://localhost:8000
-│   │   │   # Docs: http://localhost:8000/docs
-│   │   │   # ReDoc: http://localhost:8000/redoc
-│   │   │
-│   │   ├── core/                    # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   # Tương ứng: Configuration trong C#
-│   │   │   # Mục đích: Các thiết lập cốt lõi của ứng dụng
-│   │   │   #
-│   │   │   ├── __init__.py         # Package init
-│   │   │   │
-│   │   │   ├── config.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: appsettings.json
-│   │   │   │   # Mục đích: Cấu hình ứng dụng (settings)
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - Database URL (SQLite/PostgreSQL)
-│   │   │   │   #   - JWT Secret Key
-│   │   │   │   #   - JWT Algorithm
-│   │   │   │   #   - Access Token Expire Minutes
-│   │   │   │   #   - CORS Origins
-│   │   │   │   # Cách dùng: from app.core.config import settings
-│   │   │   │
-│   │   │   ├── database.py         # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Data/ApplicationDbContext.cs
-│   │   │   │   # Mục đích: Kết nối và quản lý database
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - Tạo SQLAlchemy Engine
-│   │   │   │   #   - Tạo SessionLocal (DbContext)
-│   │   │   │   #   - Dependency get_db() cho API endpoints
-│   │   │   │   #   - Tạo bảng tự động (Base.metadata.create_all)
-│   │   │   │   # Cách dùng: db = Depends(get_db)
-│   │   │   │
-│   │   │   └── security.py        # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │       # Tương ứng: Services/AuthService.cs (phần security)
-│   │   │       # Mục đích: Bảo mật và xác thực
-│   │   │       # Chức năng:
-│   │   │       #   - Hash password (bcrypt)
-│   │   │       #   - Verify password
-│   │   │       #   - Create access token (JWT)
-│   │   │       #   - Decode/Verify JWT token
-│   │   │       #   - OAuth2 scheme cho FastAPI
-│   │   │       #   - get_current_user dependency
-│   │   │
-│   │   ├── models/                 # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   # Tương ứng: Models/ trong C#
-│   │   │   # Mục đích: Định nghĩa các Entity/Database models
-│   │   │   # ORM: SQLAlchemy
-│   │   │   #
-│   │   │   ├── __init__.py         # Xuất tất cả models
-│   │   │   │
-│   │   │   ├── user.py            # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Models/Account.cs, Models/Employee.cs
-│   │   │   │   # Mục đích: Model User và Role
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - User: Tài khoản người dùng
-│   │   │   │   #   - Role: Phân quyền (Admin, Staff, Customer)
-│   │   │   │   # Trường: user_id, username, email, password_hash,
-│   │   │   │   #          full_name, phone, address, role_id, is_active
-│   │   │   │
-│   │   │   ├── product.py         # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Models/Product.cs + Models/Category.cs
-│   │   │   │   # Mục đích: Model sản phẩm và danh mục
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - Product: Sản phẩm chính
-│   │   │   │   #   - Category: Danh mục sản phẩm
-│   │   │   │   #   - ProductVariant: Biến thể (màu, storage, RAM)
-│   │   │   │   #   - ProductImage: Hình ảnh sản phẩm
-│   │   │   │   #   - Supplier: Nhà cung cấp
-│   │   │   │   #   - Inventory: Tồn kho
-│   │   │   │
-│   │   │   ├── cart.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Models/CartItem.cs
-│   │   │   │   # Mục đích: Model giỏ hàng
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - Cart: Giỏ hàng (có thể anonymous bằng session_id)
-│   │   │   │   #   - CartItem: Item trong giỏ hàng
-│   │   │   │
-│   │   │   ├── order.py          # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Models/Order.cs + Models/OrderItem.cs
-│   │   │   │   # Mục đích: Model đơn hàng
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - Order: Đơn hàng
-│   │   │   │   #   - OrderItem: Chi tiết đơn hàng
-│   │   │   │
-│   │   │   └── role.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │       # Tương ứng: Models/Role.cs
-│   │   │       # Mục đích: Định nghĩa các role
-│   │   │       # Trường: role_id, role_name
-│   │   │       # Values: Admin=1, Staff=2, Customer=3
-│   │   │
-│   │   ├── schemas/               # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   # Tương ứng: ViewModels/ trong C#
-│   │   │   # Mục đích: DTOs (Data Transfer Objects)
-│   │   │   # ORM: Pydantic
-│   │   │   #
-│   │   │   ├── __init__.py         # Xuất tất cả schemas
-│   │   │   │
-│   │   │   ├── user.py            # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: ViewModels/UserViewModel.cs
-│   │   │   │   # Mục đích: DTO cho User
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - UserCreate: Đăng ký (username, email, password)
-│   │   │   │   #   - UserLogin: Đăng nhập (username, password)
-│   │   │   │   #   - UserResponse: Response trả về
-│   │   │   │   #   - UserUpdate: Cập nhật thông tin
-│   │   │   │   #   - Token: JWT token response
-│   │   │   │
-│   │   │   ├── product.py         # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: ViewModels/ProductViewModel.cs
-│   │   │   │   # Mục đích: DTO cho Product
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - ProductCreate: Tạo sản phẩm
-│   │   │   │   #   - ProductUpdate: Cập nhật sản phẩm
-│   │   │   │   #   - ProductResponse: Response sản phẩm
-│   │   │   │   #   - ProductListResponse: Response có phân trang
-│   │   │   │   #   - ProductVariant schemas
-│   │   │   │
-│   │   │   ├── cart.py            # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: ViewModels/CartViewModel.cs
-│   │   │   │   # Mục đích: DTO cho Cart
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - CartItemCreate: Thêm vào giỏ
-│   │   │   │   #   - CartItemUpdate: Cập nhật số lượng
-│   │   │   │   #   - CartResponse: Response giỏ hàng
-│   │   │   │
-│   │   │   ├── order.py          # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: ViewModels/OrderViewModel.cs
-│   │   │   │   # Mục đích: DTO cho Order
-│   │   │   │   # Chức năng:
-│   │   │   │   #   - OrderCreate: Tạo đơn hàng
-│   │   │   │   #   - OrderUpdate: Cập nhật trạng thái
-│   │   │   │   #   - OrderResponse: Response đơn hàng
-│   │   │   │   #   - OrderItemResponse: Chi tiết item
-│   │   │   │
-│   │   │   └── chat.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │       # Mục đích: DTO cho Chat AI
-│   │   │       # Chức năng:
-│   │   │       #   - ChatMessage: Tin nhắn gửi lên
-│   │   │       #   - ChatResponse: Response từ AI
-│   │   │       # Trường: message, session_id, context, response,
-│   │   │       #          intent, suggested_products, action
-│   │   │
-│   │   ├── routers/              # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   # Tương ứng: Controllers/ trong C#
-│   │   │   # Mục đích: Định nghĩa API Endpoints
-│   │   │   #
-│   │   │   ├── __init__.py         # Xuất tất cả routers
-│   │   │   │
-│   │   │   ├── auth.py            # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Controllers/AuthController.cs
-│   │   │   │   # Mục đích: API xác thực người dùng
-│   │   │   │   # Endpoints:
-│   │   │   │   #   - POST /api/v1/auth/register - Đăng ký
-│   │   │   │   #   - POST /api/v1/auth/login - Đăng nhập
-│   │   │   │   #   - GET /api/v1/auth/me - Lấy thông tin user hiện tại
-│   │   │   │   #   - PUT /api/v1/auth/password - Đổi mật khẩu
-│   │   │   │
-│   │   │   ├── products.py        # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Controllers/ProductsController.cs
-│   │   │   │   # Mục đích: API quản lý sản phẩm
-│   │   │   │   # Endpoints:
-│   │   │   │   #   - GET /api/v1/products/ - Danh sách (phân trang)
-│   │   │   │   #   - GET /api/v1/products/{id} - Chi tiết
-│   │   │   │   #   - GET /api/v1/products/featured - Sản phẩm nổi bật
-│   │   │   │   #   - GET /api/v1/products/search - Tìm kiếm
-│   │   │   │   #   - POST /api/v1/products/ - Tạo mới (admin)
-│   │   │   │   #   - PUT /api/v1/products/{id} - Cập nhật (admin)
-│   │   │   │   #   - DELETE /api/v1/products/{id} - Xóa (admin)
-│   │   │   │
-│   │   │   ├── categories.py      # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Controllers/CategoriesController.cs
-│   │   │   │   # Mục đích: API quản lý danh mục
-│   │   │   │   # Endpoints:
-│   │   │   │   #   - GET /api/v1/categories/ - Danh sách
-│   │   │   │   #   - GET /api/v1/categories/{id} - Chi tiết
-│   │   │   │   #   - POST /api/v1/categories/ - Tạo mới (admin)
-│   │   │   │   #   - PUT /api/v1/categories/{id} - Cập nhật (admin)
-│   │   │   │   #   - DELETE /api/v1/categories/{id} - Xóa (admin)
-│   │   │   │
-│   │   │   ├── cart.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Controllers/CartItemsController.cs
-│   │   │   │   # Mục đích: API quản lý giỏ hàng
-│   │   │   │   # Endpoints:
-│   │   │   │   #   - GET /api/v1/cart/ - Lấy giỏ hàng
-│   │   │   │   #   - POST /api/v1/cart/add - Thêm vào giỏ
-│   │   │   │   #   - PUT /api/v1/cart/update/{id} - Cập nhật số lượng
-│   │   │   │   #   - DELETE /api/v1/cart/remove/{id} - Xóa khỏi giỏ
-│   │   │   │   #   - DELETE /api/v1/cart/clear - Xóa toàn bộ giỏ
-│   │   │   │
-│   │   │   ├── orders.py         # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   │   # Tương ứng: Controllers/OrdersController.cs
-│   │   │   │   # Mục đích: API quản lý đơn hàng
-│   │   │   │   # Endpoints:
-│   │   │   │   #   - GET /api/v1/orders/ - Danh sách (phân trang)
-│   │   │   │   #   - GET /api/v1/orders/{id} - Chi tiết đơn hàng
-│   │   │   │   #   - POST /api/v1/orders/ - Tạo đơn hàng mới
-│   │   │   │   #   - PUT /api/v1/orders/{id}/status - Cập nhật trạng thái
-│   │   │   │   #   - DELETE /api/v1/orders/{id} - Hủy đơn hàng
-│   │   │   │
-│   │   │   └── chat.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │       # Tương ứng: Controllers/ChatController.cs
-│   │   │       # Mục đích: API AI Chatbot
-│   │   │       # Endpoints:
-│   │   │       #   - POST /api/v1/chat/ - Gửi tin nhắn
-│   │   │       #   - WS /api/v1/chat/ws/{session_id} - WebSocket chat
-│   │   │
-│   │   └── services/              # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       # Tương ứng: Services/ trong C#
-│   │       # Mục đích: Business Logic Layer
-│   │       #
-│   │       ├── __init__.py         # Xuất tất cả services
-│   │       │
-│   │       ├── auth_service.py    # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       │   # Tương ứng: Services/AuthService.cs
-│   │       │   # Mục đích: Logic nghiệp vụ xác thực
-│   │       │   # Chức năng:
-│   │       │   #   - authenticate_user: Xác thực đăng nhập
-│   │       │   #   - register_user: Đăng ký tài khoản mới
-│   │       │   #   - get_user_by_username: Lấy user theo username
-│   │       │   #   - create_access_token: Tạo JWT token
-│   │       │
-│   │       ├── product_service.py # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       │   # Tương ứng: Services/ProductService.cs
-│   │       │   # Mục đích: Logic nghiệp vụ sản phẩm
-│   │       │   # Chức năng:
-│   │       │   #   - get_products: Lấy danh sách (filter, sort, paginate)
-│   │       │   #   - get_product_by_id: Lấy chi tiết
-│   │       │   #   - get_featured_products: Sản phẩm nổi bật
-│   │       │   #   - search_products: Tìm kiếm
-│   │       │   #   - create_product: Tạo mới
-│   │       │   #   - update_product: Cập nhật
-│   │       │   #   - delete_product: Xóa
-│   │       │
-│   │       ├── order_service.py   # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       │   # Tương ứng: Services/OrderService.cs
-│   │       │   # Mục đích: Logic nghiệp vụ đơn hàng
-│   │       │   # Chức năng:
-│   │       │   #   - create_order: Tạo đơn hàng từ giỏ hàng
-│   │       │   #   - get_orders: Lấy danh sách đơn hàng
-│   │       │   #   - get_order_by_id: Lấy chi tiết đơn hàng
-│   │       │   #   - update_order_status: Cập nhật trạng thái
-│   │       │   #   - cancel_order: Hủy đơn hàng
-│   │       │
-│   │       ├── chatbot_service.py  # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       │   # Mục đích: Xử lý tin nhắn chat với AI
-│   │       │   # Chức năng:
-│   │       │   #   - IntentClassifier: Phân loại ý định người dùng
-│   │       │   #   - ChatBotService: Xử lý chat chính
-│   │       │   #   - process_message: Xử lý tin nhắn, trả về response
-│   │       │   # Intents: greeting, product_inquiry, price_inquiry,
-│   │       │   #           order_status, cart, complaint, human_request
-│   │       │
-│   │       ├── rag_pipeline.py    # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       │   # Mục đích: RAG Pipeline cho AI
-│   │       │   # Chức năng:
-│   │       │   #   - retrieve: Truy xuất sản phẩm liên quan
-│   │       │   #   - generate_context: Tạo context cho AI
-│   │       │   #   - query: Query chính (retrieve + generate)
-│   │       │
-│   │       └── embedding_service.py # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │           # Mục đích: Text Embedding và tìm kiếm sản phẩm
-│   │           # Chức năng:
-│   │           #   - get_product_text: Chuyển product thành text
-│   │           #   - get_all_product_embeddings: Load tất cả embeddings
-│   │           #   - search_products: Tìm kiếm sản phẩm theo query
-│   │
-│   ├── scripts/                   # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   # Tương ứng: Data/Seed/SeedData.cs trong C#
-│   │   # Mục đích: Các script chạy một lần (seed, setup)
-│   │   │
-│   │   ├── __init__.py
-│   │   │
-│   │   ├── seed_data.py          # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   │   # Tương ứng: Data/Seed/SeedData.cs
-│   │   │   # Mục đích: Tạo dữ liệu mẫu ban đầu
-│   │   │   # Chạy: python -m scripts.seed_data
-│   │   │   # Chức năng:
-│   │   │   #   - seed_roles: Tạo 3 roles (Admin, Staff, Customer)
-│   │   │   #   - seed_suppliers: Tạo 5 nhà cung cấp
-│   │   │   #   - seed_categories: Tạo 7 danh mục
-│   │   │   #   - seed_products: Tạo 12 sản phẩm mẫu
-│   │   │   #   - seed_users: Tạo 3 tài khoản test
-│   │   │   #   - seed_sample_orders: Tạo đơn hàng mẫu
-│   │   │
-│   │   └── create_embeddings.py # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       # Mục đích: Tạo embeddings cho AI chatbot
-│   │       # Chạy: python -m scripts.create_embeddings
-│   │
-│   ├── tests/                     # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   # Tương ứng: UnitTests/ trong C#
-│   │   # Mục đích: Unit tests cho API
-│   │   │
-│   │   └── test_api.py           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │       # Mục đích: Viết tests cho các API endpoints
-│   │       # Framework: pytest + FastAPI TestClient
-│   │       # Chạy: pytest tests/ -v
-│   │       # Tests:
-│   │       #   - test_health_check: Kiểm tra /health
-│   │       #   - test_register_user: Test đăng ký
-│   │       #   - test_login: Test đăng nhập
-│   │       #   - test_get_products: Test lấy danh sách sản phẩm
-│   │       #   - test_chat: Test chat AI
-│   │
-│   ├── requirements.txt           # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   # Tương ứng: webstore.csproj (packages)
-│   │   # Mục đích: Danh sách Python packages cần cài đặt
-│   │   # Chạy: pip install -r requirements.txt
-│   │
-│   ├── Dockerfile                 # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   # Tương ứng: Dockerfile trong containerization
-│   │   # Mục đích: Build Docker image cho backend
-│   │   # Build: docker build -t techstore-backend .
-│   │   # Run: docker run -p 8000:8000 techstore-backend
-│   │
-│   ├── docker-compose.yml         # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│   │   # Tương ứng: docker-compose.yml
-│   │   # Mục đích: Chạy toàn bộ stack (Backend + DB)
-│   │   # Run: docker-compose up -d
-│   │
-│   └── README.md                  # ━━━━━━━━━━━━━━━━━━━━━━━━━
-│       # Mục đích: Tài liệu hướng dẫn sử dụng
-│
-├── frontend/                      # Next.js Frontend
-│   │
-│   ├── app/                       # App Router pages
-│   │   ├── layout.tsx            # Root layout
-│   │   ├── page.tsx              # Trang chủ
-│   │   ├── products/page.tsx     # Danh sách sản phẩm
-│   │   ├── cart/page.tsx         # Giỏ hàng
-│   │   ├── login/page.tsx        # Đăng nhập
-│   │   └── admin/                # Admin Dashboard
-│   │
-│   ├── components/                # React components
-│   │   ├── navbar.tsx            # Navigation bar
-│   │   ├── providers.tsx         # React Query provider
-│   │   └── chat/
-│   │       └── chat-widget.tsx   # AI Chat Widget
-│   │
-│   ├── lib/                       # Utilities
-│   │   ├── api.ts                # Axios client
-│   │   ├── types.ts              # TypeScript interfaces
-│   │   └── utils.ts              # Helper functions
-│   │
-│   ├── stores/                    # Zustand stores
-│   │   └── index.ts              # Auth + Cart state
-│   │
-│   ├── hooks/                     # Custom hooks
-│   │   └── useApi.ts             # React Query hooks
-│   │
-│   ├── package.json               # Dependencies
-│   ├── tailwind.config.js         # TailwindCSS config
-│   └── tsconfig.json              # TypeScript config
-│
-└── README.md                      # (File này)
+┌─────────────────────────────────────────────────────────────────┐
+│                        TRÌNH DUYỆT                              │
+│              (Khách hàng gửi HTTP Request)                      │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      app.py  ⚡                                  │
+│         Khởi tạo FastAPI · Đăng ký Routes · Cấu hình           │
+└──────┬──────────────────────────────────────────┬──────────────┘
+       │                                          │
+       ▼                                          ▼
+┌──────────────────┐                   ┌─────────────────────────┐
+│  Controllers/ 🎮 │                   │      wwwroot/ 🎨        │
+│                  │                   │  css/ · js/ · images/   │
+│  Home            │                   │  (CSS, JavaScript,      │
+│  Auth            │                   │   Hình ảnh tĩnh)        │
+│  Products        │                   └─────────────────────────┘
+│  Cart            │
+│  Orders          │
+│  Chat            │
+│  Admin           │
+└──────┬───────────┘
+       │ gọi
+       ▼
+┌──────────────────────────────────────────────────────────────┐
+│                     Services/ ⚙️                             │
+│                                                              │
+│  AuthService    │ ProductService  │ CartService              │
+│  OrderService   │ ChatService     │ AccountService           │
+└──────┬───────────────────────────────────────┬──────────────┘
+       │ truy vấn                              │ gọi AI
+       ▼                                       ▼
+┌──────────────────┐                  ┌────────────────────────┐
+│    Models/ 📦    │                  │       AI/ 🤖           │
+│                  │                  │                        │
+│  Product         │                  │  gemini_client.py      │
+│  Category        │                  │  rag_pipeline.py       │
+│  User / Account  │                  │                        │
+│  Cart / Order    │                  │  Luồng AI:             │
+│  Chat / AI       │                  │  Câu hỏi → Tìm SP      │
+└──────┬───────────┘                  │  → Gemini → Trả lời   │
+       │                              └────────────────────────┘
+       ▼
+┌──────────────────────────────────────────────────────────────┐
+│                 SQL Server Database 🗄️                       │
+│            Database: TechShopWebsite1                        │
+│     14 bảng: Products · Users · Orders · Carts · Chat...    │
+└──────────────────────────────────────────────────────────────┘
+       │
+       (Kết quả được Controller đưa vào)
+       ▼
+┌──────────────────────────────────────────────────────────────┐
+│                     Views/ 🖼️                                │
+│              Template Engine: Jinja2                         │
+│                                                              │
+│  Shared/base.html    →  Layout chung (Menu, Footer)          │
+│  Home/index.html     →  Trang chủ                            │
+│  Products/*.html     →  Danh sách & Chi tiết sản phẩm        │
+│  Cart/index.html     →  Giỏ hàng                            │
+│  Orders/*.html       →  Đặt hàng, Lịch sử                   │
+│  Auth/*.html         →  Đăng nhập, Đăng ký                  │
+│  Chat/index.html     →  AI Chatbot                          │
+│  Admin/*.html        →  Trang quản trị                       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Luồng dữ liệu thực tế (Ví dụ: Xem danh sách sản phẩm)
+
+```
+① Khách gõ URL:    http://localhost:8000/Products/
+② FastAPI nhận:    → ProductsController.index()
+③ Controller gọi:  → ProductService.get_all_products(page=1)
+④ Service truy vấn: SELECT * FROM Products WHERE is_available = 1
+⑤ Service trả về:  [Product(iPhone15), Product(Samsung S24), ...]
+⑥ Controller render: TemplateResponse("Products/index.html", {"products": [...]})
+⑦ Jinja2 tạo HTML: {% for p in products %} <div>{{ p.name }}</div> {% endfor %}
+⑧ Trình duyệt nhận: File HTML → Hiển thị giao diện đẹp
 ```
 
 ---
 
-## 🎯 Hướng Dẫn Sử Dụng
+## 🔄 So sánh ASP.NET Core ↔ Python FastAPI
 
-### Chạy Backend
+| Thành phần | ASP.NET Core (C#) | **Dự án này (Python)** |
+|:-----------|:-----------------|:----------------------|
+| Entry Point | `Program.cs` | `app.py` |
+| Controller | `Controllers/*.cs` | `Controllers/*.py` |
+| Trả về View | `return View(model)` | `TemplateResponse("file.html", {...})` |
+| Service | `Services/*.cs` | `Services/*.py` |
+| Model (Entity) | `Models/*.cs` (EF Core) | `Models/*.py` (SQLAlchemy) |
+| View Template | `Views/*.cshtml` (Razor) | `Views/*.html` (Jinja2) |
+| Layout | `_Layout.cshtml` | `Shared/base.html` |
+| Include partial | `@Html.Partial()` | `{% include "file.html" %}` |
+| Biến trong View | `@Model.Name` | `{{ product.name }}` |
+| Vòng lặp View | `@foreach(var p in Model)` | `{% for p in products %}` |
+| ORM | Entity Framework Core | SQLAlchemy |
+| Database config | `appsettings.json` | `Data/database.py` |
+| Static files | `wwwroot/` | `wwwroot/` → mount `/static` |
+| DI Container | `services.AddScoped<>()` | `Depends(get_db)` |
 
+---
+
+## ⚙️ Công nghệ sử dụng
+
+<div align="center">
+
+| 🔧 Layer | 🛠️ Công nghệ | 📝 Mục đích |
+|:--------|:------------|:-----------|
+| **Web Framework** | FastAPI 0.109 | Xử lý HTTP requests, routing |
+| **Template Engine** | Jinja2 3.1 | Render HTML (thay Razor) |
+| **Database** | SQL Server | Lưu trữ dữ liệu chính |
+| **ORM** | SQLAlchemy 2.0 | Kết nối & truy vấn DB bằng Python |
+| **DB Driver** | pyodbc | Giao tiếp với SQL Server |
+| **Frontend** | Bootstrap 5 + Vanilla JS | Giao diện người dùng |
+| **Auth** | JWT + bcrypt (passlib) | Đăng nhập, bảo mật token |
+| **AI** | Google Gemini API | Chatbot thông minh |
+| **AI Method** | RAG Pipeline | Tư vấn dựa trên dữ liệu thực |
+| **Server** | Uvicorn | Chạy ứng dụng Python |
+
+</div>
+
+---
+
+## 🚀 Cài đặt và chạy dự án
+
+### Yêu cầu hệ thống
+
+- ✅ Python **3.10+**
+- ✅ SQL Server (Express/Developer/Standard)
+- ✅ ODBC Driver 17 for SQL Server ([Tải tại đây](https://go.microsoft.com/fwlink/?linkid=2187214))
+- ✅ Git
+
+### Các bước cài đặt
+
+**1️⃣ Clone dự án**
 ```bash
-cd backend
+git clone https://github.com/your-repo/Website-ban-do-cong-nghe-AI-G4-14.1-Y3.git
+cd Website-ban-do-cong-nghe-AI-G4-14.1-Y3
+```
 
-# 1. Tạo virtual environment
-python -m venv venv
-.\venv\Scripts\activate  # Windows
-# hoặc
-source venv/bin/activate  # Linux/Mac
-
-# 2. Cài đặt packages
+**2️⃣ Cài đặt Python packages**
+```bash
 pip install -r requirements.txt
-
-# 3. Seed dữ liệu
-python -m scripts.seed_data
-
-# 4. Chạy server
-uvicorn app.main:app --reload
 ```
 
-### Chạy Frontend
+**3️⃣ Tạo Database trên SQL Server**
 
+Mở **SQL Server Management Studio (SSMS)**, kết nối server, mở file và chạy:
+```
+SQL/schema.sql
+```
+> ✅ Kết quả: Database `TechShopWebsite1` được tạo với 14 bảng
+
+**4️⃣ Cấu hình kết nối Database**
+
+Mở `Data/database.py`, sửa thông tin server:
+```python
+SQL_SERVER_CONFIG = {
+    "server": "localhost",          # ← Sửa thành tên SQL Server của bạn
+    "database": "TechShopWebsite1", # ← Tên database (giữ nguyên)
+    "driver": "ODBC Driver 17 for SQL Server",
+    "trusted_connection": "yes",    # Windows Authentication (không cần nhập mật khẩu)
+}
+```
+
+> 💡 **Tìm tên server:** Mở SSMS → Tên ở ô "Server name" khi đăng nhập
+
+**5️⃣ Seed dữ liệu mẫu**
 ```bash
-cd frontend
-npm install
-npm run dev
+python Data/Seed/seed_data.py
+```
+```
+✓ Đã tạo dữ liệu danh mục
+✓ Đã tạo dữ liệu nhà cung cấp
+✓ Đã tạo dữ liệu sản phẩm
+✓ Đã tạo tài khoản admin (admin / admin123)
+```
+
+**6️⃣ Chạy ứng dụng**
+```bash
+uvicorn app:app --reload
+```
+
+**7️⃣ Mở trình duyệt**
+
+| Trang | URL |
+|-------|-----|
+| 🏠 Website | http://localhost:8000 |
+| 🛍️ Sản phẩm | http://localhost:8000/Products/ |
+| 🤖 AI Chat | http://localhost:8000/Chat/ |
+| 🖥️ Admin | http://localhost:8000/Admin/ |
+| 📖 API Docs | http://localhost:8000/docs |
+
+---
+
+## 🔑 Tài khoản mặc định
+
+| 👤 Username | 🔒 Password | 🎭 Role | 🔗 Trang |
+|:-----------|:-----------|:-------|:--------|
+| `admin` | `admin123` | Admin | `/Admin/` |
+| `staff01` | `staff123` | Staff | `/Chat/` |
+| `customer01` | `customer123` | Customer | `/` |
+
+---
+
+## 📁 Cấu trúc thư mục
+
+```
+📦 Website-ban-do-cong-nghe-AI-G4-14.1-Y3/
+│
+├── 📄 app.py                     # Entry point (≈ Program.cs)
+├── 📄 requirements.txt           # Python packages
+│
+├── 📂 Controllers/               # 🎮 Nhận request → gọi Service → trả View
+│   ├── HomeController.py         #    / · /about · /contact
+│   ├── AuthController.py         #    /Auth/Login · /Register · /Logout
+│   ├── ProductsController.py     #    /Products/ · /{id}
+│   ├── CartController.py         #    /Cart/ · /add · /remove
+│   ├── OrderController.py        #    /Orders/ · /Checkout  (cần tạo)
+│   ├── ChatController.py         #    /Chat/ · /Send
+│   └── AdminController.py        #    /Admin/  (cần tạo)
+│
+├── 📂 Services/                  # ⚙️ Xử lý logic nghiệp vụ
+│   ├── AuthService.py            #    Đăng nhập, JWT, bcrypt
+│   ├── ProductService.py         #    CRUD, tìm kiếm, phân trang
+│   ├── CartService.py            #    Thêm/xóa/sửa giỏ hàng
+│   ├── OrderService.py           #    Tạo đơn, thống kê, trạng thái
+│   ├── ChatService.py            #    Phiên chat, lịch sử tin nhắn
+│   └── AccountService.py         #    Quản lý tài khoản
+│
+├── 📂 Models/                    # 📦 Cấu trúc bảng Database (SQLAlchemy)
+│   ├── Product.py                #    Products, ProductVariants, ProductImages
+│   ├── Category.py               #    Categories, Suppliers, Inventory
+│   ├── User.py / Account.py      #    Users, Accounts, Roles
+│   ├── Cart.py                   #    Carts, CartItems
+│   ├── Order.py                  #    Orders, OrderItems
+│   ├── Chat.py                   #    ChatSessions, ChatMessages
+│   └── AI.py                     #    AIResponse, RAGContext
+│
+├── 📂 Views/                     # 🖼️ Giao diện HTML (Jinja2)
+│   ├── Shared/
+│   │   ├── base.html             #    Layout chung (menu, footer)
+│   │   └── error.html            #    Trang lỗi 404/500
+│   ├── Home/                     #    Trang chủ, About, Contact
+│   ├── Products/                 #    Danh sách, Chi tiết sản phẩm
+│   ├── Cart/                     #    Giỏ hàng
+│   ├── Auth/                     #    Đăng nhập, Đăng ký, Profile
+│   ├── Orders/                   #    Đặt hàng, Lịch sử  (cần tạo)
+│   ├── Chat/                     #    AI Chatbot
+│   └── Admin/                    #    Dashboard, Quản lý  (cần tạo)
+│
+├── 📂 Data/                      # 🗄️ Kết nối Database
+│   ├── database.py               #    Connection string, SessionLocal
+│   └── Seed/
+│       └── seed_data.py          #    Script tạo dữ liệu mẫu
+│
+├── 📂 SQL/
+│   └── schema.sql                # 📋 CREATE TABLE cho 14 bảng
+│
+├── 📂 AI/                        # 🤖 AI Chatbot Module (cần tạo)
+│   ├── gemini_client.py          #    Kết nối Google Gemini API
+│   └── rag_pipeline.py           #    RAG: DB → Context → AI → Trả lời
+│
+├── 📂 wwwroot/                   # 🎨 File tĩnh
+│   ├── css/style.css             #    CSS toàn trang
+│   ├── js/main.js                #    JavaScript, AJAX
+│   └── images/                   #    Logo, banner, ảnh sản phẩm
+│
+└── 📂 Utilities/                 # 🔧 Hàm dùng chung (cần tạo)
+    └── __init__.py               #    PagedList (phân trang)
 ```
 
 ---
 
-## 🔑 Tài Khoản Test
+## 👥 Nhóm phát triển
 
-| Username | Password | Role |
-|----------|----------|------|
-| admin | admin123 | Admin |
-| staff01 | staff123 | Staff |
-| customer01 | customer123 | Customer |
+| STT | Vai trò | Phụ trách |
+|:---:|:--------|:---------|
+| 1 | **Backend Lead** | Controllers, Services, AI Chatbot |
+| 2 | **Database Lead** | Models, SQL Server, Seed Data |
+| 3 | **Frontend Lead** | Views (Khách hàng), CSS, JS |
+| 4 | **Fullstack Admin** | Views (Admin), Quản lý đơn hàng |
 
----
-
-## 📊 API Endpoints Summary
-
-| Module | Endpoint | Method | Mô tả |
-|--------|----------|--------|-------|
-| Auth | `/api/v1/auth/register` | POST | Đăng ký |
-| Auth | `/api/v1/auth/login` | POST | Đăng nhập |
-| Auth | `/api/v1/auth/me` | GET | Thông tin user |
-| Products | `/api/v1/products/` | GET | Danh sách sản phẩm |
-| Products | `/api/v1/products/{id}` | GET | Chi tiết sản phẩm |
-| Products | `/api/v1/products/featured` | GET | Sản phẩm nổi bật |
-| Products | `/api/v1/products/search` | GET | Tìm kiếm |
-| Categories | `/api/v1/categories/` | GET | Danh sách danh mục |
-| Cart | `/api/v1/cart/` | GET | Lấy giỏ hàng |
-| Cart | `/api/v1/cart/add` | POST | Thêm vào giỏ |
-| Orders | `/api/v1/orders/` | GET | Danh sách đơn hàng |
-| Orders | `/api/v1/orders/` | POST | Tạo đơn hàng |
-| Chat | `/api/v1/chat/` | POST | Gửi tin nhắn AI |
+> 📋 Xem chi tiết phân công tại file [phan_cong_CV.txt](phan_cong_CV.txt)
 
 ---
 
-## 🔄 So Sánh C# vs Python
+## 📄 License
 
-### 1. Entry Point
-
-```csharp
-// C# - Program.cs
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllersWithViews();
-var app = builder.Build();
-```
-
-```python
-# Python - main.py
-from fastapi import FastAPI
-app = FastAPI()
-```
-
-### 2. Database Model
-
-```csharp
-// C# - Models/Product.cs
-public class Product {
-    public int ProductId { get; set; }
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-}
-```
-
-```python
-# Python - models/product.py
-class Product(Base):
-    __tablename__ = "products"
-    product_id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    price = Column(Numeric(10, 2), nullable=False)
-```
-
-### 3. API Controller
-
-```csharp
-// C# - Controllers/ProductsController.cs
-[HttpGet]
-public async Task<ActionResult<IEnumerable<Product>>> GetProducts() {
-    return await _context.Products.ToListAsync();
-}
-```
-
-```python
-# Python - routers/products.py
-@router.get("/", response_model=PaginatedResponse)
-async def get_products(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    products = db.query(Product).offset(skip).limit(limit).all()
-    return products
-```
-
-### 4. DTO/Schema
-
-```csharp
-// C# - ViewModels/ProductViewModel.cs
-public class ProductCreateDto {
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-}
-```
-
-```python
-# Python - schemas/product.py
-class ProductCreate(BaseModel):
-    name: str
-    price: float
-```
-
----
-
-## 👥 Phân Công Công Việc
-
-| Người | Nhiệm vụ | Thời gian |
-|-------|----------|-----------|
-| Người 1 | Backend API, AI Core | 7 ngày |
-| Người 2 | Database, Vector DB, Seed Data | 3 ngày |
-| Người 3 | Frontend User UI | 7 ngày |
-| Người 4 | Admin Dashboard, Staff Chat | 7 ngày |
-
----
-
-## 📝 Ghi Chú
-
-- Cấu trúc này tham khảo từ [Website-ban-do-CN-Webstore-cs](../Website-ban-do-CN-Webstore-cs/README.md)
-- Backend sử dụng **FastAPI** thay vì ASP.NET Core
-- Frontend sử dụng **Next.js 14** (App Router) thay vì Razor Pages
-- AI Chatbot sử dụng **RAG Pipeline** để tư vấn sản phẩm
+MIT License © 2026 — Tech Store AI Team

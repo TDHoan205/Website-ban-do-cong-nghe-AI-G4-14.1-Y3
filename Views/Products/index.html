@@ -1,0 +1,159 @@
+{% extends "Shared/base.html" %}
+
+{% block title %}Sản phẩm{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar - Categories -->
+        <aside class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter"></i> Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Danh mục</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="/Products/" class="text-decoration-none {% if not category_id %}fw-bold text-primary{% endif %}">
+                                <i class="fas fa-th"></i> Tất cả sản phẩm
+                            </a>
+                        </li>
+                        {% for cat in categories %}
+                        <li class="list-group-item">
+                            <a href="/Products/?category_id={{ cat.category_id }}"
+                               class="text-decoration-none {% if category_id == cat.category_id %}fw-bold text-primary{% endif %}">
+                                {{ cat.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Products Grid -->
+        <main class="col-lg-9">
+            <!-- Search & Sort -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" action="/Products/" class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control"
+                                       placeholder="Tìm kiếm sản phẩm..."
+                                       value="{{ search or '' }}">
+                                {% if category_id %}
+                                <input type="hidden" name="category_id" value="{{ category_id }}">
+                                {% endif %}
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="sort_by" class="form-select">
+                                <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Mới nhất</option>
+                                <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Giá</option>
+                                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Tên A-Z</option>
+                                <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Đánh giá</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="sort_order" class="form-select">
+                                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Giảm dần</option>
+                                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Tăng dần</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="mb-0 text-muted">
+                    Hiển thị {{ products|length }} / {{ total_products }} sản phẩm
+                </p>
+            </div>
+
+            <!-- Products -->
+            {% if products %}
+            <div class="row">
+                {% for product in products %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="product-card card h-100 shadow-sm position-relative">
+                        {% if product.is_hot %}<span class="badge bg-danger position-absolute top-0 end-0 m-2">Hot</span>{% endif %}
+                        {% if product.is_new %}<span class="badge bg-success position-absolute top-0 start-0 m-2">Mới</span>{% endif %}
+
+                        <a href="/Products/{{ product.product_id }}">
+                            <img src="{{ product.image_url or '/static/images/no-image.png' }}"
+                                 class="card-img-top product-image"
+                                 alt="{{ product.name }}"
+                                 onerror="this.src='/static/images/no-image.png'">
+                        </a>
+
+                        <div class="card-body text-center">
+                            <h6 class="card-title">
+                                <a href="/Products/{{ product.product_id }}" class="text-decoration-none text-dark">
+                                    {{ product.name }}
+                                </a>
+                            </h6>
+                            <p class="text-muted small">{{ product.category.name if product.category else '' }}</p>
+
+                            <div class="rating mb-2">
+                                {% for i in range(5) %}
+                                <i class="fas fa-star {% if i < (product.rating or 4) %}text-warning{% else %}text-secondary{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+
+                            <div class="price-section mb-2">
+                                <span class="current-price text-danger fw-bold fs-5">
+                                    {{ "{:,.0f}".format(product.current_price) }} đ
+                                </span>
+                            </div>
+
+                            <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page-1 }}&category_id={{ category_id or '' }}&search={{ search or '' }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">Trước</a>
+                    </li>
+                    {% endif %}
+
+                    {% for p in range(1, total_pages + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&category_id={{ category_id or '' }}&search={{ search or '' }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page+1 }}&category_id={{ category_id or '' }}&search={{ search or '' }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">Sau</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> Không tìm thấy sản phẩm nào.
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

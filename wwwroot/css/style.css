@@ -1,0 +1,218 @@
+/*
+Tech Store - Main Stylesheet
+*/
+
+/* =====================================================
+   Variables & Base Styles
+   ===================================================== */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding-bottom: 2rem;
+}
+
+/* =====================================================
+   Navigation
+   ===================================================== */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: #ffc107 !important;
+}
+
+/* =====================================================
+   Product Card
+   ===================================================== */
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.price-section {
+    min-height: 50px;
+}
+
+.current-price {
+    font-size: 1.2rem;
+}
+
+.original-price {
+    font-size: 0.9rem;
+}
+
+/* =====================================================
+   Category Card
+   ===================================================== */
+.category-card {
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    color: var(--primary-color) !important;
+}
+
+/* =====================================================
+   Chatbot Floating Button
+   ===================================================== */
+.chatbot-float {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.chatbot-float .btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.chatbot-float .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* =====================================================
+   Hero Section
+   ===================================================== */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.hero-section h1 {
+    color: white;
+}
+
+.hero-section .badge {
+    font-size: 0.8rem;
+}
+
+/* =====================================================
+   AI Banner
+   ===================================================== */
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* =====================================================
+   Error Page
+   ===================================================== */
+.error-page {
+    padding: 50px 0;
+}
+
+.error-page h1 {
+    font-size: 8rem;
+    font-weight: bold;
+}
+
+/* =====================================================
+   Footer
+   ===================================================== */
+footer {
+    margin-top: auto;
+}
+
+footer a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: white !important;
+}
+
+/* =====================================================
+   Responsive
+   ===================================================== */
+@media (max-width: 768px) {
+    .product-image {
+        height: 150px;
+    }
+
+    .chatbot-float {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .chatbot-float .btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+}
+
+/* =====================================================
+   Loading Animation
+   ===================================================== */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading {
+    animation: spin 1s linear infinite;
+}
+
+/* =====================================================
+   Utility Classes
+   ===================================================== */
+.shadow-hover:hover {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
