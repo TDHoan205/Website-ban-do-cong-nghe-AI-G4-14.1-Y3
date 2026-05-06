@@ -6,11 +6,11 @@
 -- Tạo Database nếu chưa có
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TechShopWebsite1')
 BEGIN
-    CREATE DATABASE TechShopWebsite1;
+    CREATE DATABASE TechShopWebsite2;
 END
 GO
 
-USE TechShopWebsite1;
+USE TechShopWebsite2;
 GO
 
 -- =====================================================
