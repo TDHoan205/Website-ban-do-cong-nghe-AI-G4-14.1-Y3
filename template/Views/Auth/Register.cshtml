@@ -1,0 +1,124 @@
+@model Webstore.Models.Account
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <div class="auth-icon-wrapper auth-icon-success">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2 class="auth-title">Tạo tài khoản mới</h2>
+                <p class="auth-subtitle">Đăng ký để bắt đầu mua sắm</p>
+            </div>
+        </div>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-msg alert-danger-msg">
+                <i class="fas fa-exclamation-triangle"></i>@TempData["Error"]
+            </div>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-msg alert-success-msg">
+                <i class="fas fa-check-circle"></i>@TempData["Success"]
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert-msg alert-danger-msg">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Vui lòng kiểm tra lại thông tin</strong>
+            </div>
+        }
+
+        <form method="post" asp-action="Register" class="auth-form">
+            @Html.AntiForgeryToken()
+            <div class="row g-3 mb-1">
+                <div class="col-md-6">
+                    <div class="input-group-custom">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <input asp-for="Username" class="input-with-icon" id="username" placeholder="Tên đăng nhập" required minlength="3" maxlength="50" />
+                    </div>
+                    <span asp-validation-for="Username" class="text-danger d-block mt-1"></span>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group-custom">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input name="password" type="password" class="input-with-icon" id="password" placeholder="Mật khẩu (tối thiểu 6 ký tự)" required minlength="6" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group-custom mb-1">
+                <div class="input-icon-wrapper">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <input asp-for="FullName" class="input-with-icon" id="fullName" placeholder="Họ và tên" />
+            </div>
+            <span asp-validation-for="FullName" class="text-danger d-block mb-2"></span>
+
+            <div class="row g-3 mb-1">
+                <div class="col-md-6">
+                    <div class="input-group-custom">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <input asp-for="Email" type="email" class="input-with-icon" id="email" placeholder="Email (không bắt buộc)" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger d-block mt-1"></span>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group-custom">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <input asp-for="Phone" class="input-with-icon" id="phone" placeholder="Số điện thoại" />
+                    </div>
+                    <span asp-validation-for="Phone" class="text-danger d-block mt-1"></span>
+                </div>
+            </div>
+
+            <div class="input-group-custom mb-1">
+                <div class="input-icon-wrapper">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <input asp-for="Address" class="input-with-icon" id="address" placeholder="Địa chỉ (không bắt buộc)" />
+            </div>
+            <span asp-validation-for="Address" class="text-danger d-block mb-3"></span>
+
+            <div class="form-check-custom mb-4">
+                <input class="form-check-input-custom" type="checkbox" id="agreeTerms" required>
+                <label class="form-check-label-custom" for="agreeTerms">
+                    Tôi đồng ý với <a href="#" class="text-link">Điều khoản sử dụng</a> và <a href="#" class="text-link">Chính sách bảo mật</a>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-auth-submit btn-success-submit mb-3" id="registerBtn">
+                <i class="fas fa-user-plus"></i>Tạo tài khoản
+            </button>
+
+            <div class="text-center">
+                <p class="auth-form-footer mb-0">Đã có tài khoản?
+                    <a asp-action="Login" class="text-link">
+                        Đăng nhập ngay
+                    </a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

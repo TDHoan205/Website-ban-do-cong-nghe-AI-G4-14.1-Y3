@@ -33,7 +33,7 @@
         </aside>
 
         <!-- Products Grid -->
-        <main class="col-lg-9">
+        <div class="col-lg-9">
             <!-- Search & Sort -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -86,10 +86,10 @@
                         {% if product.is_new %}<span class="badge bg-success position-absolute top-0 start-0 m-2">Mới</span>{% endif %}
 
                         <a href="/Products/{{ product.product_id }}">
-                            <img src="{{ product.image_url or '/static/images/no-image.png' }}"
+                            <img src="{{ product.image_url or url_for('static', path='images/no-image.png') }}"
                                  class="card-img-top product-image"
                                  alt="{{ product.name }}"
-                                 onerror="this.src='/static/images/no-image.png'">
+                                 onerror="this.src='{{ url_for('static', path='images/no-image.png') }}'">
                         </a>
 
                         <div class="card-body text-center">
@@ -125,7 +125,7 @@
 
             <!-- Pagination -->
             {% if total_pages > 1 %}
-            <nav>
+            <nav aria-label="Product pagination">
                 <ul class="pagination justify-content-center">
                     {% if page > 1 %}
                     <li class="page-item">
@@ -153,7 +153,7 @@
                 <i class="fas fa-info-circle"></i> Không tìm thấy sản phẩm nào.
             </div>
             {% endif %}
-        </main>
+        </div>
     </div>
 </div>
 {% endblock %}

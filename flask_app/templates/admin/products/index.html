@@ -1,0 +1,59 @@
+{% extends "layouts/admin.html" %}
+
+{% block content %}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 style="font-size:1.3rem;font-weight:800;"><i class="fas fa-box me-2 text-primary"></i>Quan ly San Pham</h2>
+                <a href="#" class="btn btn-success btn-sm"><i class="fas fa-plus me-1"></i> Them moi</a>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="d-flex gap-2">
+                        <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Tim theo ten san pham..." style="max-width:300px;" />
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search me-1"></i> Tim kiem</button>
+                        <a href="/admin/products" class="btn btn-sm" style="background:#f0f8ff;color:var(--primary);">Xoa loc</a>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th><th>Anh</th><th>Ten san pham</th><th>Gia</th><th>Danh muc</th><th>Kho</th><th>Trang thai</th><th class="text-center">Thao tac</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr>
+                            <td>{{ p.product_id }}</td>
+                            <td>
+                                {% if p.image_url %}
+                                <img src="{{ p.image_url }}" alt="{{ p.name }}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;" />
+                                {% else %}
+                                <div style="width:50px;height:50px;background:#f0f8ff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9CA8B3;"><i class="fas fa-image"></i></div>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ p.name }}</strong></td>
+                            <td style="color:#e63946;font-weight:700;">{{ p.price|format_vnd }}</td>
+                            <td>{% if p.category %}<span class="badge badge-primary">{{ p.category.name }}</span>{% endif %}</td>
+                            <td class="fw-bold {% if p.stock_quantity <= 0 %}text-danger{% elif p.stock_quantity <= 5 %}text-warning{% else %}text-success{% endif %}">{{ p.stock_quantity }}</td>
+                            <td>
+                                {% if p.is_available %}
+                                {% if p.stock_quantity > 0 %}
+                                <span class="badge badge-success">Con hang</span>
+                                {% else %}
+                                <span class="badge badge-warning">Het hang</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="badge badge-danger">An</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="#" class="btn btn-primary btn-sm" title="Sua"><i class="fas fa-edit"></i></a>
+                                <a href="#" class="btn btn-danger btn-sm" title="Xoa"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+{% endblock %}

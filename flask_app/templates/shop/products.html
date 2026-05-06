@@ -1,0 +1,152 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title"><i class="fas fa-th-large me-2"></i>Tất cả sản phẩm</h1>
+                <p class="page-subtitle mb-0">{{ total_count }} sản phẩm</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar Filter -->
+        <div class="col-lg-3 mb-4">
+            <div style="background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; border: 1px solid var(--border);">
+                <div style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 14px 20px; font-weight: 700; font-size: 0.95rem;">
+                    <i class="fas fa-filter me-2"></i>Bộ lọc nâng cao
+                </div>
+                <div style="padding: 20px;">
+                    <form method="get" action="/shop/products">
+                        <input type="hidden" name="filter" value="{{ filter }}" />
+
+                        <!-- Search -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 6px; display: block;">Tìm kiếm</label>
+                            <div style="position: relative;">
+                                <input type="text" name="search" class="form-control" value="{{ search }}" placeholder="Tên sản phẩm..." />
+                                <i class="fas fa-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 6px; display: block;">Danh mục</label>
+                            <select name="categoryId" class="form-select">
+                                <option value="">Tất cả danh mục</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.category_id }}" {% if category_id == cat.category_id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 6px; display: block;">Khoảng giá (₫)</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="number" name="minPrice" class="form-control" value="{{ min_price }}" placeholder="Từ" />
+                                <span>-</span>
+                                <input type="number" name="maxPrice" class="form-control" value="{{ max_price }}" placeholder="Đến" />
+                            </div>
+                        </div>
+
+                        <!-- Sort -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 6px; display: block;">Sắp xếp</label>
+                            <select name="sortBy" class="form-select">
+                                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Mới nhất</option>
+                                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Giá thấp → cao</option>
+                                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Giá cao → thấp</option>
+                                <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Tên A → Z</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" style="padding: 10px;">
+                            <i class="fas fa-check me-2"></i>Lọc kết quả
+                        </button>
+                        <a href="/shop/products" class="btn btn-link btn-sm text-center w-100 mt-2" style="text-decoration: none; color: var(--text-muted);">Xóa tất cả bộ lọc</a>
+                    </form>
+                </div>
+
+                <!-- Quick Categories -->
+                <div style="padding: 0 20px 20px;">
+                    <h6 style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">Khám phá nhanh</h6>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        {% for cat in categories %}
+                        <a href="/shop/products?category_id={{ cat.category_id }}"
+                           class="{% if category_id == cat.category_id %}active{% endif %}"
+                           style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; color: {% if category_id == cat.category_id %}var(--primary){% else %}var(--text-secondary){% endif %}; background: {% if category_id == cat.category_id %}var(--primary-lightest){% else %}transparent{% endif %}; text-decoration: none; transition: var(--transition);">
+                            <i class="fas fa-{{ cat.name|get_category_icon }}" style="width: 16px;"></i>
+                            {{ cat.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <!-- Toolbar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 12px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+                <span style="font-size: 0.88rem; color: var(--text-secondary); font-weight: 600;">{{ total_count }} sản phẩm được tìm thấy</span>
+            </div>
+
+            {% if products %}
+            <div class="row g-3" id="productsGrid">
+                {% for product in products %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    {% include "shop/_product_card.html" %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav class="mt-5">
+                <ul class="pagination pagination-rounded justify-content-center">
+                    {% if has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="/shop/products?page={{ current_page - 1 }}&search={{ search }}&categoryId={{ category_id }}&sortBy={{ sort_by }}&filter={{ filter }}" style="border-radius: 50px; margin: 0 4px;">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for i in range(1, total_pages + 1) %}
+                        {% if i >= current_page - 2 and i <= current_page + 2 %}
+                        <li class="page-item {% if i == current_page %}active{% endif %}">
+                            <a class="page-link" href="/shop/products?page={{ i }}&search={{ search }}&categoryId={{ category_id }}&sortBy={{ sort_by }}&filter={{ filter }}"
+                               style="border-radius: 50px; margin: 0 2px; min-width: 36px; text-align: center;">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="/shop/products?page={{ current_page + 1 }}&search={{ search }}&categoryId={{ category_id }}&sortBy={{ sort_by }}&filter={{ filter }}" style="border-radius: 50px; margin: 0 4px;">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5" style="background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 60px 20px;">
+                <i class="fas fa-search-minus" style="font-size: 4rem; color: var(--text-muted); opacity: 0.3; margin-bottom: 20px;"></i>
+                <h4 style="font-weight: 700; color: var(--text-primary);">Không tìm thấy sản phẩm phù hợp</h4>
+                <p style="color: var(--text-muted);">Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm của bạn</p>
+                <a href="/shop/products" class="btn btn-primary" style="margin-top: 12px;">Xóa tất cả bộ lọc</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

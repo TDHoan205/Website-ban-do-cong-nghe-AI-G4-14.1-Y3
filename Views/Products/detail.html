@@ -17,11 +17,11 @@
         <!-- Images -->
         <div class="col-lg-6 mb-4">
             <div class="card">
-                <img src="{{ product.image_url or '/static/images/no-image.png' }}"
+                <img src="{{ product.image_url or url_for('static', path='images/no-image.png') }}"
                      class="card-img-top"
                      alt="{{ product.name }}"
                      id="main-image"
-                     onerror="this.src='/static/images/no-image.png'">
+                     onerror="this.src='{{ url_for('static', path='images/no-image.png') }}'">
             </div>
         </div>
 
@@ -118,12 +118,12 @@
             <div class="row">
                 {% for rp in related_products %}
                 <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="card h-100">
+                    <div class="card h-100 shadow-sm">
                         <a href="/Products/{{ rp.product_id }}">
-                            <img src="{{ rp.image_url or '/static/images/no-image.png' }}"
+                            <img src="{{ rp.image_url or url_for('static', path='images/no-image.png') }}"
                                  class="card-img-top product-image"
                                  alt="{{ rp.name }}"
-                                 onerror="this.src='/static/images/no-image.png'">
+                                 onerror="this.src='{{ url_for('static', path='images/no-image.png') }}'">
                         </a>
                         <div class="card-body text-center">
                             <h6><a href="/Products/{{ rp.product_id }}" class="text-decoration-none text-dark">{{ rp.name }}</a></h6>

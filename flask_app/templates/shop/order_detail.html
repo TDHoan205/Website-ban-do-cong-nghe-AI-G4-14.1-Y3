@@ -1,0 +1,104 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-receipt me-2"></i>Chi tiết đơn hàng #{{ order.order_id if order else 0 }}</h1>
+    </div>
+</div>
+
+<div class="container py-5">
+    {% if order %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span><i class="fas fa-list me-2"></i>Danh sách sản phẩm</span>
+                    <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'New' %}bg-primary{% elif order.status == 'Canceled' %}bg-danger{% else %}bg-warning{% endif %}">{{ order.status }}</span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            {% set price = item.variant.price if item.variant else (item.product.price if item.product else 0) %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600;">{{ item.product.name if item.product else 'Sản phẩm' }}</div>
+                                    {% if item.variant %}
+                                    <small style="color: var(--text-muted);">{{ item.variant.color }}{% if item.variant.storage %} / {{ item.variant.storage }}{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-end">{{ price|format_vnd }}</td>
+                                <td class="text-end fw-bold">{{ (price * item.quantity)|format_vnd }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot style="background: var(--surface-alt);">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
+                                <td class="text-end fw-bold text-danger" style="font-size: 1.1rem;">{{ order.total_amount|format_vnd }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng</div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Mã đơn hàng</div>
+                            <div style="font-weight: 700;">#{{ order.order_id }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Ngày đặt</div>
+                            <div style="font-weight: 600;">{{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date else '' }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Khách hàng</div>
+                            <div style="font-weight: 600;">{{ order.customer_name }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Email</div>
+                            <div style="font-weight: 600;">{{ order.customer_email }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Số điện thoại</div>
+                            <div style="font-weight: 600;">{{ order.customer_phone }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Địa chỉ giao hàng</div>
+                            <div style="font-weight: 600;">{{ order.shipping_address }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Trạng thái</div>
+                            <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'New' %}bg-primary{% elif order.status == 'Canceled' %}bg-danger{% else %}bg-warning{% endif %}">{{ order.status }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="/shop/orders" class="btn btn-outline-primary w-100 mt-3">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại lịch sử
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-search-minus" style="font-size: 4rem; color: var(--text-muted); opacity: 0.3; margin-bottom: 20px;"></i>
+        <h4>Không tìm thấy đơn hàng</h4>
+        <a href="/shop/orders" class="btn btn-primary mt-3">Quay lại</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

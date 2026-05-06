@@ -1,0 +1,28 @@
+{% extends "layouts/admin.html" %}
+
+{% block content %}
+            <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:20px;"><i class="fas fa-user-circle me-2 text-primary"></i>Quan ly Tai khoan</h2>
+            <div class="card">
+                <table class="table">
+                    <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Ho ten</th><th>Vai tro</th><th>Ngay tao</th><th class="text-center">Thao tac</th></tr></thead>
+                    <tbody>
+                        {% for acc in accounts %}
+                        <tr>
+                            <td>{{ acc.account_id }}</td>
+                            <td><strong>{{ acc.username }}</strong></td>
+                            <td style="color:#9CA8B3;font-size:.85rem;">{{ acc.email }}</td>
+                            <td>{{ acc.full_name }}</td>
+                            <td>
+                                <span class="badge {% if acc.role == 'Admin' %}badge-primary{% elif acc.role == 'Employee' %}badge-warning{% else %}badge-success{% endif %}">{{ acc.role }}</span>
+                            </td>
+                            <td style="font-size:.85rem;color:#9CA8B3;">{{ acc.created_at.strftime('%d/%m/%Y') if acc.created_at else '' }}</td>
+                            <td class="text-center">
+                                <a href="#" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                <a href="#" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#e63946;"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+{% endblock %}

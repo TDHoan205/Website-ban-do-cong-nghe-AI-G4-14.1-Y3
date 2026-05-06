@@ -1,0 +1,219 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-shopping-cart me-2"></i>Giỏ hàng của bạn</h1>
+        <p class="page-subtitle mb-0">{{ cart|length }} sản phẩm trong giỏ hàng</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    {% if cart %}
+    <div class="row g-4">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div style="background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; border: 1px solid var(--border);">
+                <!-- Toolbar -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--surface-alt); border-bottom: 1px solid var(--border);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="checkbox" id="selectAllCart" checked style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;" />
+                        <label for="selectAllCart" style="font-weight: 700; font-size: 0.88rem; cursor: pointer;">Chọn tất cả (<span id="totalItemsCount">{{ cart|length }}</span> sản phẩm)</label>
+                    </div>
+                    <button type="button" class="btn" style="background: none; border: none; color: var(--danger); font-size: 0.85rem; font-weight: 600; cursor: pointer;" onclick="clearSelected()">
+                        <i class="fas fa-trash-alt me-1"></i>Xóa đã chọn
+                    </button>
+                </div>
+
+                <!-- Items -->
+                <div>
+                    {% for item in cart %}
+                    {% set price = item.variant.price if item.variant else (item.product.price if item.product else 0) %}
+                    <div class="cart-item" data-product-id="{{ item.product_id }}" data-variant-id="{{ item.variant_id or 0 }}"
+                         data-price="{{ price }}" data-quantity="{{ item.quantity }}"
+                         style="display: grid; grid-template-columns: 40px 90px 1fr auto auto auto; align-items: center; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border); transition: var(--transition);">
+                        <div>
+                            <input type="checkbox" class="select-for-checkout form-check-input" checked
+                                   data-product-id="{{ item.product_id }}" data-variant-id="{{ item.variant_id or 0 }}"
+                                   style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;" />
+                        </div>
+                        <div style="width: 90px; height: 90px; background: var(--surface-alt); border-radius: var(--radius-md); overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);">
+                            {% if item.product and item.product.image_url %}
+                            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" style="width: 100%; height: 100%; object-fit: contain;" />
+                            {% else %}
+                            <i class="fas fa-box" style="font-size: 1.5rem; color: var(--text-muted);"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h5 style="font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">{{ item.product.name if item.product else 'Sản phẩm' }}</h5>
+                            {% if item.variant %}
+                            <div style="font-size: 0.82rem; color: var(--primary); font-weight: 600;">{{ item.variant.color }}{% if item.variant.storage %} / {{ item.variant.storage }}{% endif %}</div>
+                            {% endif %}
+                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--primary);">{{ price|format_vnd }}</div>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; border: 2px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: white;">
+                                <button onclick="changeQuantity({{ item.product_id }}, {{ item.variant_id or 0 }}, -1)" style="width: 34px; height: 36px; border: none; background: var(--surface-alt); cursor: pointer; color: var(--text-secondary);"><i class="fas fa-minus" style="font-size: 0.7rem;"></i></button>
+                                <input type="number" value="{{ item.quantity }}" readonly id="qty-{{ item.product_id }}-{{ item.variant_id or 0 }}"
+                                       style="width: 42px; height: 36px; border: none; text-align: center; font-weight: 700; font-size: 0.88rem; background: white;" />
+                                <button onclick="changeQuantity({{ item.product_id }}, {{ item.variant_id or 0 }}, 1)" style="width: 34px; height: 36px; border: none; background: var(--surface-alt); cursor: pointer; color: var(--text-secondary);"><i class="fas fa-plus" style="font-size: 0.7rem;"></i></button>
+                            </div>
+                        </div>
+                        <div style="font-size: 1rem; font-weight: 800; color: var(--text-primary); white-space: nowrap;">
+                            {{ (price * item.quantity)|format_vnd }}
+                        </div>
+                        <div>
+                            <button onclick="removeCartItem({{ item.product_id }}, {{ item.variant_id or 0 }})"
+                                    style="width: 36px; height: 36px; border: 2px solid var(--border); border-radius: var(--radius-sm); background: white; cursor: pointer; transition: var(--transition); color: var(--text-muted);">
+                                <i class="fas fa-trash-alt" style="font-size: 0.85rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div style="padding: 16px 20px;">
+                    <a href="/shop/products" class="btn" style="border: 2px solid var(--primary); color: var(--primary); border-radius: var(--radius-md); padding: 10px 20px; font-weight: 700; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; transition: var(--transition);">
+                        <i class="fas fa-arrow-left me-2"></i>Tiếp tục mua hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div style="background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; border: 1px solid var(--border); position: sticky; top: 80px;">
+                <div style="padding: 16px 20px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white;">
+                    <h5 style="margin: 0; font-weight: 800; font-size: 1rem;"><i class="fas fa-receipt me-2"></i>Tóm tắt đơn hàng</h5>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.88rem; color: var(--text-secondary);">
+                        <span>Số sản phẩm</span>
+                        <span class="fw-bold" id="selectedCount">{{ cart|length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.88rem; color: var(--text-secondary);">
+                        <span>Tạm tính</span>
+                        <span id="selectedAmount">{{ total|format_vnd }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-size: 0.88rem; color: var(--text-secondary);">
+                        <span>Phí vận chuyển</span>
+                        <span class="text-success fw-bold">Miễn phí</span>
+                    </div>
+                    <div style="border-top: 2px dashed var(--border); margin: 12px 0;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <span style="font-weight: 800; font-size: 1.05rem;">Tổng cộng</span>
+                        <span id="totalPrice" style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">{{ total|format_vnd }}</span>
+                    </div>
+                    <button type="button" class="btn w-100" onclick="goCheckout()" style="padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; border-radius: var(--radius-md); font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: var(--transition);">
+                        <i class="fas fa-credit-card me-2"></i>Thanh toán ngay
+                    </button>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; color: var(--text-muted); font-size: 0.75rem;">
+                        <i class="fas fa-shield-alt" style="color: var(--success);"></i>Thanh toán an toàn, bảo mật
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="text-center" style="padding: 80px 20px; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+        <div style="width: 120px; height: 120px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 3rem; color: var(--primary); border: 3px dashed var(--primary-lighter);">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3 style="font-weight: 800; margin-bottom: 10px;">Giỏ hàng trống</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Bạn chưa có sản phẩm nào trong giỏ hàng. Hãy bắt đầu mua hàng ngay!</p>
+        <a href="/shop/products" class="btn" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 14px 28px; border-radius: 50px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center;">
+            <i class="fas fa-shopping-bag me-2"></i>Mua hàng ngay
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function changeQuantity(productId, variantId, delta) {
+    var item = document.querySelector('.cart-item[data-product-id="' + productId + '"]');
+    if (variantId > 0) item = document.querySelector('.cart-item[data-product-id="' + productId + '"][data-variant-id="' + variantId + '"]');
+    if (!item) return;
+    var currentQty = parseInt(item.dataset.quantity) || 0;
+    var newQty = currentQty + delta;
+    if (newQty <= 0) { removeCartItem(productId, variantId); return; }
+
+    item.dataset.quantity = newQty;
+    var price = parseFloat(item.dataset.price) || 0;
+    var qtyInput = item.querySelector('input[type="number"]');
+    var totalEl = item.querySelector('.line-total') || item.children[4];
+    if (qtyInput) qtyInput.value = newQty;
+    totalEl.textContent = (price * newQty).toLocaleString('vi-VN') + ' ₫';
+    updateCartSummary();
+
+    fetch('/api/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'productId=' + productId + '&quantity=' + newQty + (variantId > 0 ? '&variantId=' + variantId : '')
+    }).then(r => r.json()).catch(() => {});
+}
+
+function removeCartItem(productId, variantId) {
+    if (!confirm('Xóa sản phẩm này khỏi giỏ hàng?')) return;
+    fetch('/api/cart/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'productId=' + productId + (variantId > 0 ? '&variantId=' + variantId : '')
+    }).then(() => window.location.reload()).catch(() => window.location.reload());
+}
+
+function clearSelected() {
+    var checked = document.querySelectorAll('.select-for-checkout:checked');
+    if (!checked.length) { alert('Vui lòng chọn sản phẩm để xóa.'); return; }
+    if (!confirm('Xóa ' + checked.length + ' sản phẩm đã chọn?')) return;
+    checked.forEach(function(cb) {
+        fetch('/api/cart/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'productId=' + cb.dataset.productId + (parseInt(cb.dataset.variantId) > 0 ? '&variantId=' + cb.dataset.variantId : '')
+        });
+    });
+    setTimeout(() => window.location.reload(), 500);
+}
+
+function updateCartSummary() {
+    var checked = document.querySelectorAll('.select-for-checkout:checked');
+    var totalQty = 0, totalAmount = 0;
+    checked.forEach(function(cb) {
+        var item = cb.closest('.cart-item');
+        if (item) {
+            totalQty += parseInt(item.dataset.quantity) || 0;
+            totalAmount += (parseFloat(item.dataset.price) || 0) * (parseInt(item.dataset.quantity) || 0);
+        }
+    });
+    document.getElementById('selectedCount').textContent = totalQty;
+    document.getElementById('selectedAmount').textContent = totalAmount.toLocaleString('vi-VN') + ' ₫';
+    document.getElementById('totalPrice').textContent = totalAmount.toLocaleString('vi-VN') + ' ₫';
+}
+
+function goCheckout() {
+    window.location.href = '/shop/cart';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var selectAll = document.getElementById('selectAllCart');
+    var checkboxes = document.querySelectorAll('.select-for-checkout');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+            updateCartSummary();
+        });
+    }
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            if (selectAll) selectAll.checked = Array.from(checkboxes).every(function(c) { return c.checked; });
+            updateCartSummary();
+        });
+    });
+    updateCartSummary();
+});
+</script>
+{% endblock %}

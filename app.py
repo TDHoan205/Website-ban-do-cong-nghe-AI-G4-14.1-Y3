@@ -98,25 +98,25 @@ app.include_router(StatisticsController.router)
 
 @app.on_event("startup")
 async def startup():
-    """Khởi động ứng dụng"""
+    """Khoi dong ung dung"""
     db_info = get_connection_info()
     print(f"""
-╔══════════════════════════════════════════════════════════════╗
-║              🚀 TECH STORE APPLICATION STARTED              ║
-╠══════════════════════════════════════════════════════════════╣
-║  📦 Database : {db_info['database']:<40} ║
-║  🖥️  Server  : {db_info['server']:<40} ║
-║  🔐 Auth     : {db_info['auth_mode']:<40} ║
-║  🌐 URL      : http://localhost:8000                        ║
-║  📖 Docs     : http://localhost:8000/docs                   ║
-╚══════════════════════════════════════════════════════════════╝
++--------------------------------------------------------------+
+|              TECH STORE APPLICATION STARTED                   |
++--------------------------------------------------------------+
+|  Database : {db_info['database']:<46} |
+|  Server   : {db_info['server']:<46} |
+|  Auth     : {db_info['auth_mode']:<46} |
+|  URL      : http://localhost:8000                            |
+|  Docs     : http://localhost:8000/docs                       |
++--------------------------------------------------------------+
     """)
 
 
 @app.on_event("shutdown")
 async def shutdown():
     """Tắt ứng dụng"""
-    print("\n👋 Tech Store Application Shutdown")
+    print("\nTech Store Application Shutdown")
 
 
 # =====================================================================

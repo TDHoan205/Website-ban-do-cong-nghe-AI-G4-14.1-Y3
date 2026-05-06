@@ -1,0 +1,65 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-headset me-2"></i>Hỗ trợ khách hàng</h1>
+        <p class="page-subtitle mb-0">Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card" style="text-align: center; padding: 32px 20px;">
+                <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <i class="fas fa-phone-alt" style="font-size: 1.8rem; color: var(--primary);"></i>
+                </div>
+                <h4 style="font-weight: 700; margin-bottom: 8px;">Hotline</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">Tư vấn mua hàng và hỗ trợ kỹ thuật</p>
+                <a href="tel:18006601" class="btn btn-primary">1800.6601 (Nhánh 1)</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card" style="text-align: center; padding: 32px 20px;">
+                <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <i class="fas fa-envelope" style="font-size: 1.8rem; color: var(--primary);"></i>
+                </div>
+                <h4 style="font-weight: 700; margin-bottom: 8px;">Email</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">Phản hồi trong vòng 24 giờ</p>
+                <a href="mailto:support@webstore.vn" class="btn btn-primary">Webstore@gmail.com</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card" style="text-align: center; padding: 32px 20px;">
+                <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary-lightest), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <i class="fas fa-comments" style="font-size: 1.8rem; color: var(--primary);"></i>
+                </div>
+                <h4 style="font-weight: 700; margin-bottom: 8px;">Chat trực tuyến</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">Tư vấn viên trực tuyến 24/7</p>
+                <button class="btn btn-primary" onclick="alert('Tính năng chat đang được phát triển!')">Bắt đầu chat</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-question-circle me-2"></i>Câu hỏi thường gặp (FAQ)</div>
+            <div class="card-body">
+                {% set faqs = [
+                    ("Làm sao để đặt hàng?", "Bạn có thể đặt hàng trực tiếp trên website bằng cách chọn sản phẩm, thêm vào giỏ hàng và tiến hành thanh toán."),
+                    ("Thời gian giao hàng là bao lâu?", "Đơn hàng nội thành Hà Nội và TP.HCM sẽ được giao trong 24-48 giờ. Các khu vực khác từ 2-5 ngày làm việc."),
+                    ("Chính sách đổi trả như thế nào?", "Quý khách được đổi trả trong vòng 7 ngày nếu sản phẩm bị lỗi hoặc không đúng như mô tả."),
+                    ("Làm sao để liên hệ với bộ phận kỹ thuật?", "Gọi đường dây nóng 1800.6601 (Nhánh 2) hoặc gửi email về support@webstore.vn.")
+                ] %}
+                {% for q, a in faqs %}
+                <div style="border-bottom: 1px solid var(--border); padding: 16px 0;">
+                    <h6 style="font-weight: 700; color: var(--primary); margin-bottom: 8px;"><i class="fas fa-question-circle me-2"></i>{{ q }}</h6>
+                    <p style="color: var(--text-secondary); margin: 0; font-size: 0.88rem;">{{ a }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -198,37 +198,4 @@ if (q) {
     setTimeout(() => sendMessage(q), 500);
 }
 </script>
-
-<style>
-.message {
-    display: flex;
-    margin-bottom: 15px;
-}
-.message-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e9ecef;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px;
-    flex-shrink: 0;
-}
-.message-content {
-    max-width: 70%;
-}
-.message-bubble {
-    padding: 10px 15px;
-    border-radius: 15px;
-    display: inline-block;
-}
-.user-message {
-    flex-direction: row-reverse;
-}
-.user-message .message-avatar {
-    margin-right: 0;
-    margin-left: 10px;
-}
-</style>
 {% endblock %}
