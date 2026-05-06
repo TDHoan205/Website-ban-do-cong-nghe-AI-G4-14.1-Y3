@@ -2,6 +2,12 @@
 Seed Data - Tạo dữ liệu mẫu
 Tương đương Data/Seed/SeedData.cs trong ASP.NET Core
 """
+import sys
+import os
+
+# Thêm thư mục gốc vào PYTHONPATH để có thể import Models
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from sqlalchemy.orm import Session
 from Models.Category import Category
 from Models.Supplier import Supplier

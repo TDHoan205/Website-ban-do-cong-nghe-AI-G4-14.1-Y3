@@ -78,7 +78,7 @@
        ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                 SQL Server Database 🗄️                       │
-│            Database: TechShopWebsite1                        │
+│            Database: TechShopWebsite2                        │
 │     14 bảng: Products · Users · Orders · Carts · Chat...    │
 └──────────────────────────────────────────────────────────────┘
        │
@@ -184,7 +184,7 @@ Mở **SQL Server Management Studio (SSMS)**, kết nối server, mở file và 
 ```
 SQL/schema.sql
 ```
-> ✅ Kết quả: Database `TechShopWebsite1` được tạo với 14 bảng
+> ✅ Kết quả: Database `TechShopWebsite2` được tạo với 14 bảng
 
 **4️⃣ Cấu hình kết nối Database**
 
@@ -192,7 +192,7 @@ Mở `Data/database.py`, sửa thông tin server:
 ```python
 SQL_SERVER_CONFIG = {
     "server": "localhost",          # ← Sửa thành tên SQL Server của bạn
-    "database": "TechShopWebsite1", # ← Tên database (giữ nguyên)
+    "database": "TechShopWebsite2", # ← Tên database (giữ nguyên)
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",    # Windows Authentication (không cần nhập mật khẩu)
 }

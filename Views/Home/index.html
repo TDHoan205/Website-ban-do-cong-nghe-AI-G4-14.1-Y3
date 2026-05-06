@@ -72,7 +72,7 @@
 
                         <div class="price-section mb-2">
                             <span class="current-price text-danger fw-bold fs-5">
-                                {{ "{:,.0f}".format(product.current_price) }} đ
+                                {{ "{:,.0f}".format(product.price) }} đ
                             </span>
                             {% if product.original_price and product.original_price > product.price %}
                             <br>
@@ -128,7 +128,7 @@
 
                         <div class="price-section mb-2">
                             <span class="current-price text-danger fw-bold">
-                                {{ "{:,.0f}".format(product.current_price) }} đ
+                                {{ "{:,.0f}".format(product.price) }} đ
                             </span>
                         </div>
 

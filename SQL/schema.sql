@@ -1,16 +1,97 @@
 -- =====================================================
--- Tech Store - Database Schema
--- SQL Server - Tương thích với ASP.NET Core EF Core
+-- Tech Store - Database Schema (Updated to match Python MVC Models)
+-- SQL Server - TechShopWebsite2
 -- =====================================================
 
 -- Tạo Database nếu chưa có
-IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TechShopWebsite1')
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TechShopWebsite2')
 BEGIN
     CREATE DATABASE TechShopWebsite2;
 END
 GO
 
 USE TechShopWebsite2;
+GO
+
+-- XÓA BẢNG CŨ NẾU CẦN (Để làm mới hoàn toàn cấu trúc)
+-- DROP TABLE IF EXISTS KnowledgeChunks;
+-- DROP TABLE IF EXISTS ChatMessages;
+-- DROP TABLE IF EXISTS ChatSessions;
+-- DROP TABLE IF EXISTS Notifications;
+-- DROP TABLE IF EXISTS FAQs;
+-- DROP TABLE IF EXISTS AIConversationLogs;
+-- DROP TABLE IF EXISTS ReceiptShipments;
+-- DROP TABLE IF EXISTS OrderItems;
+-- DROP TABLE IF EXISTS Orders;
+-- DROP TABLE IF EXISTS CartItems;
+-- DROP TABLE IF EXISTS Carts;
+-- DROP TABLE IF EXISTS Inventory;
+-- DROP TABLE IF EXISTS ProductImages;
+-- DROP TABLE IF EXISTS ProductVariants;
+-- DROP TABLE IF EXISTS Products;
+-- DROP TABLE IF EXISTS Employees;
+-- DROP TABLE IF EXISTS Accounts;
+-- DROP TABLE IF EXISTS Roles;
+-- DROP TABLE IF EXISTS Suppliers;
+-- DROP TABLE IF EXISTS Categories;
+-- GO
+
+-- =====================================================
+-- Roles Table
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Roles')
+BEGIN
+    CREATE TABLE Roles (
+        role_id INT IDENTITY(1,1) PRIMARY KEY,
+        role_name NVARCHAR(50) NOT NULL UNIQUE,
+        description NVARCHAR(255),
+        permissions NVARCHAR(1000), -- JSON string
+        created_at DATETIME DEFAULT GETDATE()
+    );
+END
+GO
+
+-- =====================================================
+-- Accounts Table (Thay thế Users)
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Accounts')
+BEGIN
+    CREATE TABLE Accounts (
+        account_id INT IDENTITY(1,1) PRIMARY KEY,
+        username NVARCHAR(50) NOT NULL UNIQUE,
+        password_hash NVARCHAR(255) NOT NULL,
+        email NVARCHAR(100) UNIQUE,
+        full_name NVARCHAR(100),
+        phone NVARCHAR(20),
+        address NVARCHAR(255),
+        is_active BIT DEFAULT 1,
+        role_id INT NOT NULL,
+        reset_token NVARCHAR(64),
+        reset_token_expiry DATETIME,
+        created_at DATETIME DEFAULT GETDATE(),
+        updated_at DATETIME,
+        FOREIGN KEY (role_id) REFERENCES Roles(role_id)
+    );
+END
+GO
+
+-- =====================================================
+-- Employees Table
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Employees')
+BEGIN
+    CREATE TABLE Employees (
+        employee_id INT IDENTITY(1,1) PRIMARY KEY,
+        account_id INT NOT NULL UNIQUE,
+        department NVARCHAR(50),
+        position NVARCHAR(50),
+        hire_date DATETIME,
+        salary INT,
+        is_active BIT DEFAULT 1,
+        created_at DATETIME DEFAULT GETDATE(),
+        FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+    );
+END
 GO
 
 -- =====================================================
@@ -25,7 +106,8 @@ BEGIN
         image_url NVARCHAR(500),
         display_order INT DEFAULT 0,
         is_active BIT DEFAULT 1,
-        created_at DATETIME DEFAULT GETDATE()
+        created_at DATETIME DEFAULT GETDATE(),
+        updated_at DATETIME
     );
 END
 GO
@@ -43,29 +125,6 @@ BEGIN
         email NVARCHAR(100),
         address NVARCHAR(255),
         is_active BIT DEFAULT 1,
-        created_at DATETIME DEFAULT GETDATE()
-    );
-END
-GO
-
--- =====================================================
--- Users Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Users')
-BEGIN
-    CREATE TABLE Users (
-        user_id INT IDENTITY(1,1) PRIMARY KEY,
-        username NVARCHAR(50) NOT NULL UNIQUE,
-        email NVARCHAR(100) NOT NULL UNIQUE,
-        password_hash NVARCHAR(255) NOT NULL,
-        full_name NVARCHAR(100),
-        phone NVARCHAR(20),
-        address NVARCHAR(255),
-        is_active BIT DEFAULT 1,
-        role NVARCHAR(20) DEFAULT 'Customer',
-        avatar_url NVARCHAR(500),
-        reset_token NVARCHAR(64),
-        reset_token_expiry DATETIME,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME
     );
@@ -84,7 +143,8 @@ BEGIN
         image_url NVARCHAR(500),
         price DECIMAL(10, 2) NOT NULL,
         original_price DECIMAL(10, 2),
-        stock_quantity INT DEFAULT 50,
+        stock_quantity INT DEFAULT 0,
+        is_available BIT DEFAULT 1,
         rating DECIMAL(2, 1) DEFAULT 4.5,
         is_new BIT DEFAULT 0,
         is_hot BIT DEFAULT 0,
@@ -92,7 +152,6 @@ BEGIN
         specifications NVARCHAR(MAX),
         category_id INT,
         supplier_id INT,
-        is_available BIT DEFAULT 1,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME,
         FOREIGN KEY (category_id) REFERENCES Categories(category_id),
@@ -154,6 +213,7 @@ BEGIN
         min_stock_level INT DEFAULT 5,
         max_stock_level INT DEFAULT 100,
         last_restock_date DATETIME,
+        created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME,
         FOREIGN KEY (product_id) REFERENCES Products(product_id)
     );
@@ -167,11 +227,10 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Carts')
 BEGIN
     CREATE TABLE Carts (
         cart_id INT IDENTITY(1,1) PRIMARY KEY,
-        user_id INT NOT NULL UNIQUE,
-        session_id NVARCHAR(100),
+        account_id INT NOT NULL UNIQUE,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME,
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
+        FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
     );
 END
 GO
@@ -202,24 +261,17 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
 BEGIN
     CREATE TABLE Orders (
         order_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_number NVARCHAR(50) NOT NULL UNIQUE,
-        user_id INT NOT NULL,
-        status NVARCHAR(20) DEFAULT 'Pending',
-        subtotal DECIMAL(10, 2) NOT NULL,
-        shipping_fee DECIMAL(10, 2) DEFAULT 0,
-        tax_amount DECIMAL(10, 2) DEFAULT 0,
-        total_amount DECIMAL(10, 2) NOT NULL,
-        shipping_address NVARCHAR(500),
-        shipping_phone NVARCHAR(20),
-        shipping_name NVARCHAR(100),
-        notes NVARCHAR(MAX),
+        account_id INT,
         order_date DATETIME DEFAULT GETDATE(),
-        confirmed_date DATETIME,
-        shipped_date DATETIME,
-        delivered_date DATETIME,
-        cancelled_date DATETIME,
-        cancellation_reason NVARCHAR(255),
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
+        total_amount DECIMAL(10, 2) NOT NULL,
+        status NVARCHAR(20) DEFAULT 'Pending',
+        customer_name NVARCHAR(100),
+        customer_phone NVARCHAR(20),
+        customer_address NVARCHAR(255),
+        notes NVARCHAR(500),
+        created_at DATETIME DEFAULT GETDATE(),
+        updated_at DATETIME,
+        FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
     );
 END
 GO
@@ -247,39 +299,21 @@ END
 GO
 
 -- =====================================================
--- Payments Table
+-- ReceiptShipments Table
 -- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Payments')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ReceiptShipments')
 BEGIN
-    CREATE TABLE Payments (
-        payment_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_id INT NOT NULL UNIQUE,
-        payment_method NVARCHAR(50),
-        payment_status NVARCHAR(20) DEFAULT 'Pending',
-        transaction_id NVARCHAR(100),
-        amount DECIMAL(10, 2) NOT NULL,
-        payment_date DATETIME,
+    CREATE TABLE ReceiptShipments (
+        receipt_id INT IDENTITY(1,1) PRIMARY KEY,
+        product_id INT NOT NULL,
+        supplier_id INT,
+        order_id INT,
+        quantity INT NOT NULL,
+        type NVARCHAR(20) NOT NULL, -- IN, OUT
+        reason NVARCHAR(100),
         created_at DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (order_id) REFERENCES Orders(order_id)
-    );
-END
-GO
-
--- =====================================================
--- Shipments Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Shipments')
-BEGIN
-    CREATE TABLE Shipments (
-        shipment_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_id INT NOT NULL UNIQUE,
-        shipping_method NVARCHAR(50),
-        tracking_number NVARCHAR(100),
-        shipping_status NVARCHAR(20) DEFAULT 'Pending',
-        estimated_delivery DATETIME,
-        actual_delivery DATETIME,
-        shipping_note NVARCHAR(MAX),
-        created_at DATETIME DEFAULT GETDATE(),
+        FOREIGN KEY (product_id) REFERENCES Products(product_id),
+        FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id),
         FOREIGN KEY (order_id) REFERENCES Orders(order_id)
     );
 END
@@ -293,12 +327,12 @@ BEGIN
     CREATE TABLE ChatSessions (
         session_id INT IDENTITY(1,1) PRIMARY KEY,
         session_uuid NVARCHAR(36) NOT NULL UNIQUE,
-        user_id INT,
+        account_id INT,
         device_info NVARCHAR(255),
         started_at DATETIME DEFAULT GETDATE(),
         ended_at DATETIME,
         is_active BIT DEFAULT 1,
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
+        FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
     );
 END
 GO
@@ -311,7 +345,7 @@ BEGIN
     CREATE TABLE ChatMessages (
         message_id INT IDENTITY(1,1) PRIMARY KEY,
         session_id INT NOT NULL,
-        sender_type NVARCHAR(20) NOT NULL,
+        sender_type NVARCHAR(20) NOT NULL, -- user, bot, staff
         message_content NVARCHAR(MAX) NOT NULL,
         intent NVARCHAR(50),
         confidence_score NVARCHAR(10),
@@ -323,4 +357,80 @@ BEGIN
 END
 GO
 
-PRINT 'Database schema created successfully!';
+-- =====================================================
+-- AIConversationLogs Table
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AIConversationLogs')
+BEGIN
+    CREATE TABLE AIConversationLogs (
+        log_id INT IDENTITY(1,1) PRIMARY KEY,
+        session_id INT NOT NULL,
+        account_id INT,
+        user_message NVARCHAR(MAX),
+        bot_response NVARCHAR(MAX),
+        intent_detected NVARCHAR(50),
+        confidence_score NVARCHAR(10),
+        response_time_ms INT,
+        is_escalated_to_staff BIT DEFAULT 0,
+        created_at DATETIME DEFAULT GETDATE(),
+        FOREIGN KEY (session_id) REFERENCES ChatSessions(session_id),
+        FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+    );
+END
+GO
+
+-- =====================================================
+-- FAQs Table
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FAQs')
+BEGIN
+    CREATE TABLE FAQs (
+        faq_id INT IDENTITY(1,1) PRIMARY KEY,
+        question NVARCHAR(500) NOT NULL,
+        answer NVARCHAR(MAX) NOT NULL,
+        category NVARCHAR(50),
+        display_order INT DEFAULT 0,
+        is_active BIT DEFAULT 1,
+        created_at DATETIME DEFAULT GETDATE(),
+        updated_at DATETIME
+    );
+END
+GO
+
+-- =====================================================
+-- Notifications Table
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Notifications')
+BEGIN
+    CREATE TABLE Notifications (
+        notification_id INT IDENTITY(1,1) PRIMARY KEY,
+        account_id INT,
+        title NVARCHAR(200) NOT NULL,
+        content NVARCHAR(MAX) NOT NULL,
+        notification_type NVARCHAR(50),
+        is_read BIT DEFAULT 0,
+        created_at DATETIME DEFAULT GETDATE(),
+        FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+    );
+END
+GO
+
+-- =====================================================
+-- KnowledgeChunks Table
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'KnowledgeChunks')
+BEGIN
+    CREATE TABLE KnowledgeChunks (
+        chunk_id INT IDENTITY(1,1) PRIMARY KEY,
+        content NVARCHAR(MAX) NOT NULL,
+        content_type NVARCHAR(50),
+        source_id INT,
+        source_table NVARCHAR(50),
+        embedding_vector NVARCHAR(MAX), -- Vector embedding lưu dạng string
+        chunk_metadata NVARCHAR(MAX), -- JSON metadata
+        created_at DATETIME DEFAULT GETDATE()
+    );
+END
+GO
+
+PRINT 'Database schema updated successfully to match Python Models!';
