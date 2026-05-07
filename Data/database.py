@@ -5,12 +5,12 @@ Tương tự Data/AppDbContext.cs trong ASP.NET Core
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
-import urllib
+import urllib.parse
 
 # Cấu hình SQL Server - Sửa theo server của bạn
 SQL_SERVER_CONFIG = {
     "server": "localhost",
-    "database": "TechShopWebsite1",
+    "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication
     # Nếu dùng SQL Authentication:

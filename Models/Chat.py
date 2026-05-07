@@ -7,6 +7,14 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
 
+# Import for type hinting and relationship resolution
+# Account is imported here to avoid "Undefined name" errors in IDEs
+# and to ensure SQLAlchemy can find the model if it's not already in the registry.
+# However, to avoid circular imports with Models/__init__.py, we can use string references
+# which are already used below. If you see errors about "Account" not being defined,
+# it's usually because the model hasn't been loaded into the Base metadata yet.
+
+
 
 class ChatSession(Base):
     __tablename__ = "ChatSessions"
@@ -113,7 +121,7 @@ class KnowledgeChunk(Base):
     source_id = Column(Integer)  # Reference to source entity
     source_table = Column(String(50))  # Table name
     embedding_vector = Column(Text)  # Vector embedding
-    metadata = Column(Text)  # JSON metadata
+    chunk_metadata = Column(Text)  # JSON metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
