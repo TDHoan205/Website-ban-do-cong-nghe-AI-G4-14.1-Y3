@@ -193,22 +193,6 @@ ELSE
     PRINT 'ProductVariants table already exists';
 GO
 
--- Inventory Table
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Inventory')
-BEGIN
-    CREATE TABLE Inventory (
-        inventory_id INT PRIMARY KEY IDENTITY(1,1),
-        product_id INT NOT NULL UNIQUE,
-        quantity_in_stock INT NOT NULL DEFAULT 0,
-        last_updated_date DATETIME NOT NULL DEFAULT GETDATE(),
-        FOREIGN KEY (product_id) REFERENCES Products(product_id)
-    );
-    PRINT 'Created Inventory table';
-END
-ELSE
-    PRINT 'Inventory table already exists';
-GO
-
 -- Orders Table
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
 BEGIN
