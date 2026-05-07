@@ -36,6 +36,42 @@ async def index(request: Request, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/Count")
+async def get_cart_count(request: Request, db: Session = Depends(get_db)):
+    """Lấy số lượng sản phẩm trong giỏ (API)"""
+    try:
+        account = require_account(request, db)
+        cart_service = CartService(db)
+        count = cart_service.get_cart_item_count(account.account_id)
+        return {"count": count}
+    except Exception:
+        return {"count": 0}
+
+
+@router.get("/Checkout", response_class=HTMLResponse)
+async def checkout(request: Request, db: Session = Depends(get_db)):
+    """Trang thanh toán"""
+    account = require_account(request, db)
+    cart_service = CartService(db)
+    cart = cart_service.get_or_create_cart(account.account_id)
+    items = cart_service.get_cart_items(cart.cart_id)
+    total = cart_service.get_cart_total(account.account_id)
+
+    if not items:
+        return RedirectResponse(url="/Cart/", status_code=303)
+
+    return templates.TemplateResponse(
+        "Cart/checkout.html",
+        {
+            "request": request,
+            "page_title": "Thanh toán",
+            "cart_items": items,
+            "cart_total": total,
+            "account": account
+        }
+    )
+
+
 @router.post("/add")
 async def add(
     request: Request,

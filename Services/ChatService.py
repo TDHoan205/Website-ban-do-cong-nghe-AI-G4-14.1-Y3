@@ -12,11 +12,11 @@ class ChatService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_session(self, user_id: Optional[int] = None) -> ChatSession:
+    def create_session(self, account_id: Optional[int] = None) -> ChatSession:
         """Tạo phiên chat mới"""
         session = ChatSession(
             session_uuid=str(uuid.uuid4()),
-            user_id=user_id,
+            account_id=account_id,
             is_active=True
         )
         self.db.add(session)
@@ -30,13 +30,13 @@ class ChatService:
             ChatSession.session_uuid == session_uuid
         ).first()
 
-    def get_or_create_session(self, session_uuid: str = None, user_id: int = None) -> ChatSession:
+    def get_or_create_session(self, session_uuid: str = None, account_id: int = None) -> ChatSession:
         """Lấy hoặc tạo phiên chat"""
         if session_uuid:
             session = self.get_session(session_uuid)
             if session:
                 return session
-        return self.create_session(user_id)
+        return self.create_session(account_id)
 
     def add_message(
         self,
@@ -75,13 +75,13 @@ class ChatService:
             return True
         return False
 
-    def process_user_message(self, session_uuid: str, user_message: str, user_id: int = None) -> str:
+    def process_user_message(self, session_uuid: str, user_message: str, account_id: int = None) -> str:
         """
         Xử lý tin nhắn từ user và trả lời
         Đây là placeholder - sẽ tích hợp RAG pipeline thực tế
         """
         # Tạo hoặc lấy session
-        session = self.get_or_create_session(session_uuid, user_id)
+        session = self.get_or_create_session(session_uuid, account_id)
 
         # Lưu tin nhắn user
         self.add_message(session.session_id, "user", user_message)

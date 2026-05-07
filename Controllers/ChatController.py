@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from Data.database import get_db
 from Services.ChatService import ChatService
+from Utilities.auth import require_account
 
 router = APIRouter(prefix="/Chat")
 
@@ -13,8 +14,18 @@ router = APIRouter(prefix="/Chat")
 @router.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request, session_id: str = None, db: Session = Depends(get_db)):
     """Trang chatbot"""
+    # Không bắt buộc login để chat, nhưng nếu login thì gắn session vào account
+    token = request.cookies.get("access_token")
+    account_id = None
+    if token:
+        try:
+            account = require_account(request, db)
+            account_id = account.account_id
+        except:
+            pass
+
     chat_service = ChatService(db)
-    session = chat_service.get_or_create_session(session_id)
+    session = chat_service.get_or_create_session(session_id, account_id)
 
     return templates.TemplateResponse(
         "Chat/index.html",
@@ -22,6 +33,7 @@ async def chat_page(request: Request, session_id: str = None, db: Session = Depe
             "request": request,
             "page_title": "Chat với AI",
             "session_uuid": session.session_uuid,
+            "messages": chat_service.get_session_messages(session.session_id)
         }
     )
 

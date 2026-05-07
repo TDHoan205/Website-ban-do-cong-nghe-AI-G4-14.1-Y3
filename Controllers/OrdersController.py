@@ -4,6 +4,7 @@ Tuong duong Controllers/OrdersController.cs trong C#
 """
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,18 @@ from Services.OrderService import OrderService
 from Utilities.auth import require_account
 
 router = APIRouter(prefix="/Orders")
+
+
+@router.get("/Success", response_class=HTMLResponse)
+async def order_success(request: Request):
+    """Trang thông báo đặt hàng thành công"""
+    return templates.TemplateResponse(
+        "Cart/success.html",
+        {
+            "request": request,
+            "page_title": "Đặt hàng thành công"
+        }
+    )
 
 
 
@@ -136,9 +149,14 @@ def checkout(
             customer_address=customer_address,
             notes=notes,
         )
+        # Clear cart after order
+        from Services.CartService import CartService
+        cart_service = CartService(db)
+        cart_service.clear_cart(account.account_id)
+        
+        return RedirectResponse(url="/Orders/Success", status_code=303)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    return _order_to_dict(order)
 
 
 @router.put("/{order_id}/Status")
@@ -159,3 +177,11 @@ def cancel_order(order_id: int, reason: Optional[str] = None, db: Session = Depe
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return _order_to_dict(order)
+
+
+# Templates
+templates = None
+
+def set_templates(t):
+    global templates
+    templates = t

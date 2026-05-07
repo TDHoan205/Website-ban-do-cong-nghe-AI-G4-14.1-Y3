@@ -63,12 +63,23 @@ async def index(
     """Danh sách sản phẩm có phân trang, lọc, tìm kiếm"""
     product_service = ProductService(db)
 
-    products, total = product_service.get_all_products(
+    # Map sort_by and sort_order to ProductService format
+    sort_order_map = {
+        "created_at": "created",
+        "name": "name",
+        "price": "price"
+    }
+    service_sort_order = sort_order_map.get(sort_by, "created")
+    if sort_order == "asc":
+        service_sort_order = service_sort_order
+    else:
+        service_sort_order = service_sort_order + "_desc"
+    
+    products = product_service.get_products(
         category_id=category_id,
         search=search,
-        sort_by=sort_by,
-        sort_order=sort_order,
-        page=page,
+        sort_order=service_sort_order,
+        page_number=page,
         page_size=page_size
     )
     categories = product_service.get_all_categories()
@@ -80,10 +91,10 @@ async def index(
             "page_title": "Sản phẩm",
             "products": products,
             "categories": categories,
-            "total_products": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": (total + page_size - 1) // page_size,
+            "total_products": products.total_count,
+            "page": products.current_page,
+            "page_size": products.page_size,
+            "total_pages": products.total_pages,
             "category_id": category_id,
             "search": search,
             "sort_by": sort_by,

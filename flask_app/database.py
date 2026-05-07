@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
 
 # ── SQL Server connection ────────────────────────────────────────────────
-SQL_SERVER = os.getenv("SQL_SERVER", "DESKTOP-1TM8FSO")
+SQL_SERVER = os.getenv("SQL_SERVER", "localhost\\SQLEXPRESS")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "TechShopWebsite2")
 
 # Windows Authentication via pyodbc

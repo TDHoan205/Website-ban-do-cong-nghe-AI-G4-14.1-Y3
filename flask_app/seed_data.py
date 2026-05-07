@@ -169,17 +169,19 @@ def seed_accounts(db: Session):
             is_active=True,
         ))
 
-    # Demo customer
-    if not db.query(Account).filter(Account.username == "customer").first():
-        db.add(Account(
-            username="customer",
-            email="customer@techstore.com",
-            password_hash=_hash("customer123"),
-            full_name="Khách hàng Demo",
-            phone="0987654321",
-            role_id=customer_role.role_id,
-            is_active=True,
-        ))
+    # Demo customer accounts
+    for i in range(1, 4):
+        username = f"customer{i}"
+        if not db.query(Account).filter(Account.username == username).first():
+            db.add(Account(
+                username=username,
+                email=f"customer{i}@techstore.com",
+                password_hash=_hash("customer123"),
+                full_name=f"Khách hàng Demo {i}",
+                phone=f"098765432{i}",
+                role_id=customer_role.role_id,
+                is_active=True,
+            ))
 
     db.commit()
     print("  [OK] Accounts seeded")
@@ -197,7 +199,7 @@ def main():
         seed_accounts(db)
         print("\n=== Seed complete! ===")
         print("  Admin login: admin / admin123")
-        print("  Customer login: customer / customer123\n")
+        print("  Customer login: customer1 / customer123\n")
     finally:
         db.close()
 

@@ -6,10 +6,25 @@ from fastapi import APIRouter, Request, Form, Depends, Response, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import Optional
+from pydantic import BaseModel
 
 from ..database import get_db
 from ..services import ProductService, CartService, OrderService
 from ..session import get_account_id, is_authenticated
+
+
+# ── Schemas ───────────────────────────────────────────────────────────
+
+class AddToCartRequest(BaseModel):
+    productId: int
+    quantity: int = 1
+    variantId: Optional[int] = None
+
+
+class UpdateCartItemRequest(BaseModel):
+    productId: int
+    quantity: int
+    variantId: Optional[int] = None
 
 
 api_router = APIRouter(prefix="/api", tags=["API"])
@@ -78,9 +93,7 @@ async def api_cart_count(
 async def api_add_to_cart(
     request: Request,
     response: Response,
-    productId: int = Form(...),
-    quantity: int = Form(1),
-    variantId: Optional[int] = Form(None),
+    data: AddToCartRequest,
     db: Session = Depends(get_db),
 ):
     account_id = _get_account_id(request, response)
@@ -96,9 +109,9 @@ async def api_add_to_cart(
     cart_svc = CartService(db)
     success, message = cart_svc.add_item(
         account_id=account_id,
-        product_id=productId,
-        quantity=quantity,
-        variant_id=variantId,
+        product_id=data.productId,
+        quantity=data.quantity,
+        variant_id=data.variantId,
     )
 
     return JSONResponse(content={
@@ -114,9 +127,7 @@ async def api_add_to_cart(
 async def api_update_cart(
     request: Request,
     response: Response,
-    productId: int = Form(...),
-    quantity: int = Form(...),
-    variantId: Optional[int] = Form(None),
+    data: UpdateCartItemRequest,
     db: Session = Depends(get_db),
 ):
     account_id = _auth_get_account_id(request, response)
@@ -126,9 +137,9 @@ async def api_update_cart(
     cart_svc = CartService(db)
     success, message, new_qty = cart_svc.update_item_quantity(
         account_id=account_id,
-        product_id=productId,
-        quantity=quantity,
-        variant_id=variantId,
+        product_id=data.productId,
+        quantity=data.quantity,
+        variant_id=data.variantId,
     )
 
     return JSONResponse(content={

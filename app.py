@@ -29,6 +29,7 @@ from Controllers import (
     SeedController,
     ShopController,
     StatisticsController,
+    AdminController,
 )
 
 # =====================================================================
@@ -61,6 +62,30 @@ templates.env.globals.update({
     "current_year": 2024,
 })
 
+
+@app.middleware("http")
+async def add_auth_to_templates(request: Request, call_next):
+    """Thêm thông tin account vào tất cả request state để dùng trong templates"""
+    from Data.database import get_db
+    from Services.AuthService import AuthService
+    
+    db = next(get_db())
+    token = request.cookies.get("access_token")
+    account = None
+    if token:
+        auth_service = AuthService(db)
+        account = auth_service.get_current_account_from_token(token)
+    
+    # Gắn vào request state
+    request.state.account = account
+    
+    # Cập nhật templates context global
+    templates.env.globals["current_account"] = account
+    
+    response = await call_next(request)
+    return response
+
+
 # =====================================================================
 # Register Controllers với templates
 # =====================================================================
@@ -69,6 +94,8 @@ ProductsController.set_templates(templates)
 CartController.set_templates(templates)
 AuthController.set_templates(templates)
 ChatController.set_templates(templates)
+OrdersController.set_templates(templates)
+AdminController.set_templates(templates)
 
 # =====================================================================
 # Include Routers
@@ -90,6 +117,7 @@ app.include_router(CartItemsController.router)
 app.include_router(SeedController.router)
 app.include_router(ShopController.router)
 app.include_router(StatisticsController.router)
+app.include_router(AdminController.router)
 
 
 # =====================================================================

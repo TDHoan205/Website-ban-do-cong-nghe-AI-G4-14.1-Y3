@@ -1,0 +1,45 @@
+<div class="product-card">
+    <a href="/Products/{{ product.product_id }}" class="product-card-img">
+        <div class="product-badges">
+            {% if product.is_new %}
+                <span class="badge-new"><i class="fas fa-bolt"></i> MỚI</span>
+            {% endif %}
+            {% if product.is_hot %}
+                <span class="badge-hot"><i class="fas fa-fire"></i> HOT</span>
+            {% endif %}
+            {% if product.discount_percent > 0 %}
+                <span class="badge bg-danger" style="padding:4px 14px; font-size:11px; font-weight:700; color:#fff; border-radius:50px; display:flex; align-items:center; gap:5px; box-shadow:0 4px 8px rgba(0,0,0,0.1); margin-top:6px;">-{{ product.discount_percent }}%</span>
+            {% endif %}
+        </div>
+        {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" />
+        {% else %}
+            <div class="img-placeholder" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#999; background:#f8f9fa;">
+                <i class="fas fa-box" style="font-size:3rem; margin-bottom:10px;"></i>
+                <span class="placeholder-name" style="font-size:0.8rem; text-align:center; padding:0 10px;">{{ product.name }}</span>
+            </div>
+        {% endif %}
+    </a>
+    <div class="product-card-body">
+        <div class="product-card-cat">{{ product.category.name if product.category else "Chưa phân loại" }}</div>
+        <h5 class="product-card-title">
+            <a href="/Products/{{ product.product_id }}">{{ product.name }}</a>
+        </h5>
+        <div class="product-card-rating">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star-half-alt"></i>
+            <span>4.8</span>
+        </div>
+        <div class="product-card-price">{{ "{:,.0f}".format(product.price) }}₫
+            {% if product.original_price and product.original_price > product.price %}
+            <small class="text-muted text-decoration-line-through ms-2" style="font-size: 0.8rem; font-weight: 500;">{{ "{:,.0f}".format(product.original_price) }}₫</small>
+            {% endif %}
+        </div>
+        <button class="btn btn-add-cart" onclick="addToCart({{ product.product_id }})">
+            <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+        </button>
+    </div>
+</div>

@@ -31,5 +31,5 @@ Thumbs.db
 # Chroma DB (AI)
 chroma_db/
 
-# Byte-compiled
-*.pyc
+# Scratch
+scratch/

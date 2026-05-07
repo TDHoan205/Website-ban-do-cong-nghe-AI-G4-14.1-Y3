@@ -1,0 +1,268 @@
+﻿{% extends "Shared/base.html" %}
+{% block content %}
+@using Webstore.Services
+@model PagedList<Webstore.Models.Product>
+@{
+    var filters = ViewBag.Filters as ProductFiltersViewModel;
+    ViewData["Title"] = "Sản phẩm";
+    Layout = "_ShopLayout";
+}
+
+<div class="shop-products-page">
+<!-- Page Header -->
+<div class="page-header products-page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center products-header-inner">
+            <div>
+                <h1 class="page-title"><i class="fas fa-th-large me-2"></i>Tất cả sản phẩm</h1>
+                <p class="page-subtitle mb-0">Hiển thị {{ total_products }} sản phẩm</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4 products-page-content">
+    <div class="row">
+        <!-- Sidebar Filter -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-card">
+                <div class="filter-header">
+                    <h5><i class="fas fa-filter me-2"></i>Bộ lọc nâng cao</h5>
+                </div>
+                <div class="filter-body">
+                    <form method="get" action="/Products">
+                        <input type="hidden"  />
+                        <!-- Search -->
+                        <div class="filter-group">
+                            <label class="filter-label">Tìm kiếm</label>
+                            <div class="position-relative">
+                                <input type="text" name="search" class="filter-input" value="{{ search or "" }}"
+                                       placeholder="Tên sản phẩm...">
+                                <i class="fas fa-search position-absolute end-0 top-50 translate-middle-y me-3 text-muted"></i>
+                            </div>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">Danh mục</label>
+                            <select name="categoryId" class="filter-select">
+                                <option value="">Tất cả danh mục</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.category_id }}"
+                                            {% if category_id and category_id|string == category.category_id|string %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <label class="filter-label">Khoảng giá (₫)</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="number" name="minPrice" class="filter-input py-1" value="" placeholder="Từ">
+                                <span>-</span>
+                                <input type="number" name="maxPrice" class="filter-input py-1" value="" placeholder="Đến">
+                            </div>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="filter-group">
+                            <label class="filter-label">Sắp xếp</label>
+                            <select name="sort_by" class="filter-select">
+                                <option value="newest" {% if sort_by == "created_at" %}selected{% endif %}>Mới nhất</option>
+                                <option value="price_asc" {% if sort_by == "price" and sort_order == "asc" %}selected{% endif %}>Giá thấp → cao</option>
+                                <option value="price_desc" {% if sort_by == "price" and sort_order == "desc" %}selected{% endif %}>Giá cao → thấp</option>
+                                <option value="name_asc" {% if sort_by == "name" %}selected{% endif %}>Tên A → Z</option>
+                            </select>
+                        </div>
+
+                        {{ i }}f (filters != null)
+                        {
+                            {{ i }}f (filters.Storages.Any())
+                            {
+                                <div class="filter-group">
+                                    <label class="filter-label">Dung lượng</label>
+                                    <div class="filter-options-grid">
+                                        @foreach (var s in filters.Storages)
+                                        {
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" id="storage_@s" value="@s">
+                                                <label class="form-check-label" for="storage_@s">@s</label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        <button type="submit" class="btn btn-filter-apply w-100 mt-3">
+                            <i class="fas fa-check me-2"></i>Lọc kết quả
+                        </button>
+                        <a href="/Products" class="btn btn-link btn-sm text-center w-100 mt-2 text-decoration-none">Xóa tất cả bộ lọc</a>
+                    </form>
+                </div>
+
+                <!-- Quick Categories -->
+                <div class="filter-header mt-3 rounded-0 border-top border-white border-2">
+                    <h6>Khám phá nhanh</h6>
+                </div>
+                <div class="filter-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for category in categories %}
+                            <a action="/Products" 
+                               class="list-group-item list-group-item-action border-0 px-3 py-2 {% if category_id and category_id|string == category.category_id|string %}active{% endif %}">
+                                <i class="fas fa-{% if "điện thoại" in category.name|lower %}mobile-alt{% elif "laptop" in category.name|lower %}laptop{% elif "tablet" in category.name|lower %}tablet-alt{% else %}cube{% endif %} me-2"></i>{{ category.name }}
+                            </a>
+                        {% endfor %}</div></div></div></div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <!-- Toolbar -->
+            <div class="products-toolbar products-toolbar-premium mb-4">
+                <div class="toolbar-info">
+                    <span class="results-count">{{ total_products }} sản phẩm được tìm thấy</span>
+                </div>
+                <div class="toolbar-actions d-flex gap-3">
+                    <div class="view-switch d-none d-md-flex gap-2">
+                        <button id="viewGrid" class="btn btn-sm btn-outline-secondary active" title="Xem dạng lưới"><i class="fas fa-th"></i></button>
+                        <button id="viewList" class="btn btn-sm btn-outline-secondary" title="Xem dạng danh sách"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            {% if products %}
+                <div class="row g-4 view-mode-grid" id="productsGrid">
+                    {% set stagger_index = 0 %}
+                    {% for product in products %}
+                        <div class="product-item-container col-lg-3 col-md-4 col-sm-6 mb-4 js-stagger-card" data-stagger-index="{{ loop.index0 }}">
+                            {% include "Shared/product_card.html" ignore missing %}
+                        </div>
+                        
+                    }
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                    <nav class="mt-5">
+                        <ul class="pagination pagination-rounded justify-content-center">
+                            {% if page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" " }}" 
+                                         
+                                         >
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item {% if i == page %}active{% endif %}">
+                                    <a class="page-link" " }}" 
+                                         
+                                         >{{ i }}</a>
+                                </li>
+                            }
+
+                            {{ i }}f (Model.HasNext)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" " }}" 
+                                         
+                                         >
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}</ul></nav>{% endif %}
+            {% else %}
+                <div class="empty-state text-center py-5">
+                    <div class="empty-icon-wrapper mb-4">
+                        <i class="fas fa-search-minus fa-4x text-muted opacity-25"></i>
+                    </div>
+                    <h4>Không tìm thấy sản phẩm phù hợp</h4>
+                    <p class="text-muted">Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm của bạn</p>
+                    <a href="/Products" class="btn btn-primary mt-3">Xóa tất cả bộ lọc</a>
+                </div>
+            {% endif %}</div></div></div></div>
+
+{% block extra_js %}
+    <link rel="stylesheet" href="{{ url_for('static', path='css/homepage.css') }}" />
+    <script>
+        (function () {
+            var cards = document.querySelectorAll('.js-stagger-card');
+            if (!cards.length) {
+                return;
+            }
+
+            cards.forEach(function (card) {
+                var index = Number(card.getAttribute('data-stagger-index') || 0);
+                card.classList.add('stagger-ready');
+                card.style.transitionDelay = (Math.min(index % 6, 5) * 70) + 'ms';
+            });
+
+            if (!('IntersectionObserver' in window)) {
+                cards.forEach(function (card) {
+                    card.classList.add('is-visible');
+                });
+                return;
+            }
+
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '0px 0px -10% 0px',
+                threshold: 0.16
+            });
+
+            cards.forEach(function (card) {
+                observer.observe(card);
+            });
+
+            // View Switcher Logic
+            const gridBtn = document.getElementById('viewGrid');
+            const listBtn = document.getElementById('viewList');
+            const productsGrid = document.getElementById('productsGrid');
+
+            if (gridBtn && listBtn && productsGrid) {
+                gridBtn.addEventListener('click', function() {
+                    productsGrid.classList.remove('view-mode-list');
+                    productsGrid.classList.add('view-mode-grid');
+                    gridBtn.classList.add('active');
+                    listBtn.classList.remove('active');
+                    
+                    // Update classes for grid mode
+                    $('.product-item-container').removeClass('col-12').addClass('col-lg-3 col-md-4 col-sm-6');
+                    localStorage.setItem('productViewMode', 'grid');
+                });
+
+                listBtn.addEventListener('click', function() {
+                    productsGrid.classList.remove('view-mode-grid');
+                    productsGrid.classList.add('view-mode-list');
+                    listBtn.classList.add('active');
+                    gridBtn.classList.remove('active');
+                    
+                    // Update classes for list mode
+                    $('.product-item-container').removeClass('col-lg-3 col-md-4 col-sm-6').addClass('col-12');
+                    localStorage.setItem('productViewMode', 'list');
+                });
+
+                // Restore preference
+                const savedMode = localStorage.getItem('productViewMode');
+                if (savedMode === 'list') {
+                    listBtn.click();
+                }
+            }
+        })();
+    </script>
+}
+
+}
+
+{% endblock %}
