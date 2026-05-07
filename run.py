@@ -2,7 +2,6 @@
 Webstore FastAPI - Entry Point
 Run with: python run.py
 """
-# pyrefly: ignore [missing-import]
 import uvicorn
 
 if __name__ == "__main__":
