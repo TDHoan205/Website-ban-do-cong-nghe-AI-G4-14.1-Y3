@@ -2,8 +2,11 @@
 Inventory Model - Ton kho
 Tuong duong Models/Inventory.cs trong C#
 """
+# pyrefly: ignore [missing-import]
 from sqlalchemy import Column, Integer, DateTime, ForeignKey
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import relationship
+# pyrefly: ignore [missing-import]
 from sqlalchemy.sql import func
 from Data.database import Base
 
