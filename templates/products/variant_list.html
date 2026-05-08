@@ -1,0 +1,134 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Biến thể sản phẩm' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'products:product_list' %}">Sản phẩm</a></li>
+                <li class="breadcrumb-item active">{{ product.name }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <a href="{% url 'products:image_list' product.pk %}" class="btn btn-secondary me-2">
+            <i class="bi bi-images"></i> Hình ảnh
+        </a>
+        <a href="{% url 'products:variant_create' product.pk %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Thêm biến thể
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="d-flex align-items-center">
+            {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" 
+                     class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+            {% endif %}
+            <div>
+                <h6 class="m-0 font-weight-bold text-primary">{{ product.name }}</h6>
+                <small class="text-muted">{{ product.price|floatformat:0|intcomma }}đ</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên biến thể</th>
+                        <th>Màu sắc</th>
+                        <th>Dung lượng</th>
+                        <th>RAM</th>
+                        <th>SKU</th>
+                        <th>Giá</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th width="100">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for variant in variants %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ variant.variant_name }}</strong></td>
+                        <td>{{ variant.color|default:'--' }}</td>
+                        <td>{{ variant.storage|default:'--' }}</td>
+                        <td>{{ variant.ram|default:'--' }}</td>
+                        <td>{{ variant.sku|default:'--' }}</td>
+                        <td>{{ variant.effective_price|floatformat:0|intcomma }}đ</td>
+                        <td>
+                            <span class="badge bg-{% if variant.stock_quantity > 0 %}success{% else %}danger{% endif %}">
+                                {{ variant.stock_quantity }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if variant.is_active %}
+                                <span class="badge bg-success">Hoạt động</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Không hoạt động</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'products:variant_update' product.pk variant.pk %}"
+                               class="action-btn action-btn-edit" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="action-btn action-btn-delete btn-delete"
+                                    data-url="{% url 'products:variant_delete' product.pk variant.pk %}"
+                                    title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                Chưa có biến thể nào
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            if (confirm('Bạn có chắc muốn xóa biến thể này?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) location.reload();
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

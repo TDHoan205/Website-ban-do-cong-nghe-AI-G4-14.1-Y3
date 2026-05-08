@@ -1,0 +1,232 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Quản lý chat' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Chat</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <a href="{% url 'chat:ai_logs' %}" class="btn btn-outline-info me-2">
+            <i class="bi bi-robot"></i> Log AI
+        </a>
+        <a href="{% url 'chat:chat_start' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Tạo phiên chat
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Status Tabs -->
+<ul class="nav nav-pills mb-4" id="chatStatusTabs">
+    <li class="nav-item">
+        <a class="nav-link {% if not status_filter %}active{% endif %}" href="?status=">
+            Tất cả <span class="badge bg-secondary ms-1">{{ status_counts.active|default:"0"|add:status_counts.waiting|default:"0"|add:status_counts.closed|default:"0" }}</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if status_filter == 'Waiting' %}active{% endif %}" href="?status=Waiting">
+            <span class="badge bg-warning ms-1">{{ status_counts.waiting|default:"0" }}</span> Đang chờ
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if status_filter == 'Active' %}active{% endif %}" href="?status=Active">
+            <span class="badge bg-success ms-1">{{ status_counts.active|default:"0" }}</span> Đang chat
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if status_filter == 'Closed' %}active{% endif %}" href="?status=Closed">
+            <span class="badge bg-secondary ms-1">{{ status_counts.closed|default:"0" }}</span> Đã đóng
+        </a>
+    </li>
+</ul>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách phiên chat</h6>
+    </div>
+    <div class="card-body">
+        <!-- Search -->
+        <form method="get" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tìm kiếm..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="Waiting" {% if status_filter == 'Waiting' %}selected{% endif %}>Đang chờ</option>
+                        <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Đang chat</option>
+                        <option value="Closed" {% if status_filter == 'Closed' %}selected{% endif %}>Đã đóng</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Lọc
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>Khách hàng</th>
+                        <th>Nhân viên</th>
+                        <th>Trạng thái</th>
+                        <th>Bắt đầu</th>
+                        <th>Tin nhắn</th>
+                        <th width="120">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td><code>{{ session.session_id|truncatechars:8 }}</code></td>
+                        <td>
+                            {% if session.account %}
+                                <strong>{{ session.account.username }}</strong>
+                                <br><small class="text-muted">{{ session.account.full_name|default:'' }}</small>
+                            {% else %}
+                                <span class="text-muted">Khách</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if session.assigned_to %}
+                                {{ session.assigned_to.username }}
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if session.status == 'Waiting' %}
+                                <span class="badge bg-warning">Đang chờ</span>
+                            {% elif session.status == 'Active' %}
+                                <span class="badge bg-success">Đang chat</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Đã đóng</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ session.started_at|date:"d/m/Y H:i" }}</td>
+                        <td><span class="badge bg-info">{{ session.messages.count }}</span></td>
+                        <td class="text-center">
+                            <a href="{% url 'chat:chat_detail' session.session_id %}"
+                               class="action-btn action-btn-edit" title="Xem">
+                                <i class="bi bi-chat-dots"></i>
+                            </a>
+                            {% if session.status != 'Closed' %}
+                                <button type="button" class="action-btn action-btn-lock btn-close-chat"
+                                        data-url="{% url 'chat:chat_close' session.session_id %}"
+                                        data-session="{{ session.session_id }}"
+                                        title="Đóng">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+                                Chưa có phiên chat nào
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" {% if paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if sessions.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ sessions.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num >= sessions.number|add:'-2' and num <= sessions.number|add:'2' %}
+                            <li class="page-item {% if num == sessions.number %}active{% endif %}">
+                                {% if num == sessions.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if sessions.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ sessions.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-close-chat').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const session = this.dataset.session;
+            if (confirm('Đóng cuộc trò chuyện #' + session + '?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(() => location.reload())
+                .catch(function() {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Cài đặt website' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Cài đặt</li>
+            </ol>
+        </nav>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSettingModal">
+        <i class="bi bi-plus-lg"></i> Thêm cài đặt
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Maintenance Mode -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="bi bi-tools me-2"></i>Chế độ bảo trì
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'settings:maintenance' %}">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_enabled" id="maintenanceSwitch"
+                               {% if maintenance.is_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="maintenanceSwitch">
+                            Bật chế độ bảo trì
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <input type="text" name="message" class="form-control" 
+                           placeholder="Thông báo bảo trì"
+                           value="{{ maintenance.message }}">
+                </div>
+            </div>
+            <div class="mt-3">
+                <label class="form-label small text-muted">IP được phép truy cập (mỗi dòng 1 IP)</label>
+                <textarea name="allowed_ips" class="form-control" rows="2">{{ maintenance.allowed_ips }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">
+                <i class="bi bi-check"></i> Lưu
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Settings Accordion -->
+<div class="accordion" id="settingsAccordion">
+    {% for cat_key, cat_data in settings_dict.items %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{{ cat_key }}">
+            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                    type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#settings{{ cat_key }}">
+                <i class="bi bi-gear me-2"></i>{{ cat_data.name }}
+                <span class="badge bg-secondary ms-2">{{ cat_data.settings.count }}</span>
+            </button>
+        </h2>
+        <div id="settings{{ cat_key }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+             data-bs-parent="#settingsAccordion">
+            <div class="accordion-body">
+                {% if cat_data.settings %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Giá trị</th>
+                            <th>Mô tả</th>
+                            <th width="100"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for setting in cat_data.settings %}
+                        <tr>
+                            <td>
+                                <code>{{ setting.key }}</code>
+                                {% if setting.is_public %}
+                                    <span class="badge bg-success ms-1">Public</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'settings:setting_update' setting.pk %}" class="d-flex gap-2">
+                                    {% csrf_token %}
+                                    {% if setting.setting_type == 'boolean' %}
+                                        <select name="value" class="form-select form-select-sm" style="width: auto;">
+                                            <option value="true" {% if setting.value == 'true' %}selected{% endif %}>True</option>
+                                            <option value="false" {% if setting.value == 'false' %}selected{% endif %}>False</option>
+                                        </select>
+                                    {% elif setting.setting_type == 'number' %}
+                                        <input type="number" name="value" class="form-control form-control-sm" 
+                                               value="{{ setting.value }}" style="width: 150px;">
+                                    {% else %}
+                                        <input type="text" name="value" class="form-control form-control-sm" 
+                                               value="{{ setting.value }}">
+                                    {% endif %}
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td><small class="text-muted">{{ setting.description }}</small></td>
+                            <td class="text-center">
+                                <button type="button" class="action-btn action-btn-delete btn-delete"
+                                        data-url="{% url 'settings:setting_delete' setting.pk %}"
+                                        data-key="{{ setting.key }}"
+                                        title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted mb-0">Chưa có cài đặt nào</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add Setting Modal -->
+<div class="modal fade" id="addSettingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm cài đặt mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'settings:setting_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Key</label>
+                        <input type="text" name="key" class="form-control" required placeholder="site_name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giá trị</label>
+                        <input type="text" name="value" class="form-control" placeholder="Giá trị">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Loại</label>
+                                <select name="setting_type" class="form-select">
+                                    <option value="text">Văn bản</option>
+                                    <option value="number">Số</option>
+                                    <option value="boolean">Boolean</option>
+                                    <option value="image">Hình ảnh</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Danh mục</label>
+                                <select name="category" class="form-select">
+                                    <option value="general">Chung</option>
+                                    <option value="contact">Liên hệ</option>
+                                    <option value="social">Mạng xã hội</option>
+                                    <option value="email">Email</option>
+                                    <option value="payment">Thanh toán</option>
+                                    <option value="seo">SEO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <input type="text" name="description" class="form-control" placeholder="Mô tả ngắn">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_public" id="isPublicCheck">
+                        <label class="form-check-label" for="isPublicCheck">
+                            Hiển thị công khai (frontend)
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Tạo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!confirm('Bạn có chắc muốn xóa cài đặt này?')) return;
+            const url = this.dataset.url;
+            const key = this.dataset.key || '';
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(() => location.reload())
+            .catch(function() {
+                alert('Có lỗi xảy ra, vui lòng thử lại!');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

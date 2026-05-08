@@ -1,0 +1,463 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+
+{% block title %}TechStore - Công nghệ cho cuộc sống hiện đại{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-particles"></div>
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-80">
+            <div class="col-lg-6">
+                <div class="hero-badge-modern">
+                    <span class="badge-icon"><i class="fas fa-robot"></i></span>
+                    <span>AI Assistant powered</span>
+                </div>
+                <h1 class="hero-title-modern">
+                    Khám phá
+                    <span class="text-gradient-hero">Công nghệ</span>
+                    <br />Thông minh hơn
+                </h1>
+                <p class="hero-desc-modern">
+                    Hệ thống AI tư vấn thông minh giúp bạn tìm kiếm sản phẩm hoàn hảo. 
+                    Cam kết chính hãng với bảo hành đáng tin cậy.
+                </p>
+                <div class="hero-actions-modern">
+                    <a href="{% url 'shop:product_list' %}" class="btn-hero-primary-modern">
+                        <i class="fas fa-shopping-bag me-2"></i>
+                        <span>Mua sắm ngay</span>
+                    </a>
+                    <a href="#sanpham-moi" class="btn-hero-secondary-modern">
+                        <i class="fas fa-play-circle me-2"></i>
+                        <span>Xem sản phẩm</span>
+                    </a>
+                </div>
+                <div class="hero-stats-modern">
+                    <div class="stat-item-modern">
+                        <span class="stat-number-modern">500+</span>
+                        <span class="stat-label-modern">Sản phẩm</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item-modern">
+                        <span class="stat-number-modern">10K+</span>
+                        <span class="stat-label-modern">Khách hàng</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item-modern">
+                        <span class="stat-number-modern">4.9</span>
+                        <span class="stat-label-modern">Đánh giá</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="hero-visual-wrapper">
+                    <div class="hero-main-visual">
+                        <div class="main-product-display">
+                            <div class="product-glow"></div>
+                            <div class="product-circle-bg"></div>
+                            <div class="featured-product-card">
+                                <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=400&hei=400&fmt=png-alpha" alt="iPhone 15 Pro Max" class="featured-product-img" />
+                                <div class="product-card-overlay">
+                                    <span class="product-badge-float badge-new">Mới</span>
+                                    <span class="product-name-float">iPhone 15 Pro Max</span>
+                                    <span class="product-price-float">34.990.000đ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="floating-items">
+                            <div class="float-icon fi-1"><i class="fas fa-mobile-alt"></i></div>
+                            <div class="float-icon fi-2"><i class="fas fa-laptop"></i></div>
+                            <div class="float-icon fi-3"><i class="fas fa-headphones-alt"></i></div>
+                            <div class="float-icon fi-4"><i class="fas fa-tablet-alt"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#eef3f8"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Trust Badges -->
+<section class="trust-section">
+    <div class="container">
+        <div class="trust-badges-wrapper">
+            <div class="trust-badge-item">
+                <div class="trust-badge-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="trust-badge-content">
+                    <span class="trust-badge-title">Chính hãng 100%</span>
+                    <span class="trust-badge-desc">Cam kết authentic</span>
+                </div>
+            </div>
+            <div class="trust-badge-item">
+                <div class="trust-badge-icon"><i class="fas fa-truck"></i></div>
+                <div class="trust-badge-content">
+                    <span class="trust-badge-title">Giao hàng nhanh</span>
+                    <span class="trust-badge-desc">Miễn phí từ 500K</span>
+                </div>
+            </div>
+            <div class="trust-badge-item">
+                <div class="trust-badge-icon"><i class="fas fa-undo-alt"></i></div>
+                <div class="trust-badge-content">
+                    <span class="trust-badge-title">Đổi trả 7 ngày</span>
+                    <span class="trust-badge-desc">Không phí phát sinh</span>
+                </div>
+            </div>
+            <div class="trust-badge-item">
+                <div class="trust-badge-icon"><i class="fas fa-headset"></i></div>
+                <div class="trust-badge-content">
+                    <span class="trust-badge-title">Hỗ trợ 24/7</span>
+                    <span class="trust-badge-desc">Luôn sẵn sàng</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="py-5" id="categories">
+    <div class="container">
+        <div class="section-header-modern">
+            <div class="section-title-group">
+                <span class="section-label">Khám phá</span>
+                <h2 class="section-title-modern">
+                    <i class="fas fa-th-large section-title-icon"></i>
+                    Danh mục sản phẩm
+                </h2>
+                <p class="section-subtitle-modern">Tìm kiếm sản phẩm theo nhu cầu của bạn</p>
+            </div>
+            <a href="{% url 'shop:product_list' %}" class="btn-view-all">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <a href="{% url 'shop:product_list' %}?category={{ category.category_id }}" class="category-card-modern">
+                <div class="category-icon-wrap">
+                    <i class="bi bi-{{ category.icon_name|default:'box' }}"></i>
+                </div>
+                <span class="category-name-modern">{{ category.name }}</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            {% empty %}
+            <!-- Default categories if none exist -->
+            <a href="{% url 'shop:product_list' %}?category=1" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-mobile-alt"></i></div>
+                <span class="category-name-modern">Điện thoại</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=2" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-laptop"></i></div>
+                <span class="category-name-modern">Laptop</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=3" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-tablet-alt"></i></div>
+                <span class="category-name-modern">Tablet</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=4" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-headphones"></i></div>
+                <span class="category-name-modern">Tai nghe</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=9" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-smartwatch"></i></div>
+                <span class="category-name-modern">Đồng hồ</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=7" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-camera"></i></div>
+                <span class="category-name-modern">Camera</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=18" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-gamepad"></i></div>
+                <span class="category-name-modern">Gaming</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            <a href="{% url 'shop:product_list' %}?category=5" class="category-card-modern">
+                <div class="category-icon-wrap"><i class="bi bi-plug"></i></div>
+                <span class="category-name-modern">Phụ kiện</span>
+                <div class="category-card-shimmer"></div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- New Products -->
+<section class="section-featured" id="sanpham-moi">
+    <div class="container">
+        <div class="section-header-modern">
+            <div class="section-title-group">
+                <span class="section-label section-label-new">Mới nhất</span>
+                <h2 class="section-title-modern">
+                    <i class="fas fa-bolt section-title-icon text-warning"></i>
+                    Sản phẩm mới về
+                </h2>
+                <p class="section-subtitle-modern">Cập nhật xu hướng công nghệ mới nhất</p>
+            </div>
+            <a href="{% url 'shop:product_list' %}?filter=new" class="btn-view-all">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        {% if new_products %}
+        <div class="products-grid-modern">
+            {% for product in new_products %}
+            <div class="product-card-wrapper">
+                {% include 'shop/partials/product_card.html' with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination for New Products -->
+        {% if new_paginator.num_pages > 1 %}
+        <div class="pagination-wrapper mt-4">
+            <nav aria-label="New products pagination">
+                <ul class="pagination justify-content-center">
+                    {% if new_products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?new_page={{ new_products.previous_page_number }}{% if hot_products.has_next %}&hot_page={{ hot_products.number }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in new_paginator.page_range %}
+                        {% if num == new_products.number %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > new_products.number|add:'-2' and num < new_products.number|add:'2' %}
+                        <li class="page-item"><a class="page-link" href="?new_page={{ num }}{% if hot_products.has_next %}&hot_page={{ hot_products.number }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if new_products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?new_page={{ new_products.next_page_number }}{% if hot_products.has_next %}&hot_page={{ hot_products.number }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>Chưa có sản phẩm mới</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Deals Banner -->
+{% if deal_products %}
+<section class="section-deals-modern">
+    <div class="container">
+        <div class="deals-banner">
+            <div class="deals-banner-content">
+                <span class="deals-label"><i class="fas fa-fire me-2"></i>Flash Sale</span>
+                <h2 class="deals-title">Giảm giá cực sốc</h2>
+                <p class="deals-desc">Ưu đãi có hạn - Nhanh tay chớp ngay!</p>
+                <a href="{% url 'shop:product_list' %}" class="btn-deals">
+                    Mua ngay <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+            <div class="deals-banner-products">
+                {% for product in deal_products %}
+                <div class="deal-mini-card">
+                    <img src="{{ product.image_url|default:'https://via.placeholder.com/80' }}" alt="{{ product.name }}" class="deal-mini-img" />
+                    <div class="deal-mini-info">
+                        <span class="deal-mini-name">{{ product.name|truncatechars:15 }}</span>
+                        <span class="deal-mini-price">{{ product.price|floatformat:0 }}đ</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Hot Products -->
+{% if hot_products %}
+<section class="section-hot" id="sanpham-hot">
+    <div class="container">
+        <div class="section-header-modern">
+            <div class="section-title-group">
+                <span class="section-label section-label-hot">Xu hướng</span>
+                <h2 class="section-title-modern">
+                    <i class="fas fa-fire section-title-icon text-danger"></i>
+                    Sản phẩm hot
+                </h2>
+                <p class="section-subtitle-modern">Những sản phẩm được yêu thích nhất</p>
+            </div>
+            <a href="{% url 'shop:product_list' %}?filter=hot" class="btn-view-all">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="products-grid-modern">
+            {% for product in hot_products %}
+            <div class="product-card-wrapper">
+                {% include 'shop/partials/product_card.html' with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination for Hot Products -->
+        {% if hot_paginator.num_pages > 1 %}
+        <div class="pagination-wrapper mt-4">
+            <nav aria-label="Hot products pagination">
+                <ul class="pagination justify-content-center">
+                    {% if hot_products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?hot_page={{ hot_products.previous_page_number }}{% if new_products.has_next %}&new_page={{ new_products.number }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in hot_paginator.page_range %}
+                        {% if num == hot_products.number %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > hot_products.number|add:'-2' and num < hot_products.number|add:'2' %}
+                        <li class="page-item"><a class="page-link" href="?hot_page={{ num }}{% if new_products.has_next %}&new_page={{ new_products.number }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if hot_products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?hot_page={{ hot_products.next_page_number }}{% if new_products.has_next %}&new_page={{ new_products.number }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="py-5">
+    <div class="container">
+        <div class="section-header-modern">
+            <div class="section-title-group">
+                <span class="section-label">Nổi bật</span>
+                <h2 class="section-title-modern">
+                    <i class="fas fa-star section-title-icon text-warning"></i>
+                    Sản phẩm nổi bật
+                </h2>
+                <p class="section-subtitle-modern">Top sản phẩm được đánh giá cao nhất</p>
+            </div>
+            <a href="{% url 'shop:product_list' %}" class="btn-view-all">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="products-grid-modern">
+            {% for product in featured_products %}
+            <div class="product-card-wrapper">
+                {% include 'shop/partials/product_card.html' with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Why Choose Us -->
+<section class="section-why">
+    <div class="container">
+        <div class="section-header-modern text-center mx-auto" style="max-width: 600px;">
+            <span class="section-label">Cam kết</span>
+            <h2 class="section-title-modern">
+                <i class="fas fa-award section-title-icon text-primary"></i>
+                Tại sao chọn chúng tôi
+            </h2>
+            <p class="section-subtitle-modern">Dịch vụ hàng đầu - Sự hài lòng của khách hàng là ưu tiên số 1</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card-modern">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h3 class="feature-title-modern">Giao hàng nhanh</h3>
+                <p class="feature-desc-modern">Giao hàng trong 24h cho đơn nội thành. Miễn phí vận chuyển cho đơn từ 500K.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <h3 class="feature-title-modern">Chính hãng 100%</h3>
+                <p class="feature-desc-modern">Tất cả sản phẩm chính hãng với đầy đủ hóa đơn và bảo hành chính hãng.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h3 class="feature-title-modern">Đổi trả dễ dàng</h3>
+                <p class="feature-desc-modern">Chính sách đổi trả trong 7 ngày nếu sản phẩm không đúng như mô tả.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3 class="feature-title-modern">Hỗ trợ chuyên nghiệp</h3>
+                <p class="feature-desc-modern">Đội ngũ tư vấn chuyên môn cao, hỗ trợ 24/7 qua điện thoại và chat.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title-modern">Bảo hành dài hạn</h3>
+                <p class="feature-desc-modern">Bảo hành chính hãng lên đến 24 tháng với dịch vụ hậu mãi tận tâm.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="feature-title-modern">Thanh toán an toàn</h3>
+                <p class="feature-desc-modern">Nhiều phương thức thanh toán an toàn, bảo mật thông tin tuyệt đối.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section-modern">
+    <div class="container">
+        <div class="cta-box-modern">
+            <div class="cta-content-modern">
+                <h2 class="cta-title-modern">
+                    <i class="fas fa-headset me-2"></i>
+                    Bạn cần hỗ trợ?
+                </h2>
+                <p class="cta-desc-modern">Đội ngũ tư vấn của chúng tôi luôn sẵn sàng giải đáp mọi thắc mắc</p>
+            </div>
+            <div class="cta-actions-modern">
+                <a href="tel:18006601" class="btn-cta-phone-modern">
+                    <i class="fas fa-phone-alt me-2"></i>
+                    <span>1800.6601 (Nhánh 1)</span>
+                </a>
+                <a href="#" class="btn-cta-chat-modern">
+                    <i class="fas fa-comments me-2"></i>
+                    <span>Chat ngay</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

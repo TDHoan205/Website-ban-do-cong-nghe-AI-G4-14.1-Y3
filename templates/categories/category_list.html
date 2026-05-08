@@ -1,0 +1,221 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title|default:'Quản lý danh mục' }} - TechShop Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">Danh mục</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h1 class="page-title">{{ page_title|default:'Quản lý danh mục' }}</h1>
+        <p class="text-muted mb-0">Quản lý danh mục sản phẩm</p>
+    </div>
+    <a href="{% url 'categories:category_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-2"></i>Thêm danh mục
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i>Bộ lọc & Tìm kiếm
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tên danh mục..." 
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Hoạt động</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Không hoạt động</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Category Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i>Danh sách danh mục
+        <span class="badge bg-light text-dark ms-2">{{ categories.paginator.count|default:0 }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th width="60">Hình</th>
+                        <th>Tên danh mục</th>
+                        <th>Mô tả</th>
+                        <th width="80">Thứ tự</th>
+                        <th width="100">Sản phẩm</th>
+                        <th width="120">Trạng thái</th>
+                        <th width="140" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>
+                            {% if category.image_url %}
+                                <img src="{{ category.image_url }}" alt="{{ category.name }}" 
+                                     class="rounded" style="width: 45px; height: 45px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 45px; height: 45px;">
+                                    <i class="bi bi-grid text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ category.name }}</strong>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ category.description|truncatechars:40|default:'--' }}</span>
+                        </td>
+                        <td class="text-center">{{ category.display_order }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'products:product_list' %}?category={{ category.pk }}" 
+                               class="badge bg-info text-decoration-none" title="Xem sản phẩm">
+                                {{ category.product_count }} <i class="bi bi-box-seam"></i>
+                            </a>
+                        </td>
+                        <td>
+                            {% if category.is_active %}
+                                <span class="badge bg-success">Hoạt động</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Không hoạt động</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'categories:category_update' category.pk %}"
+                               class="action-btn action-btn-edit" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="action-btn action-btn-delete btn-delete"
+                                    data-url="{% url 'categories:category_delete' category.pk %}"
+                                    data-name="{{ category.name }}" title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-1 fw-medium">Chưa có danh mục nào</p>
+                                <a href="{% url 'categories:category_create' %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-lg me-1"></i>Thêm danh mục mới
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if categories.paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" {% if categories.paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if categories.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ categories.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                    {% endif %}
+                    {% for num in categories.paginator.page_range %}
+                        {% if num >= categories.number|add:'-2' and num <= categories.number|add:'2' %}
+                            <li class="page-item {% if num == categories.number %}active{% endif %}">
+                                {% if num == categories.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if categories.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ categories.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ categories.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delete button
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+            
+            if (confirm('Bạn có chắc muốn xóa danh mục "' + name + '"?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(function() {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
+        });
+    });
+
+});
+</script>
+{% endblock %}

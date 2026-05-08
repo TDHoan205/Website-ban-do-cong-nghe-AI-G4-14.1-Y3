@@ -1,0 +1,321 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title|default:'Quản lý tài khoản' }} - TechShop Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">Tài khoản</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h1 class="page-title">{{ page_title|default:'Quản lý tài khoản' }}</h1>
+        <p class="text-muted mb-0">Quản lý tài khoản người dùng trong hệ thống</p>
+    </div>
+    <a href="{% url 'accounts:account_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-2"></i>Thêm tài khoản
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Role Filter Tabs -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i>Vai trò tài khoản
+    </div>
+    <div class="card-body py-3">
+        <div class="filter-tabs">
+            <a href="{% url 'accounts:account_list' %}" class="filter-tab {% if not role_filter %}active{% endif %}">
+                <i class="bi bi-people me-1"></i>
+                Tất cả
+                <span class="badge bg-secondary ms-1">{{ total_count|default:0 }}</span>
+            </a>
+            <a href="?role=Admin" class="filter-tab {% if role_filter == 'Admin' %}active{% endif %}">
+                <i class="bi bi-shield-check me-1"></i>
+                Admin
+                <span class="badge bg-primary ms-1">{{ admin_count|default:0 }}</span>
+            </a>
+            <a href="?role=Employee" class="filter-tab {% if role_filter == 'Employee' %}active{% endif %}">
+                <i class="bi bi-person-badge me-1"></i>
+                Nhân viên
+                <span class="badge bg-info ms-1">{{ employee_count|default:0 }}</span>
+            </a>
+            <a href="?role=Customer" class="filter-tab {% if role_filter == 'Customer' %}active{% endif %}">
+                <i class="bi bi-person-circle me-1"></i>
+                Khách hàng
+                <span class="badge bg-secondary ms-1">{{ customer_count|default:0 }}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-search me-2"></i>Tìm kiếm
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            {% if role_filter %}
+                <input type="hidden" name="role" value="{{ role_filter }}">
+            {% endif %}
+            <div class="col-md-5">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tên đăng nhập, email, tên..." 
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Hoạt động</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Bị khóa</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Account Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-people me-2"></i>Danh sách tài khoản
+        <span class="badge bg-light text-dark ms-2">{{ accounts.paginator.count|default:0 }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Tên đăng nhập</th>
+                        <th>Email</th>
+                        <th>Họ tên</th>
+                        <th>Liên hệ</th>
+                        <th width="120">Vai trò</th>
+                        <th width="120">Trạng thái</th>
+                        <th width="120">Ngày tạo</th>
+                        <th width="150" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in accounts %}
+                    <tr data-pk="{{ account.pk }}" data-is-active="{{ account.is_active|yesno:'true,false' }}">
+                        <td>
+                            <a href="{% url 'accounts:account_update' account.pk %}" class="text-primary fw-semibold text-decoration-none">
+                                {{ account.username }}
+                            </a>
+                            {% if account.role == 'Employee' %}
+                                <br><small class="text-muted">{{ account.employee_profile.employee_code|default:'--' }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ account.email|default:'--' }}</td>
+                        <td>{{ account.full_name|default:'--' }}</td>
+                        <td>
+                            <small>
+                                {% if account.phone %}<i class="bi bi-phone me-1"></i>{{ account.phone }}<br>{% endif %}
+                                {% if account.address %}<i class="bi bi-geo-alt me-1"></i>{{ account.address|truncatechars:30 }}{% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            {% if account.role == 'Admin' %}
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-shield-check me-1"></i>Admin
+                                </span>
+                            {% elif account.role == 'Employee' %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-person-badge me-1"></i>Nhân viên
+                                </span>
+                                {% if account.employee_profile.department %}
+                                    <br><small class="text-muted">{{ account.employee_profile.department }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-person-circle me-1"></i>Khách hàng
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if account.is_active %}
+                                <span class="badge bg-success">Hoạt động</span>
+                            {% else %}
+                                <span class="badge bg-danger">Bị khóa</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ account.created_at|date:"d/m/Y" }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'accounts:account_update' account.pk %}"
+                               class="action-btn action-btn-edit" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button"
+                                    class="action-btn {% if account.is_active %}action-btn-lock{% else %}action-btn-unlock{% endif %} btn-toggle-status"
+                                    data-url="{% url 'accounts:account_toggle_status' account.pk %}"
+                                    data-pk="{{ account.pk }}"
+                                    data-username="{{ account.username }}"
+                                    data-active="{{ account.is_active|yesno:'true,false' }}"
+                                    title="{% if account.is_active %}Khóa tài khoản{% else %}Kích hoạt tài khoản{% endif %}">
+                                {% if account.is_active %}
+                                    <i class="bi bi-lock"></i>
+                                {% else %}
+                                    <i class="bi bi-unlock"></i>
+                                {% endif %}
+                            </button>
+                            {% if account.pk != request.user.pk %}
+                                <button type="button" class="action-btn action-btn-delete btn-delete"
+                                        data-url="{% url 'accounts:account_delete' account.pk %}"
+                                        data-name="{{ account.username }}"
+                                        title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-people" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-0 fw-medium">Chưa có tài khoản nào</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if accounts.paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" {% if accounts.paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if accounts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ accounts.previous_page_number }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                    {% endif %}
+                    {% for num in accounts.paginator.page_range %}
+                        {% if num >= accounts.number|add:'-2' and num <= accounts.number|add:'2' %}
+                            <li class="page-item {% if num == accounts.number %}active{% endif %}">
+                                {% if num == accounts.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if accounts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ accounts.next_page_number }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ accounts.paginator.num_pages }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast helper
+    window.showToast = function(message, type) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const html = '<div class="toast"><div class="toast-body"><i class="bi bi-' + (type === 'success' ? 'check-circle text-success' : type === 'danger' ? 'x-circle text-danger' : 'info-circle text-info') + ' me-2"></i>' + message + '</div></div>';
+        container.insertAdjacentHTML('beforeend', html);
+        try { new bootstrap.Toast(document.querySelector('.toast:last-child')).show(); } catch(e) {}
+    };
+
+    // Toggle status
+    document.querySelectorAll('.btn-toggle-status').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const username = this.dataset.username;
+            const isActive = this.dataset.active === 'true';
+            const action = isActive ? 'khóa' : 'kích hoạt';
+            const url = this.dataset.url;
+
+            if (confirm('Bạn có chắc muốn ' + action + ' tài khoản "' + username + '"?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                })
+                .catch(function() {
+                    showToast('Có lỗi xảy ra!', 'danger');
+                });
+            }
+        });
+    });
+
+    // Delete
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+
+            if (confirm('Bạn có chắc muốn xóa tài khoản "' + name + '"?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        showToast('Xóa tài khoản thành công!', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                })
+                .catch(function() {
+                    showToast('Có lỗi xảy ra!', 'danger');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

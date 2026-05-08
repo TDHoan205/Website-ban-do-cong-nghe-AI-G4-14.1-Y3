@@ -1,0 +1,32 @@
+{% extends 'admin/base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Thêm slide' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'slides:slide_list' %}">Slides</a></li>
+                <li class="breadcrumb-item active">{{ is_edit|yesno:'Sửa,Thêm mới' }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {{ is_edit|yesno:'Sửa slide,Thêm slide mới' }}
+        </h6>
+    </div>
+    <div class="card-body">
+        {% crispy form %}
+    </div>
+</div>
+{% endblock %}

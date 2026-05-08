@@ -1,0 +1,282 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title|default:'Quản lý sản phẩm' }} - TechShop Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">Sản phẩm</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h1 class="page-title">{{ page_title|default:'Quản lý sản phẩm' }}</h1>
+        <p class="text-muted mb-0">Quản lý sản phẩm trong cửa hàng</p>
+    </div>
+    <a href="{% url 'products:product_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Tabs -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i>Trạng thái sản phẩm
+    </div>
+    <div class="card-body py-3">
+        <div class="filter-tabs">
+            <a href="{% url 'products:product_list' %}" class="filter-tab {% if not status_filter %}active{% endif %}">
+                <i class="bi bi-grid-3x3-gap me-1"></i>
+                Tất cả
+            </a>
+            <a href="?status=available" class="filter-tab {% if status_filter == 'available' %}active{% endif %}">
+                <i class="bi bi-check-circle me-1"></i>
+                Còn hàng
+            </a>
+            <a href="?status=out_of_stock" class="filter-tab {% if status_filter == 'out_of_stock' %}active{% endif %}">
+                <i class="bi bi-x-circle me-1"></i>
+                Hết hàng
+            </a>
+            <a href="?status=hidden" class="filter-tab {% if status_filter == 'hidden' %}active{% endif %}">
+                <i class="bi bi-eye-slash me-1"></i>
+                Ẩn
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-search me-2"></i>Tìm kiếm
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+            {% endif %}
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tên sản phẩm..." 
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Danh mục</label>
+                <select name="category" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.pk }}" {% if category_filter == cat.pk|stringformat:'s' %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Nhà cung cấp</label>
+                <select name="supplier" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    {% for sup in suppliers %}
+                        <option value="{{ sup.pk }}" {% if supplier_filter == sup.pk|stringformat:'s' %}selected{% endif %}>
+                            {{ sup.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Tìm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Product Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-box-seam me-2"></i>Danh sách sản phẩm
+        <span class="badge bg-light text-dark ms-2">{{ products.paginator.count|default:0 }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th width="60">Hình</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th width="140" class="text-end">Giá</th>
+                        <th width="100" class="text-center">Tồn kho</th>
+                        <th width="100">Trạng thái</th>
+                        <th width="180" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr data-product-id="{{ product.pk }}">
+                        <td>
+                            {% if product.image_url %}
+                                <img src="{{ product.image_url }}" alt="{{ product.name }}"
+                                     class="rounded" style="width:50px; height:50px; object-fit:cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                     style="width:50px; height:50px;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>
+                                <strong class="text-primary">{{ product.name }}</strong>
+                                <div class="small text-muted">
+                                    {% if product.is_new %}<span class="badge bg-primary me-1">Mới</span>{% endif %}
+                                    {% if product.is_hot %}<span class="badge bg-danger me-1">Hot</span>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ product.category.name|default:'--' }}</td>
+                        <td class="text-end">
+                            <strong class="text-primary" data-currency="{{ product.price }}">{{ product.price|floatformat:0|intcomma }}đ</strong>
+                            {% if product.original_price and product.original_price > product.price %}
+                                <br><small class="text-muted text-decoration-line-through" data-currency="{{ product.original_price }}">{{ product.original_price|floatformat:0|intcomma }}đ</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% with stock=product.stock_quantity %}
+                                {% if stock > 20 %}
+                                    <span class="badge bg-success">{{ stock }}</span>
+                                {% elif stock >= 5 %}
+                                    <span class="badge bg-warning">{{ stock }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ stock }}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% if product.is_available %}
+                                <span class="badge bg-success">Còn hàng</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Ẩn</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'products:product_update' product.pk %}"
+                               class="action-btn action-btn-edit" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="action-btn action-btn-delete btn-delete"
+                                    data-url="{% url 'products:product_delete' product.pk %}"
+                                    data-name="{{ product.name }}"
+                                    title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-box-seam" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-0 fw-medium">Chưa có sản phẩm nào</p>
+                                <a href="{% url 'products:product_create' %}" class="btn btn-primary btn-sm mt-2">
+                                    <i class="bi bi-plus-lg me-1"></i>Thêm sản phẩm mới
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if products.paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}" {% if products.paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                    {% endif %}
+                    {% for num in products.paginator.page_range %}
+                        {% if num >= products.number|add:'-2' and num <= products.number|add:'2' %}
+                            <li class="page-item {% if num == products.number %}active{% endif %}">
+                                {% if num == products.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast
+    window.showToast = function(message, type) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const html = '<div class="toast"><div class="toast-body"><i class="bi bi-' + (type === 'success' ? 'check-circle text-success' : type === 'danger' ? 'x-circle text-danger' : 'info-circle text-info') + ' me-2"></i>' + message + '</div></div>';
+        container.insertAdjacentHTML('beforeend', html);
+        try { new bootstrap.Toast(document.querySelector('.toast:last-child')).show(); } catch(e) {}
+    };
+
+    // Delete
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+            if (confirm('Xóa sản phẩm "' + name + '"?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        showToast('Xóa thành công!', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

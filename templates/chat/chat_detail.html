@@ -1,0 +1,220 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Chi tiết chat' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'chat:chat_list' %}">Chat</a></li>
+                <li class="breadcrumb-item active">Chi tiết</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        {% if session.status != 'Closed' %}
+            <a href="{% url 'chat:chat_close' session.session_id %}" class="btn btn-danger">
+                <i class="bi bi-x-circle"></i> Đóng phiên
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Chat Messages -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Tin nhắn</h6>
+                <span class="badge status-badge" data-status="{{ session.status }}">
+                    {{ session.get_status_display() }}
+                </span>
+            </div>
+            <div class="card-body chat-messages" id="chatMessages" style="height: 500px; overflow-y: auto;">
+                {% for msg in messages %}
+                <div class="message {% if msg.sender_type == 'admin' %}message-admin{% else %}message-user{% endif %}">
+                    <div class="message-header">
+                        <strong>{{ msg.sender.username|default:'Khách' }}</strong>
+                        <small class="text-muted">{{ msg.created_at|date:'H:i' }}</small>
+                    </div>
+                    <div class="message-body">
+                        {{ msg.message|linebreaks }}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+                    Chưa có tin nhắn nào
+                </div>
+                {% endfor %}
+            </div>
+            {% if session.status != 'Closed' %}
+            <div class="card-footer">
+                <form id="chatForm" class="d-flex gap-2">
+                    <input type="text" id="messageInput" class="form-control" 
+                           placeholder="Nhập tin nhắn..." autocomplete="off">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Gửi
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Session Info -->
+    <div class="col-lg-4">
+        <!-- Customer Info -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Khách hàng</h6>
+            </div>
+            <div class="card-body">
+                {% if session.account %}
+                    <p class="mb-2">
+                        <i class="bi bi-person me-2 text-primary"></i>
+                        {{ session.account.username }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-person-badge me-2 text-primary"></i>
+                        {{ session.account.full_name|default:'--' }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-envelope me-2 text-primary"></i>
+                        {{ session.account.email|default:'--' }}
+                    </p>
+                {% else %}
+                    <p class="text-muted mb-0">Khách (chưa đăng nhập)</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Assignment -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Phân công</h6>
+            </div>
+            <div class="card-body">
+                <select id="employeeSelect" class="form-select mb-3">
+                    <option value="">-- Chọn nhân viên --</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.pk }}" {% if session.assigned_to_id == emp.pk %}selected{% endif %}>
+                            {{ emp.username }} - {{ emp.full_name|default:'' }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="button" id="btnAssign" class="btn btn-primary w-100"
+                        data-url="{% url 'chat:chat_assign' session.session_id %}">
+                    <i class="bi bi-check"></i> Gán
+                </button>
+            </div>
+        </div>
+
+        <!-- Session Info -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Thông tin phiên</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-5 text-muted">Session ID</div>
+                    <div class="col-7"><code>{{ session.session_id|truncatechars:12 }}</code></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5 text-muted">Bắt đầu</div>
+                    <div class="col-7">{{ session.started_at|date:'d/m/Y H:i' }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5 text-muted">Tin nhắn</div>
+                    <div class="col-7">{{ session.message_count }}</div>
+                </div>
+                {% if session.ended_at %}
+                <div class="row">
+                    <div class="col-5 text-muted">Kết thúc</div>
+                    <div class="col-7">{{ session.ended_at|date:'d/m/Y H:i' }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status badge
+    const statusColors = {'Waiting': 'bg-warning', 'Active': 'bg-success', 'Closed': 'bg-secondary'};
+    document.querySelectorAll('.status-badge').forEach(badge => {
+        badge.classList.add(statusColors[badge.dataset.status] || 'bg-secondary');
+    });
+
+    // Scroll to bottom
+    const messagesDiv = document.getElementById('chatMessages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // Send message
+    document.getElementById('chatForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        fetch("{% url 'chat:chat_send_message' session.session_id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'message=' + encodeURIComponent(message)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                input.value = '';
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+
+    // Assign employee
+    document.getElementById('btnAssign')?.addEventListener('click', function() {
+        const empId = document.getElementById('employeeSelect').value;
+        const url = this.dataset.url;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'employee_id=' + empId
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+<style>
+.message {margin-bottom: 15px; padding: 10px 15px; border-radius: 10px; max-width: 80%;}
+.message-admin {margin-left: auto; background: #3F72AF; color: #fff;}
+.message-user {margin-right: auto; background: #f0f0f0;}
+.message-header {display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px;}
+.message-body {font-size: 14px;}
+</style>
+{% endblock %}

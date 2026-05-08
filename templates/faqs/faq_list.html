@@ -1,0 +1,187 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Quản lý FAQs' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">FAQs</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="{% url 'faqs:faq_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Thêm FAQ
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách câu hỏi thường gặp</h6>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <form method="get" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tìm kiếm..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">-- Tất cả danh mục --</option>
+                        <option value="General" {% if category_filter == 'General' %}selected{% endif %}>Câu hỏi chung</option>
+                        <option value="Order" {% if category_filter == 'Order' %}selected{% endif %}>Về đơn hàng</option>
+                        <option value="Payment" {% if category_filter == 'Payment' %}selected{% endif %}>Thanh toán</option>
+                        <option value="Shipping" {% if category_filter == 'Shipping' %}selected{% endif %}>Vận chuyển</option>
+                        <option value="Return" {% if category_filter == 'Return' %}selected{% endif %}>Đổi trả</option>
+                        <option value="Product" {% if category_filter == 'Product' %}selected{% endif %}>Sản phẩm</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Hoạt động</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Không hoạt động</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Lọc
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- FAQ Accordion -->
+        <div class="accordion" id="faqAccordion">
+            {% for faq in faqs %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ faq.pk }}">
+                    <button class="accordion-button {% if forloop.first %}{% else %}collapsed{% endif %}" 
+                            type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#faq{{ faq.pk }}">
+                        <span class="badge category-badge me-2" data-category="{{ faq.category }}">
+                            {{ faq.get_category_display }}
+                        </span>
+                        <span class="flex-grow-1">{{ faq.question }}</span>
+                        {% if not faq.is_active %}
+                            <span class="badge bg-secondary ms-2">Ẩn</span>
+                        {% endif %}
+                    </button>
+                </h2>
+                <div id="faq{{ faq.pk }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                     data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <h6 class="text-primary">Câu trả lời:</h6>
+                                <p>{{ faq.answer|linebreaks }}</p>
+                                {% if faq.keywords %}
+                                    <p class="small text-muted mb-0">
+                                        <i class="bi bi-tag me-1"></i> 
+                                        Từ khóa: {{ faq.keywords }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <a href="{% url 'faqs:faq_update' faq.pk %}"
+                                   class="action-btn action-btn-edit" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="action-btn action-btn-delete btn-delete"
+                                        data-url="{% url 'faqs:faq_delete' faq.pk %}"
+                                        data-name="{{ faq.question|truncatechars:30 }}" title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-question-circle fs-1 d-block mb-2"></i>
+                Chưa có FAQ nào
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" {% if paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if faqs.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ faqs.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num >= faqs.number|add:'-2' and num <= faqs.number|add:'2' %}
+                            <li class="page-item {% if num == faqs.number %}active{% endif %}">
+                                {% if num == faqs.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if faqs.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ faqs.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryColors = {
+        'General': 'bg-secondary',
+        'Order': 'bg-primary',
+        'Payment': 'bg-success',
+        'Shipping': 'bg-info',
+        'Return': 'bg-warning',
+        'Product': 'bg-danger'
+    };
+    document.querySelectorAll('.category-badge').forEach(badge => {
+        badge.classList.add(categoryColors[badge.dataset.category] || 'bg-secondary');
+    });
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+            if (confirm('Bạn có chắc muốn xóa FAQ "' + name + '"?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'}
+                }).then(r => r.json()).then(data => {
+                    if (data.success) location.reload();
+                    else alert(data.message);
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

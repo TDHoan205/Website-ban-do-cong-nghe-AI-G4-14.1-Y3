@@ -1,0 +1,221 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Báo cáo doanh thu' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Báo cáo</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export_excel' %}?period={{ period }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+        </a>
+        <a href="{% url 'reports:export_products' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-box"></i> Sản phẩm
+        </a>
+        <a href="{% url 'reports:export_orders' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-receipt"></i> Đơn hàng
+        </a>
+        <a href="{% url 'reports:export_customers' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-people"></i> Khách hàng
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Period Filter -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-2">
+                <select name="period" class="form-select">
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>7 ngày</option>
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>Tháng này</option>
+                    <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>3 tháng</option>
+                    <option value="year" {% if period == 'year' %}selected{% endif %}>Năm nay</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date_from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date_to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Xem báo cáo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Tổng doanh thu</h6>
+                <h2 class="text-primary mb-0">{{ total_revenue|floatformat:0|intcomma }}đ</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Tổng đơn hàng</h6>
+                <h2 class="text-success mb-0">{{ total_orders }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Giá trị TB/đơn</h6>
+                <h2 class="text-info mb-0">{{ avg_order_value|floatformat:0|intcomma }}đ</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Breakdown -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Tình trạng đơn hàng</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Trạng thái</th>
+                                <th class="text-center">Số đơn</th>
+                                <th class="text-end">Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in status_breakdown %}
+                            <tr>
+                                <td>
+                                    <span class="badge status-badge" data-status="{{ item.status }}">
+                                        {{ item.status }}
+                                    </span>
+                                </td>
+                                <td class="text-center">{{ item.count }}</td>
+                                <td class="text-end">{{ item.revenue|floatformat:0|intcomma }}đ</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Không có dữ liệu</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Revenue -->
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Doanh thu theo ngày</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th class="text-center">Số đơn</th>
+                                <th class="text-end">Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in daily_revenue %}
+                            <tr>
+                                <td>{{ item.date|date:"d/m/Y" }}</td>
+                                <td class="text-center">{{ item.count }}</td>
+                                <td class="text-end">{{ item.revenue|floatformat:0|intcomma }}đ</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Không có dữ liệu</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Products -->
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Top 10 sản phẩm bán chạy</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Sản phẩm</th>
+                        <th class="text-center">Đã bán</th>
+                        <th class="text-end">Doanh thu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in top_products %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ p.product_name }}</td>
+                        <td class="text-center">{{ p.total_sold }}</td>
+                        <td class="text-end">{{ p.total_revenue|floatformat:0|intcomma }}đ</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Không có dữ liệu</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusColors = {
+        'Pending': 'bg-warning',
+        'Confirmed': 'bg-info',
+        'Processing': 'bg-primary',
+        'Shipped': 'bg-primary',
+        'Delivered': 'bg-success',
+        'Cancelled': 'bg-danger',
+        'Returned': 'bg-secondary'
+    };
+
+    document.querySelectorAll('.status-badge').forEach(function(badge) {
+        const status = badge.dataset.status;
+        badge.classList.add(statusColors[status] || 'bg-secondary');
+    });
+});
+</script>
+{% endblock %}

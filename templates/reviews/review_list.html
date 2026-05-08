@@ -1,0 +1,265 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Quản lý đánh giá' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Đánh giá</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        {% if pending_count > 0 %}
+        <a href="{% url 'reviews:review_approve_all' %}" class="btn btn-success" 
+           onclick="return confirm('Duyệt tất cả {{ pending_count }} đánh giá chưa duyệt?')">
+            <i class="bi bi-check-all"></i> Duyệt tất cả ({{ pending_count }})
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning bg-opacity-10">
+                        <i class="bi bi-star text-warning"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-0">Chờ duyệt</p>
+                        <h3 class="stat-value mb-0">{{ pending_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success bg-opacity-10">
+                        <i class="bi bi-star-fill text-success"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-0">Điểm TB</p>
+                        <h3 class="stat-value mb-0">{{ avg_rating|floatformat:1 }} / 5</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-info bg-opacity-10">
+                        <i class="bi bi-chat-dots text-info"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-0">Tổng đánh giá</p>
+                        <h3 class="stat-value mb-0">{{ paginator.count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách đánh giá</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tìm sản phẩm, tài khoản, bình luận..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="rating" class="form-select">
+                        <option value="">-- Tất cả sao --</option>
+                        <option value="5" {% if rating_filter == '5' %}selected{% endif %}>5 ★★★★★</option>
+                        <option value="4" {% if rating_filter == '4' %}selected{% endif %}>4 ★★★★☆</option>
+                        <option value="3" {% if rating_filter == '3' %}selected{% endif %}>3 ★★★☆☆</option>
+                        <option value="2" {% if rating_filter == '2' %}selected{% endif %}>2 ★★☆☆☆</option>
+                        <option value="1" {% if rating_filter == '1' %}selected{% endif %}>1 ★☆☆☆☆</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="approved" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option value="approved" {% if approval_filter == 'approved' %}selected{% endif %}>Đã duyệt</option>
+                        <option value="pending" {% if approval_filter == 'pending' %}selected{% endif %}>Chờ duyệt</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-search"></i> Lọc</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="50">STT</th>
+                        <th>Sản phẩm</th>
+                        <th>Người dùng</th>
+                        <th>Đánh giá</th>
+                        <th>Bình luận</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày</th>
+                        <th width="140">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'products:product_update' review.product.pk %}" class="text-decoration-none">
+                                <strong>{{ review.product.name }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ review.account.username|default:'Khách' }}</td>
+                        <td>
+                            <span class="text-warning">{{ review.rating_stars }}</span>
+                            <span class="text-muted small">({{ review.rating }})</span>
+                        </td>
+                        <td>
+                            <div>
+                                {% if review.title %}<strong>{{ review.title }}</strong><br>{% endif %}
+                                <span class="text-muted small">{{ review.comment|truncatechars:60|default:'--' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if review.is_approved %}
+                                <span class="badge bg-success">Đã duyệt</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ review.created_at|date:"d/m/Y" }}</td>
+                        <td class="text-center">
+                            <button type="button" class="action-btn {% if review.is_approved %}action-btn-lock{% else %}action-btn-unlock{% endif %} btn-toggle"
+                                    data-url="{% url 'reviews:review_toggle_approval' review.pk %}"
+                                    title="{% if review.is_approved %}Bỏ duyệt{% else %}Duyệt{% endif %}">
+                                <i class="bi bi-{% if review.is_approved %}x-circle{% else %}check-circle{% endif %}"></i>
+                            </button>
+                            <a href="{% url 'reviews:review_update' review.pk %}"
+                               class="action-btn action-btn-edit" title="Sửa"><i class="bi bi-pencil"></i></a>
+                            <button type="button" class="action-btn action-btn-delete btn-delete"
+                                    data-url="{% url 'reviews:review_delete' review.pk %}"
+                                    data-name="{{ review.product.name }}" title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="text-muted"><i class="bi bi-star fs-1 d-block mb-2"></i>Chưa có đánh giá nào</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}" {% if paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if reviews.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ reviews.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num >= reviews.number|add:'-2' and num <= reviews.number|add:'2' %}
+                            <li class="page-item {% if num == reviews.number %}active{% endif %}">
+                                {% if num == reviews.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if reviews.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ reviews.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if approval_filter %}&approved={{ approval_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            fetch(url, {
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'}
+            }).then(response => response.json()).then(data => {
+                if (data.success) location.reload();
+                else alert(data.message);
+            })
+            .catch(function() {
+                alert('Có lỗi xảy ra, vui lòng thử lại!');
+            });
+        });
+    });
+
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            if (confirm('Bạn có chắc muốn xóa đánh giá này?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'}
+                }).then(response => response.json()).then(data => {
+                    if (data.success) location.reload();
+                    else alert(data.message);
+                })
+                .catch(function() {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
+        });
+    });
+});
+</script>
+<style>
+.stat-card { border-radius: 12px; transition: transform 0.2s; }
+.stat-card:hover { transform: translateY(-2px); }
+.stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.stat-icon i { font-size: 24px; }
+.stat-label { font-size: 13px; color: #6c757d; }
+.stat-value { font-size: 24px; font-weight: 700; color: #112D4E; }
+</style>
+{% endblock %}

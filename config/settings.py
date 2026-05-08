@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production'
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -23,20 +23,30 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     # Third party
     'crispy_forms',
+    'crispy_bootstrap5',
     'django_filters',
     # Local apps
     'apps.core',
     'apps.users',
+    'apps.categories',
+    'apps.suppliers',
     'apps.products',
     'apps.orders',
     'apps.cart',
     'apps.inventory',
     'apps.dashboard',
-    'apps.auth',
-    'apps.shop',
+    'apps.reports',
     'apps.chat',
+    'apps.notifications',
+    'apps.faqs',
+    'apps.settings',
+    'apps.shop',
+    'apps.brands',
+    'apps.slides',
+    'apps.reviews',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.core.context_processors.admin_notifications',
             ],
         },
     },
@@ -69,20 +80,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': BASE_DIR / os.getenv('DB_NAME', 'db.sqlite3'),
-        'USER': os.getenv('DB_USER', ''),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', ''),
+# Database configuration
+# Default to SQLite, can be overridden with SQL Server in .env
+db_engine = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3')
+
+if db_engine == 'django.db.backends.sqlserver':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'mssql',
+            'NAME': os.getenv('DB_NAME', 'TechShopWebsite1'),
+            'Trusted_Connection': os.getenv('DB_TRUSTED_CONNECTION', 'Yes'),
+            'Driver': 'ODBC Driver 17 for SQL Server',
+            'Server': os.getenv('DB_SERVER', './SQLPRESS'),
+            'TrustServerCertificate': 'Yes',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / os.getenv('DB_NAME', 'db.sqlite3'),
+        }
+    }
 
 # Custom User Model
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'users.Account'
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
@@ -116,9 +138,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Login URLs
-LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/auth/login/'
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # Session settings
 SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 hours
@@ -127,6 +149,7 @@ SESSION_COOKIE_SECURE = not DEBUG
 
 # Crispy Forms
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 
 # Logging
 LOGGING = {
@@ -156,3 +179,6 @@ LOGGING = {
         },
     },
 }
+
+# Gemini AI Configuration
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')

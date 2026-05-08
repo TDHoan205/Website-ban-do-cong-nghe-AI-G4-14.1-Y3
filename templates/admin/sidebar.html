@@ -1,0 +1,103 @@
+{% load static %}
+<!-- Sidebar - Menu Tối Giản theo mẫu folder tham chiếu -->
+<nav class="sidebar" id="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-header">
+        <a href="{% url 'dashboard:index' %}" class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="bi bi-shop"></i>
+            </div>
+            <div class="logo-text">
+                <span class="logo-title">TechShop</span>
+                <span class="logo-subtitle">Admin</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Menu Tối Giản -->
+    <div class="sidebar-menu">
+        <ul class="nav flex-column">
+
+            <!-- NHÓM QUẢN LÝ -->
+            <div class="sidebar-section-title">
+                <i class="bi bi-diagram-3"></i>
+                QUẢN LÝ
+            </div>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}"
+                   href="{% url 'dashboard:index' %}">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>Trang chủ</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}"
+                   href="{% url 'products:product_list' %}">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Sản phẩm</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'categories' %}active{% endif %}"
+                   href="{% url 'categories:category_list' %}">
+                    <i class="bi bi-tags"></i>
+                    <span>Danh mục</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'suppliers' %}active{% endif %}"
+                   href="{% url 'suppliers:supplier_list' %}">
+                    <i class="bi bi-truck"></i>
+                    <span>Nhà cung cấp</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'orders' %}active{% endif %}"
+                   href="{% url 'orders:order_list' %}">
+                    <i class="bi bi-receipt"></i>
+                    <span>Đơn hàng</span>
+                </a>
+            </li>
+
+            <!-- NHÓM HỆ THỐNG -->
+            <div class="sidebar-section-title">
+                <i class="bi bi-gear"></i>
+                HỆ THỐNG
+            </div>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'accounts' %}active{% endif %}"
+                   href="{% url 'accounts:account_list' %}">
+                    <i class="bi bi-people"></i>
+                    <span>Tài khoản</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'faqs' %}active{% endif %}"
+                   href="{% url 'faqs:faq_list' %}">
+                    <i class="bi bi-question-circle"></i>
+                    <span>FAQs</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}"
+                   href="{% url 'notifications:notification_list' %}">
+                    <i class="bi bi-bell"></i>
+                    <span>Thông báo</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sidebar Footer - Xem cửa hàng -->
+    <div class="sidebar-footer">
+        <a class="shop-link-footer" href="{% url 'shop:home' %}" target="_blank">
+            <i class="bi bi-box-arrow-up-right"></i>
+            <span>Xem cửa hàng</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Mobile Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

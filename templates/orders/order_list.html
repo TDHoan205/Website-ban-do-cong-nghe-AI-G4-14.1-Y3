@@ -1,0 +1,356 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title|default:'Quản lý đơn hàng' }} - TechShop Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">Đơn hàng</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h1 class="page-title">{{ page_title|default:'Quản lý đơn hàng' }}</h1>
+        <p class="text-muted mb-0">Theo dõi và quản lý đơn hàng</p>
+    </div>
+    <a href="{% url 'orders:order_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-2"></i>Tạo đơn hàng
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Status Filter Tabs -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i>Trạng thái đơn hàng
+    </div>
+    <div class="card-body py-3">
+        <div class="filter-tabs">
+            <a href="{% url 'orders:order_list' %}" class="filter-tab {% if not status_filter %}active{% endif %}">
+                <i class="bi bi-list-ul me-1"></i>
+                Tất cả
+                <span class="badge bg-secondary ms-1">{{ status_counts.all|default:"0" }}</span>
+            </a>
+            <a href="?status=Pending" class="filter-tab {% if status_filter == 'Pending' %}active{% endif %}">
+                <i class="bi bi-hourglass-split me-1"></i>
+                Chờ xác nhận
+                <span class="badge bg-warning text-dark ms-1">{{ status_counts.pending|default:"0" }}</span>
+            </a>
+            <a href="?status=Confirmed" class="filter-tab {% if status_filter == 'Confirmed' %}active{% endif %}">
+                <i class="bi bi-check-circle me-1"></i>
+                Đã xác nhận
+                <span class="badge bg-info ms-1">{{ status_counts.confirmed|default:"0" }}</span>
+            </a>
+            <a href="?status=Processing" class="filter-tab {% if status_filter == 'Processing' %}active{% endif %}">
+                <i class="bi bi-gear me-1"></i>
+                Đang xử lý
+                <span class="badge bg-primary ms-1">{{ status_counts.processing|default:"0" }}</span>
+            </a>
+            <a href="?status=Shipped" class="filter-tab {% if status_filter == 'Shipped' %}active{% endif %}">
+                <i class="bi bi-truck me-1"></i>
+                Đang giao
+                <span class="badge bg-purple ms-1" style="background: #8B5CF6;">{{ status_counts.shipped|default:"0" }}</span>
+            </a>
+            <a href="?status=Delivered" class="filter-tab {% if status_filter == 'Delivered' %}active{% endif %}">
+                <i class="bi bi-bag-check me-1"></i>
+                Đã giao
+                <span class="badge bg-success ms-1">{{ status_counts.delivered|default:"0" }}</span>
+            </a>
+            <a href="?status=Cancelled" class="filter-tab {% if status_filter == 'Cancelled' %}active{% endif %}">
+                <i class="bi bi-x-circle me-1"></i>
+                Đã hủy
+                <span class="badge bg-danger ms-1">{{ status_counts.cancelled|default:"0" }}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-search me-2"></i>Tìm kiếm
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+            {% endif %}
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Mã đơn, tên, SĐT..." 
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Tìm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-receipt me-2"></i>Danh sách đơn hàng
+        <span class="badge bg-light text-dark ms-2">{{ orders.paginator.count|default:0 }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th width="120">Mã đơn hàng</th>
+                        <th>Khách hàng</th>
+                        <th width="140" class="text-end">Tổng tiền</th>
+                        <th width="160">Ngày đặt</th>
+                        <th width="140">Trạng thái</th>
+                        <th width="160" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr data-order-pk="{{ order.pk }}" data-order-code="{{ order.order_code }}" data-status="{{ order.status }}">
+                        <td>
+                            <a href="{% url 'orders:order_detail' order.pk %}" class="text-primary fw-semibold text-decoration-none">
+                                {{ order.order_code }}
+                            </a>
+                        </td>
+                        <td>
+                            <div>{{ order.customer_name|default:'Khách lẻ' }}</div>
+                            <small class="text-muted">{{ order.customer_phone|default:'' }}</small>
+                        </td>
+                        <td class="text-end">
+                            <strong class="text-primary" data-currency="{{ order.total_amount|floatformat:'0' }}">{{ order.total_amount|floatformat:0|intcomma }}đ</strong>
+                        </td>
+                        <td>{{ order.order_date|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if order.status == 'Pending' %}
+                                <span class="badge bg-warning">Chờ xác nhận</span>
+                            {% elif order.status == 'Confirmed' %}
+                                <span class="badge bg-info">Đã xác nhận</span>
+                            {% elif order.status == 'Processing' %}
+                                <span class="badge bg-primary">Đang xử lý</span>
+                            {% elif order.status == 'Shipped' %}
+                                <span class="badge bg-purple">Đang giao</span>
+                            {% elif order.status == 'Delivered' %}
+                                <span class="badge bg-success">Đã giao</span>
+                            {% elif order.status == 'Cancelled' %}
+                                <span class="badge bg-danger">Đã hủy</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'orders:order_detail' order.pk %}" class="action-btn action-btn-edit" title="Chi tiết">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button type="button" class="action-btn action-btn-status btn-change-status"
+                                    data-url="{% url 'orders:order_update_status' order.pk %}"
+                                    data-pk="{{ order.pk }}"
+                                    data-code="{{ order.order_code }}"
+                                    title="Đổi trạng thái">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            {% if order.can_cancel %}
+                            <button type="button" class="action-btn action-btn-delete btn-cancel"
+                                    data-url="{% url 'orders:order_cancel' order.pk %}"
+                                    data-code="{{ order.order_code }}"
+                                    title="Hủy đơn">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-0 fw-medium">Chưa có đơn hàng nào</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if orders.paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" {% if orders.paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                    {% endif %}
+                    {% for num in orders.paginator.page_range %}
+                        {% if num >= orders.number|add:'-2' and num <= orders.number|add:'2' %}
+                            <li class="page-item {% if num == orders.number %}active{% endif %}">
+                                {% if num == orders.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Status Change Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Cập nhật trạng thái
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalOrderPk">
+                <p class="mb-3">Đơn hàng: <strong id="modalOrderCode"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label">Trạng thái mới</label>
+                    <select id="modalStatusSelect" class="form-select form-select-lg">
+                        {% for value, label in order_statuses %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmStatus">
+                    <i class="bi bi-check-lg me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast
+    window.showToast = function(message, type) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const id = 'toast-' + Date.now();
+        const html = '<div class="toast"><div class="toast-body"><i class="bi bi-' + (type === 'success' ? 'check-circle text-success' : type === 'danger' ? 'x-circle text-danger' : 'info-circle text-info') + ' me-2"></i>' + message + '</div></div>';
+        container.insertAdjacentHTML('beforeend', html);
+        try { new bootstrap.Toast(document.getElementById(id)).show(); } catch(e) {}
+    };
+
+    // Status Modal
+    let statusModal = null;
+    try { statusModal = new bootstrap.Modal(document.getElementById('statusModal')); } catch(e) {}
+
+    window.openStatusModal = function(pk, code) {
+        document.getElementById('modalOrderPk').value = pk;
+        document.getElementById('modalOrderCode').textContent = code;
+        statusModal.show();
+    };
+
+    // Change status buttons
+    document.querySelectorAll('.btn-change-status').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openStatusModal(this.dataset.pk, this.dataset.code);
+            document.getElementById('btnConfirmStatus').dataset.url = this.dataset.url;
+        });
+    });
+
+    document.getElementById('btnConfirmStatus').addEventListener('click', function() {
+        const newStatus = document.getElementById('modalStatusSelect').value;
+        const url = this.dataset.url;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'status=' + newStatus
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                statusModal.hide();
+                showToast('Cập nhật trạng thái thành công!', 'success');
+                setTimeout(function() { location.reload(); }, 800);
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(function() {
+            showToast('Có lỗi xảy ra!', 'danger');
+        });
+    });
+
+    // Cancel order
+    document.querySelectorAll('.btn-cancel').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const code = this.dataset.code;
+            if (confirm('Hủy đơn hàng "' + code + '"?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        showToast('Hủy đơn hàng thành công!', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

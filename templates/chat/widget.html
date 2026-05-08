@@ -1,0 +1,374 @@
+<style>
+.chat-widget-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+}
+.chat-toggle-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+    border: none;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.chat-toggle-btn:hover { transform: scale(1.08); box-shadow: 0 12px 32px rgba(2, 132, 199, 0.5); }
+.chat-toggle-btn .chat-icon { display: none; }
+.chat-toggle-btn .close-icon { display: block; font-size: 20px; }
+.chat-toggle-btn.expanded .chat-icon { display: block; }
+.chat-toggle-btn.expanded .close-icon { display: none; }
+.chat-toggle-btn .pulse-ring {
+    position: absolute; width: 100%; height: 100%; border-radius: 50%;
+    background: rgba(2, 132, 199, 0.3); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+.chat-window {
+    position: absolute; bottom: 80px; right: 0; width: 400px; height: 560px;
+    background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    display: none; flex-direction: column; overflow: hidden;
+}
+.chat-window.active { display: flex; animation: slideUp 0.35s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.chat-header {
+    background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%); color: white;
+    padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.chat-header-info { display: flex; align-items: center; gap: 14px; }
+.chat-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 24px; position: relative;
+}
+.chat-avatar::after {
+    content: ''; position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+    background: #10B981; border-radius: 50%; border: 2px solid white;
+}
+.chat-header-text h4 { margin: 0; font-size: 17px; font-weight: 700; }
+.chat-header-text span { font-size: 12px; opacity: 0.9; }
+.chat-header-actions { display: flex; gap: 8px; }
+.chat-header-btn {
+    background: rgba(255,255,255,0.15); border: none; color: white; cursor: pointer;
+    padding: 8px 12px; border-radius: 10px; font-size: 13px; transition: background 0.2s;
+}
+.chat-header-btn:hover { background: rgba(255,255,255,0.25); }
+.chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: #F8FAFC; }
+.message { margin-bottom: 14px; display: flex; flex-direction: column; animation: messageIn 0.3s ease; }
+@keyframes messageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.message.user { align-items: flex-end; }
+.message.ai, .message.admin, .message.system { align-items: flex-start; }
+.message-bubble {
+    max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px;
+    line-height: 1.55; white-space: pre-wrap; word-wrap: break-word;
+}
+.message.user .message-bubble {
+    background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+    color: white; border-bottom-right-radius: 6px;
+}
+.message.ai .message-bubble, .message.admin .message-bubble {
+    background: white; color: #1E293B; border-bottom-left-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.message.system .message-bubble { background: #FEF3C7; color: #92400E; font-size: 13px; text-align: center; border-radius: 12px; }
+.message-time { font-size: 11px; color: #94A3B8; margin-top: 4px; padding: 0 4px; }
+.message-typing {
+    display: flex; align-items: center; gap: 6px; padding: 14px 18px;
+    background: white; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); width: fit-content;
+}
+.typing-dot {
+    width: 8px; height: 8px; background: #0284c7; border-radius: 50%; animation: typing 1.4s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+.product-suggestion {
+    background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 14px;
+    margin-top: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;
+}
+.product-suggestion:hover { border-color: #0284c7; box-shadow: 0 4px 12px rgba(2,132,199,0.15); transform: translateX(4px); }
+.product-suggestion img { width: 56px; height: 56px; object-fit: contain; border-radius: 10px; background: #F1F5F9; }
+.product-suggestion-content { flex: 1; }
+.product-suggestion-name { font-weight: 600; color: #1E293B; margin-bottom: 4px; font-size: 14px; }
+.product-suggestion-price { color: #0284c7; font-weight: 700; font-size: 15px; }
+.product-suggestion-cat { color: #64748B; font-size: 12px; }
+.escalate-btn {
+    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%); color: white; border: none;
+    padding: 10px 18px; border-radius: 22px; font-size: 13px; font-weight: 600; cursor: pointer;
+    margin-top: 12px; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.escalate-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+.chat-input-container { padding: 16px 20px; background: white; border-top: 1px solid #E2E8F0; }
+.chat-input-wrapper { display: flex; gap: 10px; align-items: flex-end; }
+.chat-input {
+    flex: 1; border: 2px solid #E2E8F0; border-radius: 24px; padding: 12px 18px;
+    font-size: 14px; outline: none; transition: border-color 0.2s; font-family: inherit;
+}
+.chat-input:focus { border-color: #0284c7; }
+.chat-send-btn {
+    background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%); border: none; color: white;
+    width: 48px; height: 48px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.chat-send-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(2,132,199,0.3); }
+.chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.chat-notification-badge {
+    position: absolute; top: -6px; right: -6px; background: #EF4444; color: white;
+    width: 22px; height: 22px; border-radius: 50%; font-size: 12px; display: none;
+    align-items: center; justify-content: center; font-weight: 700; border: 2px solid white;
+    animation: badgePop 0.3s ease;
+}
+@keyframes badgePop { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.welcome-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.welcome-suggestion-btn {
+    background: linear-gradient(135deg, rgba(2,132,199,0.1) 0%, rgba(6,182,212,0.1) 100%);
+    border: 1px solid rgba(2,132,199,0.2); color: #0284c7; padding: 8px 14px;
+    border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.welcome-suggestion-btn:hover { background: #0284c7; color: white; border-color: #0284c7; }
+@media (max-width: 480px) {
+    .chat-window { width: calc(100vw - 16px); height: calc(100vh - 120px); right: -8px; bottom: 76px; }
+    .chat-toggle-btn { width: 56px; height: 56px; bottom: 16px; right: 16px; }
+}
+</style>
+
+<div class="chat-widget-container">
+    <form id="chatAntiForgeryForm" style="display:none;">
+        {% csrf_token %}
+    </form>
+    <div class="chat-notification-badge" id="chatBadge">0</div>
+    <button class="chat-toggle-btn expanded" id="chatToggle" onclick="toggleChat()">
+        <span class="pulse-ring"></span>
+        <span class="chat-icon">&#128172;</span>
+        <span class="close-icon">&#10005;</span>
+    </button>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-avatar">&#129302;</div>
+                <div class="chat-header-text">
+                    <h4>TechStore Assistant</h4>
+                    <span>AI hỗ trợ 24/7</span>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <button class="chat-header-btn" onclick="clearChat()" title="Xóa cuộc trò chuyện">&#128465; Xóa</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Nhập tin nhắn..." onkeypress="handleKeyPress(event)" autocomplete="off">
+                <button class="chat-send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var chatSessionId = localStorage.getItem('chatSessionId') || null;
+    var isChatOpen = false;
+    var isTyping = false;
+    var unreadCount = 0;
+    var retryCount = 0;
+    var MAX_RETRIES = 2;
+
+    function getCsrfToken() {
+        var tokenInput = document.querySelector('#chatAntiForgeryForm input[name="csrfmiddlewaretoken"]');
+        return tokenInput ? tokenInput.value : '';
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatTime(date) {
+        return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatAIResponse(text) {
+        var formatted = escapeHtml(text);
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/\n/g, '<br>');
+        return formatted;
+    }
+
+    window.showWelcomeMessage = function() {
+        var html = '<div class="message ai">' +
+            '<div class="message-bubble">Xin chào! Mình là trợ lý AI của TechStore.\n\n' +
+            'Mình có thể giúp bạn:\n' +
+            '• Tìm sản phẩm công nghệ phù hợp\n' +
+            '• Tư vấn mua hàng thông minh\n' +
+            '• Thông tin bảo hành, đổi trả\n' +
+            '• Giao hàng & thanh toán\n\n' +
+            'Bạn cần mình hỗ trợ gì hôm nay?</div>' +
+            '<div class="message-time">' + formatTime(new Date()) + '</div>' +
+            '<div class="welcome-suggestions">' +
+            '<button class="welcome-suggestion-btn" onclick="sendQuickReply(\'Tư vấn mua laptop\')">&#128187; Tư vấn laptop</button>' +
+            '<button class="welcome-suggestion-btn" onclick="sendQuickReply(\'Điện thoại nào tốt nhất?\')">&#128241; Tư vấn điện thoại</button>' +
+            '<button class="welcome-suggestion-btn" onclick="sendQuickReply(\'Chính sách bảo hành\')">&#128737; Chính sách bảo hành</button>' +
+            '<button class="welcome-suggestion-btn" onclick="sendQuickReply(\'Cách thanh toán\')">&#128179; Thanh toán</button>' +
+            '</div></div>';
+        document.getElementById('chatMessages').innerHTML = html;
+    };
+
+    window.toggleChat = function() {
+        var btn = document.getElementById('chatToggle');
+        var win = document.getElementById('chatWindow');
+        isChatOpen = !isChatOpen;
+        if (isChatOpen) {
+            btn.classList.remove('expanded');
+            win.classList.add('active');
+            document.getElementById('chatBadge').style.display = 'none';
+            unreadCount = 0;
+            document.getElementById('chatInput').focus();
+        } else {
+            btn.classList.add('expanded');
+            win.classList.remove('active');
+        }
+    };
+
+    window.handleKeyPress = function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    };
+
+    function addMessage(type, text) {
+        var container = document.getElementById('chatMessages');
+        var msgDiv = document.createElement('div');
+        msgDiv.className = 'message ' + type;
+        var bubbleHtml = type === 'user'
+            ? '<div class="message-bubble">' + escapeHtml(text) + '</div>'
+            : '<div class="message-bubble">' + formatAIResponse(text) + '</div>';
+        msgDiv.innerHTML = bubbleHtml + '<div class="message-time">' + formatTime(new Date()) + '</div>';
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function showTyping() {
+        isTyping = true;
+        var container = document.getElementById('chatMessages');
+        var div = document.createElement('div');
+        div.className = 'message ai';
+        div.id = 'typingIndicator';
+        div.innerHTML = '<div class="message-typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function hideTyping() {
+        isTyping = false;
+        var el = document.getElementById('typingIndicator');
+        if (el) el.remove();
+    }
+
+    function addProductSuggestions(products) {
+        var container = document.getElementById('chatMessages');
+        products.slice(0, 3).forEach(function(p) {
+            var div = document.createElement('div');
+            div.className = 'product-suggestion';
+            div.onclick = function() { window.location.href = '/products/' + p.product_id + '/'; };
+            var price = new Intl.NumberFormat('vi-VN').format(p.price) + 'đ';
+            div.innerHTML = '<img src="' + (p.image_url || '/static/images/placeholder.svg') + '" alt="" onerror="this.src=\'/static/images/placeholder.svg\'">' +
+                '<div class="product-suggestion-content"><div class="product-suggestion-name">' + escapeHtml(p.name) + '</div>' +
+                '<div class="product-suggestion-price">' + price + '</div>' +
+                (p.category ? '<div class="product-suggestion-cat">' + escapeHtml(p.category) + '</div>' : '') + '</div>';
+            container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function addEscalateButton() {
+        var container = document.getElementById('chatMessages');
+        var div = document.createElement('div');
+        div.innerHTML = '<button class="escalate-btn" onclick="escalateToAdmin()">&#128104;&#8205;&#128187; Gặp quản trị viên</button>';
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    window.escalateToAdmin = function() {
+        if (!chatSessionId) return;
+        var fd = new FormData();
+        fd.append('session_id', chatSessionId);
+        fd.append('csrfmiddlewaretoken', getCsrfToken());
+        fetch('/chat/api/escalate/', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            addMessage('system', d.success ? 'Yêu cầu của bạn đã được chuyển đến quản trị viên. Vui lòng chờ trong giây lát.' : 'Không thể chuyển yêu cầu. Vui lòng thử lại sau.');
+        })
+        .catch(function() { addMessage('ai', 'Kết nối thất bại. Vui lòng gọi hotline: 1800.6601 (Nhánh 1)'); });
+    };
+
+    window.sendMessage = function() {
+        var input = document.getElementById('chatInput');
+        var msg = input.value.trim();
+        if (!msg || isTyping) return;
+        addMessage('user', msg);
+        input.value = '';
+        showTyping();
+
+        var fd = new FormData();
+        fd.append('message', msg);
+        if (chatSessionId) fd.append('session_id', chatSessionId);
+        fd.append('csrfmiddlewaretoken', getCsrfToken());
+
+        fetch('/chat/api/send/', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.success) { hideTyping(); addMessage('ai', 'Xin lỗi, có lỗi xảy ra: ' + (d.error || 'Vui lòng thử lại sau.')); return; }
+            if (!chatSessionId && d.session_id) {
+                chatSessionId = d.session_id;
+                localStorage.setItem('chatSessionId', chatSessionId);
+            }
+            hideTyping();
+            addMessage('ai', d.message);
+            if (d.products && d.products.length > 0) addProductSuggestions(d.products);
+            if (d.should_escalate) addEscalateButton();
+            retryCount = 0;
+        })
+        .catch(function() {
+            hideTyping();
+            retryCount++;
+            if (retryCount <= MAX_RETRIES) {
+                addMessage('ai', '&#128260; Đang kết nối lại...');
+                setTimeout(window.sendMessage, 1000);
+            } else {
+                addMessage('ai', 'Không thể kết nối với AI. Vui lòng liên hệ hotline: 1800.6601 (Nhánh 1).');
+                retryCount = 0;
+            }
+        });
+    };
+
+    window.clearChat = function() {
+        if (confirm('Bạn có chắc muốn xóa cuộc trò chuyện?')) {
+            localStorage.removeItem('chatSessionId');
+            chatSessionId = null;
+            unreadCount = 0;
+            document.getElementById('chatBadge').style.display = 'none';
+            window.showWelcomeMessage();
+        }
+    };
+
+    window.sendQuickReply = function(msg) {
+        document.getElementById('chatInput').value = msg;
+        window.sendMessage();
+    };
+
+    document.addEventListener('DOMContentLoaded', window.showWelcomeMessage);
+})();
+</script>

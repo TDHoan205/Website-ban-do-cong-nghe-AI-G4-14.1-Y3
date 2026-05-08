@@ -1,0 +1,170 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Thêm danh mục' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'categories:category_list' %}">Danh mục</a></li>
+                <li class="breadcrumb-item active">{{ page_title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">{{ page_title }}</h6>
+    </div>
+    <div class="card-body">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Row: Name + Display Order -->
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <label for="id_name" class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="id_name" class="form-control" 
+                           value="{{ form.name.value|default:'' }}"
+                           placeholder="Nhập tên danh mục" required maxlength="100">
+                </div>
+                <div class="col-md-4">
+                    <label for="id_display_order" class="form-label">Thứ tự hiển thị</label>
+                    <input type="number" name="display_order" id="id_display_order" class="form-control" 
+                           value="{{ form.display_order.value|default:'0' }}" min="0">
+                </div>
+            </div>
+
+            <!-- Image URL with Preview -->
+            <div class="mb-3">
+                <label for="id_image_url" class="form-label">URL hình ảnh</label>
+                <div class="input-group">
+                    <input type="url" name="image_url" id="id_image_url" class="form-control" 
+                           value="{{ form.image_url.value|default:'' }}"
+                           placeholder="https://example.com/image.jpg">
+                    <button type="button" class="btn btn-outline-secondary" id="btnTogglePreview" title="Xem trước">
+                        <i class="bi bi-eye"></i> Preview
+                    </button>
+                </div>
+                <small class="text-muted">Nhập URL hình ảnh để hiển thị preview bên dưới</small>
+                <div id="imagePreview" class="mt-2" style="display: none;">
+                    <img src="" alt="Preview" style="max-width: 200px; border-radius: 8px; border: 1px solid #dee2e6;">
+                </div>
+            </div>
+
+            <!-- Description with character counter -->
+            <div class="mb-3">
+                <label for="id_description" class="form-label d-flex justify-content-between align-items-center">
+                    <span>Mô tả</span>
+                    <span class="text-muted small" id="charCount">0 / 500</span>
+                </label>
+                <textarea name="description" id="id_description" class="form-control" 
+                          rows="4" maxlength="500" 
+                          placeholder="Nhập mô tả danh mục (tùy chọn)">{{ form.description.value|default:'' }}</textarea>
+            </div>
+
+            <!-- Active checkbox -->
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_active" id="id_is_active" class="form-check-input" 
+                       {% if form.is_active.value %}checked{% endif %}>
+                <label class="form-check-label" for="id_is_active">Kích hoạt danh mục</label>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'categories:category_list' %}" class="btn btn-secondary">Hủy</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Lưu danh mục
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageUrlInput = document.getElementById('id_image_url');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = imagePreview.querySelector('img');
+    const btnTogglePreview = document.getElementById('btnTogglePreview');
+    let previewVisible = false;
+
+    function updatePreview() {
+        const url = imageUrlInput.value.trim();
+        if (url) {
+            previewImg.src = url;
+            imagePreview.style.display = 'block';
+            previewVisible = true;
+            btnTogglePreview.innerHTML = '<i class="bi bi-eye-slash"></i> Ẩn';
+        } else {
+            imagePreview.style.display = 'none';
+            previewVisible = false;
+            btnTogglePreview.innerHTML = '<i class="bi bi-eye"></i> Preview';
+        }
+    }
+
+    // Live preview as user types
+    imageUrlInput.addEventListener('input', updatePreview);
+
+    // Toggle preview button
+    btnTogglePreview.addEventListener('click', function() {
+        const url = imageUrlInput.value.trim();
+        if (!url) {
+            alert('Vui lòng nhập URL hình ảnh trước!');
+            return;
+        }
+        if (previewVisible) {
+            imagePreview.style.display = 'none';
+            previewVisible = false;
+            btnTogglePreview.innerHTML = '<i class="bi bi-eye"></i> Preview';
+        } else {
+            imagePreview.style.display = 'block';
+            previewVisible = true;
+            btnTogglePreview.innerHTML = '<i class="bi bi-eye-slash"></i> Ẩn';
+        }
+    });
+
+    // Character counter for description
+    const descField = document.getElementById('id_description');
+    const charCount = document.getElementById('charCount');
+    const maxLength = 500;
+
+    if (descField && charCount) {
+        charCount.textContent = descField.value.length + ' / ' + maxLength;
+
+        descField.addEventListener('input', function() {
+            const current = this.value.length;
+            charCount.textContent = current + ' / ' + maxLength;
+            if (current > maxLength * 0.9) {
+                charCount.classList.add('text-danger');
+            } else {
+                charCount.classList.remove('text-danger');
+            }
+        });
+    }
+
+    // Init preview if URL is pre-filled
+    updatePreview();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+
+{% block title %}Hỗ trợ - TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .support-hero {
+        background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%);
+        padding: 50px 0;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .support-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .support-hero h1 {
+        color: white;
+        font-weight: 800;
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .support-hero p {
+        color: rgba(255,255,255,0.85);
+        font-size: 1.1rem;
+    }
+
+    .support-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .support-icon i {
+        font-size: 36px;
+        color: white;
+    }
+
+    .faq-category {
+        margin-bottom: 35px;
+    }
+
+    .faq-category-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #0077B6;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #CAF0F8;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .faq-category-title i {
+        color: #00B4D8;
+    }
+
+    .faq-item {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+        border: 1px solid #e8f4fc;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+        box-shadow: 0 4px 15px rgba(0,119,182,0.15);
+        transform: translateY(-2px);
+    }
+
+    .faq-question {
+        padding: 18px 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+
+    .faq-question:hover {
+        color: #0077B6;
+    }
+
+    .faq-question i {
+        color: #00B4D8;
+        font-size: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-question i {
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: #f8fbfd;
+    }
+
+    .faq-item.active .faq-answer {
+        max-height: 500px;
+    }
+
+    .faq-answer-content {
+        padding: 18px 20px;
+        color: #5C6B7A;
+        line-height: 1.7;
+        border-top: 1px solid #e8f4fc;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+
+    .search-box h4 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 15px;
+    }
+
+    .search-input-group {
+        position: relative;
+    }
+
+    .search-input-group input {
+        width: 100%;
+        padding: 14px 20px 14px 50px;
+        border: 2px solid #e1e8ed;
+        border-radius: 50px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input-group input:focus {
+        border-color: #0077B6;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(0,119,182,0.1);
+    }
+
+    .search-input-group i {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9CA8B3;
+    }
+
+    .contact-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    .contact-card {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 1px solid #e8f4fc;
+        transition: all 0.3s ease;
+    }
+
+    .contact-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,119,182,0.15);
+    }
+
+    .contact-card-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+    }
+
+    .contact-card-icon i {
+        font-size: 24px;
+        color: white;
+    }
+
+    .contact-card h5 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+    }
+
+    .contact-card p {
+        color: #5C6B7A;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .contact-card a {
+        color: #0077B6;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .contact-card a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="support-hero">
+    <div class="container text-center">
+        <div class="support-icon mx-auto">
+            <i class="bi bi-headset"></i>
+        </div>
+        <h1><i class="bi bi-question-circle me-2"></i>Trung tâm hỗ trợ</h1>
+        <p>Tìm câu trả lời nhanh chóng hoặc liên hệ với chúng tôi</p>
+    </div>
+</section>
+
+<div class="container mb-5">
+    <!-- Search Box -->
+    <div class="search-box">
+        <h4><i class="bi bi-search me-2"></i>Tìm kiếm câu hỏi</h4>
+        <form method="get" action="{% url 'faqs:support' %}">
+            <div class="search-input-group">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" placeholder="Nhập từ khóa để tìm kiếm..." value="{{ search_query }}">
+            </div>
+        </form>
+    </div>
+
+    <!-- FAQ List -->
+    {% if faqs %}
+    <div class="row">
+        <div class="col-lg-8">
+            {% for category, faq_list in faq_categories.items %}
+            <div class="faq-category">
+                <h3 class="faq-category-title">
+                    <i class="bi bi-folder-fill"></i>{{ category }}
+                </h3>
+                {% for faq in faq_list %}
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <span>{{ faq.question }}</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            {{ faq.answer|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-3">
+                        <i class="bi bi-funnel me-2 text-primary"></i>Bộ lọc
+                    </h5>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'faqs:support' %}" 
+                           class="list-group-item list-group-item-action border-0 px-0 {% if not selected_category %}active bg-primary{% endif %}"
+                           style="border-radius: 8px; margin-bottom: 4px;">
+                            <i class="bi bi-list-ul me-2"></i>Tất cả
+                        </a>
+                        {% for cat in all_categories %}
+                        <a href="?category={{ cat }}" 
+                           class="list-group-item list-group-item-action border-0 px-0 {% if selected_category == cat %}active bg-primary{% endif %}"
+                           style="border-radius: 8px; margin-bottom: 4px;">
+                            <i class="bi bi-folder me-2"></i>{{ cat }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Contact -->
+            <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%);">
+                <div class="card-body text-white p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-telephone me-2"></i>Liên hệ nhanh
+                    </h5>
+                    <p class="mb-2 opacity-75">Gọi ngay cho chúng tôi:</p>
+                    <h4 class="fw-bold mb-3">
+                        <i class="bi bi-phone"></i> 1800 6601
+                    </p>
+                    <p class="mb-0 opacity-75 small">
+                        <i class="bi bi-clock me-1"></i>Hỗ trợ: 8h - 21h (Thứ 2 - CN)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-search" style="font-size: 5rem; color: #e1e8ed;"></i>
+        </div>
+        <h4 class="text-muted mb-3">Không tìm thấy câu hỏi phù hợp</h4>
+        <p class="text-muted mb-4">Hãy thử tìm kiếm với từ khóa khác hoặc liên hệ trực tiếp với chúng tôi</p>
+        <a href="{% url 'faqs:support' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-2"></i>Xem tất cả câu hỏi
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Contact Cards -->
+    <div class="contact-cards">
+        <div class="contact-card">
+            <div class="contact-card-icon">
+                <i class="bi bi-telephone"></i>
+            </div>
+            <h5>Hotline</h5>
+            <p>Gọi ngay: <a href="tel:18006601">1800 6601</a></p>
+            <p class="small text-muted">8h - 21h (Thứ 2 - CN)</p>
+        </div>
+        <div class="contact-card">
+            <div class="contact-card-icon">
+                <i class="bi bi-envelope"></i>
+            </div>
+            <h5>Email</h5>
+            <p><a href="mailto:support@techshop.com">support@techshop.com</a></p>
+            <p class="small text-muted">Phản hồi trong 24h</p>
+        </div>
+        <div class="contact-card">
+            <div class="contact-card-icon">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <h5>Live Chat</h5>
+            <p>Chat trực tuyến</p>
+            <p class="small text-muted">8h - 21h (Thứ 2 - CN)</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFaq(element) {
+    element.classList.toggle('active');
+}
+</script>
+{% endblock %}

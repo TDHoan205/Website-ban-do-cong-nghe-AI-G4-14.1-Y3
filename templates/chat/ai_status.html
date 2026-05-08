@@ -1,0 +1,146 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-gray-800">AI Status - Trạng thái Chatbot</h1>
+        <a href="{% url 'chat:ai_logs' %}" class="btn btn-secondary">
+            <i class="fas fa-history mr-1"></i> Xem Logs
+        </a>
+    </div>
+
+    <!-- Provider Status Cards -->
+    <div class="row">
+        {% for provider, info in provider_status.items %}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-{% if info.available %}success{% else %}danger{% endif %} shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-{% if info.available %}success{% else %}danger{% endif %} text-uppercase mb-1">
+                                {% if provider == 'ollama' %}Ollama (Local){% endif %}
+                                {% if provider == 'openrouter' %}OpenRouter (Cloud){% endif %}
+                                {% if provider == 'groq' %}Groq (Cloud){% endif %}
+                                {% if provider == 'gemini' %}Gemini (Cloud){% endif %}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if info.available %}
+                                    <span class="text-success"><i class="fas fa-check-circle"></i> Active</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-times-circle"></i> Inactive</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small mt-1">{{ info.name }}</div>
+                        </div>
+                        <div class="col-auto">
+                            {% if info.available %}
+                                <i class="fas fa-robot fa-2x text-success"></i>
+                            {% else %}
+                                <i class="fas fa-robot fa-2x text-gray-300"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Info Panel -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-info-circle mr-1"></i> Thông tin về các Provider
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Provider</th>
+                            <th>Loại</th>
+                            <th>Chi phí</th>
+                            <th>Giới hạn</th>
+                            <th>Model</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ollama</strong></td>
+                            <td><span class="badge badge-success">Local</span></td>
+                            <td><span class="text-success font-weight-bold">FREE</span></td>
+                            <td>Không giới hạn</td>
+                            <td>llama3.2, qwen2.5, deepseek-r1</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenRouter</strong></td>
+                            <td><span class="badge badge-info">Cloud</span></td>
+                            <td><span class="text-info font-weight-bold">$5 Free</span></td>
+                            <td>Tùy model</td>
+                            <td>gemini-2.0-flash, claude-3.5-haiku</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Groq</strong></td>
+                            <td><span class="badge badge-primary">Cloud</span></td>
+                            <td><span class="text-primary font-weight-bold">Free Tier</span></td>
+                            <td>14,400 req/phút</td>
+                            <td>llama-3.2-3b-vision</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gemini</strong></td>
+                            <td><span class="badge badge-warning">Cloud</span></td>
+                            <td><span class="text-warning">Có phí</span></td>
+                            <td>Giới hạn</td>
+                            <td>gemini-1.5-flash</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Guide -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-book mr-1"></i> Hướng dẫn cài đặt
+            </h6>
+        </div>
+        <div class="card-body">
+            <h5 class="text-success"><i class="fas fa-star mr-1"></i> Ollama (Khuyến nghị - Miễn phí vĩnh viễn)</h5>
+            <ol class="mb-4">
+                <li>Tải Ollama từ: <a href="https://ollama.com/download" target="_blank">ollama.com/download</a></li>
+                <li>Sau khi cài xong, chạy: <code>ollama pull llama3.2</code></li>
+                <li>Khởi động server: <code>ollama serve</code></li>
+                <li>Kiểm tra: <code>curl http://localhost:11434/api/tags</code></li>
+            </ol>
+
+            <h5 class="text-info"><i class="fas fa-cloud mr-1"></i> OpenRouter (Cloud - Free $5 credit)</h5>
+            <ol class="mb-4">
+                <li>Đăng ký tại: <a href="https://openrouter.ai/credits" target="_blank">openrouter.ai/credits</a></li>
+                <li>Tạo API Key tại: <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></li>
+                <li>Thêm vào file <code>.env</code>: <code>OPENROUTER_API_KEY=sk-or-v1-xxxxx</code></li>
+            </ol>
+
+            <h5 class="text-primary"><i class="fas fa-bolt mr-1"></i> Groq (Cloud - Rất nhiều Free!)</h5>
+            <ol class="mb-4">
+                <li>Đăng ký tại: <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></li>
+                <li>Tạo API Key</li>
+                <li>Thêm vào file <code>.env</code>: <code>GROQ_API_KEY=gsk_xxxxx</code></li>
+            </ol>
+
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-lightbulb mr-1"></i>
+                <strong>Mẹo:</strong> Hệ thống sẽ tự động thử theo thứ tự ưu tiên: Ollama → OpenRouter → Groq → Gemini.
+                <br>
+                <strong>Ưu tiên Ollama</strong> để không tốn chi phí gì cả!
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

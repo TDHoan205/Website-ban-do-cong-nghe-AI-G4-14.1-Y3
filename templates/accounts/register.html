@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - TechShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0077B6;
+            --primary-dark: #005f8a;
+            --primary-light: #00B4D8;
+            --primary-lighter: #90E0EF;
+            --primary-lightest: #CAF0F8;
+            --accent: #023E8A;
+            --accent-light: #0096C7;
+            --surface: #ffffff;
+            --surface-alt: #F0F8FF;
+            --text-primary: #1a1a2e;
+            --text-secondary: #5C6B7A;
+            --text-muted: #9CA8B3;
+            --border: #E1E8ED;
+            --success: #10B981;
+            --success-dark: #059669;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.15);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            min-height: 100vh;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        /* Back to home */
+        .back-to-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .back-to-home .btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .back-to-home .btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* Auth Container */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+            animation: pulseGlow 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        /* Auth Card */
+        .auth-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .auth-icon-wrapper {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--success) 0%, #34D399 100%);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+        }
+
+        .auth-title {
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 6px;
+            font-size: 26px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        /* Auth Form */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group-custom {
+            position: relative;
+        }
+
+        .input-icon-wrapper {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+            z-index: 2;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .input-with-icon {
+            width: 100%;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 16px 14px 48px;
+            font-size: 15px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            transition: var(--transition);
+            background: var(--surface-alt);
+            color: var(--text-primary);
+        }
+
+        .input-with-icon:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.1);
+        }
+
+        .input-group-custom:focus-within .input-icon-wrapper {
+            color: var(--primary);
+        }
+
+        .text-danger {
+            font-size: 12px;
+            margin-top: 4px;
+            color: var(--danger);
+        }
+
+        /* Checkbox */
+        .form-check-custom {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-check-input-custom {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .form-check-label-custom {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            line-height: 1.5;
+        }
+
+        /* Submit button */
+        .btn-auth-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--success) 0%, #34D399 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-auth-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, var(--success-dark) 0%, var(--success) 100%);
+            color: white;
+        }
+
+        .btn-auth-submit:active {
+            transform: translateY(0);
+        }
+
+        /* Links */
+        .text-link {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .text-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Alerts */
+        .alert-msg {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-danger-msg {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-success-msg {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .auth-form-footer {
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 575px) {
+            .auth-card {
+                padding: 36px 24px;
+            }
+            .auth-title { font-size: 22px; }
+            .auth-icon-wrapper {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="back-to-home">
+        <a href="{% url 'shop:home' %}">
+            <i class="fas fa-arrow-left"></i>Về trang chủ
+        </a>
+    </div>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <div class="auth-icon-wrapper">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h2 class="auth-title">Tạo tài khoản mới</h2>
+                    <p class="auth-subtitle">Đăng ký để bắt đầu mua sắm</p>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert-msg {% if message.tags == 'error' %}alert-danger-msg{% else %}alert-success-msg{% endif %}">
+                    {% if message.tags == 'error' %}<i class="fas fa-exclamation-triangle"></i>{% else %}<i class="fas fa-check-circle"></i>{% endif %}
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'accounts:register' %}" class="auth-form">
+                {% csrf_token %}
+                
+                <div class="row g-3 mb-2">
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <input type="text" name="username" class="input-with-icon" id="username" placeholder="Tên đăng nhập" required minlength="3" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <input type="password" name="password1" class="input-with-icon" id="password1" placeholder="Mật khẩu (tối thiểu 6 ký tự)" required minlength="6" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group-custom mb-2">
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <input type="text" name="full_name" class="input-with-icon" id="full_name" placeholder="Họ và tên" required />
+                </div>
+
+                <div class="row g-3 mb-2">
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <input type="email" name="email" class="input-with-icon" id="email" placeholder="Email (không bắt buộc)" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <input type="tel" name="phone" class="input-with-icon" id="phone" placeholder="Số điện thoại" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group-custom mb-3">
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <input type="text" name="address" class="input-with-icon" id="address" placeholder="Địa chỉ (không bắt buộc)" />
+                </div>
+
+                <div class="form-check-custom mb-4">
+                    <input class="form-check-input-custom" type="checkbox" id="agreeTerms" required>
+                    <label class="form-check-label-custom" for="agreeTerms">
+                        Tôi đồng ý với <a href="#" class="text-link">Điều khoản sử dụng</a> và <a href="#" class="text-link">Chính sách bảo mật</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-auth-submit mb-3">
+                    <i class="fas fa-user-plus"></i>Tạo tài khoản
+                </button>
+
+                <div class="text-center">
+                    <p class="auth-form-footer mb-0">Đã có tài khoản?
+                        <a href="{% url 'accounts:login' %}" class="text-link">
+                            Đăng nhập ngay
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

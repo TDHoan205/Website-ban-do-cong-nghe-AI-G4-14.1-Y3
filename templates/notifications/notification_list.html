@@ -1,0 +1,242 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title|default:'Quản lý thông báo' }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h1 class="page-title">{{ page_title|default:'Quản lý thông báo' }}</h1>
+        <p class="text-muted mb-0">Quản lý thông báo hệ thống</p>
+    </div>
+    <a href="{% url 'notifications:notification_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-2"></i>Gửi thông báo
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i>Bộ lọc & Tìm kiếm
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control"
+                           placeholder="Tiêu đề, nội dung..."
+                           value="{{ search_query|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Loại thông báo</label>
+                <select name="type" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="Order" {% if type_filter == 'Order' %}selected{% endif %}>Đơn hàng</option>
+                    <option value="Payment" {% if type_filter == 'Payment' %}selected{% endif %}>Thanh toán</option>
+                    <option value="Chat" {% if type_filter == 'Chat' %}selected{% endif %}>Chat</option>
+                    <option value="System" {% if type_filter == 'System' %}selected{% endif %}>Hệ thống</option>
+                    <option value="Promotion" {% if type_filter == 'Promotion' %}selected{% endif %}>Khuyến mãi</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái đọc</label>
+                <select name="read" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="unread" {% if read_filter == 'unread' %}selected{% endif %}>Chưa đọc</option>
+                    <option value="read" {% if read_filter == 'read' %}selected{% endif %}>Đã đọc</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Tìm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notifications Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-bell me-2"></i>Danh sách thông báo
+            <span class="badge bg-light text-dark ms-2">{{ notifications.paginator.count|default:0 }}</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'notifications:notification_read_all' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-check-all"></i> Đánh dấu đã đọc
+            </a>
+            <a href="{% url 'notifications:notification_delete_read' %}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i> Xóa đã đọc
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th width="100">Loại</th>
+                        <th>Tiêu đề</th>
+                        <th>Nội dung</th>
+                        <th width="150">Người nhận</th>
+                        <th width="120">Ngày tạo</th>
+                        <th width="80">Trạng thái</th>
+                        <th width="100" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notif in notifications %}
+                    <tr class="{% if not notif.is_read %}fw-semibold{% endif %}">
+                        <td>
+                            <span class="badge type-badge" data-type="{{ notif.type }}">
+                                {{ notif.get_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ notif.title }}</td>
+                        <td>
+                            <span class="text-muted small">{{ notif.message|truncatechars:50 }}</span>
+                        </td>
+                        <td>
+                            {% if notif.account %}
+                                {{ notif.account.username }}
+                            {% else %}
+                                <span class="text-muted">Tất cả</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ notif.created_at|date:'d/m/Y H:i' }}</td>
+                        <td>
+                            {% if not notif.is_read %}
+                                <span class="badge bg-primary">Mới</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Đã đọc</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if not notif.is_read %}
+                                <a href="{% url 'notifications:notification_read' notif.pk %}"
+                                   class="action-btn action-btn-unlock btn-mark-read" data-id="{{ notif.pk }}" title="Đánh dấu đã đọc">
+                                    <i class="bi bi-check"></i>
+                                </a>
+                            {% endif %}
+                            <button type="button" class="action-btn action-btn-delete btn-delete"
+                                    data-url="{% url 'notifications:notification_delete' notif.pk %}"
+                                    title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-bell" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-0 fw-medium">Chưa có thông báo nào</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}" {% if paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if notifications.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ notifications.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num >= notifications.number|add:'-2' and num <= notifications.number|add:'2' %}
+                            <li class="page-item {% if num == notifications.number %}active{% endif %}">
+                                {% if num == notifications.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if notifications.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ notifications.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeColors = {
+        'Order': 'bg-primary',
+        'Payment': 'bg-success',
+        'Chat': 'bg-info',
+        'System': 'bg-secondary',
+        'Promotion': 'bg-warning'
+    };
+    document.querySelectorAll('.type-badge').forEach(function(badge) {
+        badge.classList.add(typeColors[badge.dataset.type] || 'bg-secondary');
+    });
+
+    // Mark as read
+    document.querySelectorAll('.btn-mark-read').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.href;
+            fetch(url, {
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'}
+            }).then(function() { location.reload(); })
+            .catch(function() {
+                alert('Có lỗi xảy ra, vui lòng thử lại!');
+            });
+        });
+    });
+
+    // Delete
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            if (confirm('Bạn có chắc muốn xóa thông báo này?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'}
+                }).then(function() { location.reload(); })
+                .catch(function() {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

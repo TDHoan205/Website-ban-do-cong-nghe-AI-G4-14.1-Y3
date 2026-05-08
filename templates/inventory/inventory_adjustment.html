@@ -1,0 +1,152 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-sliders text-warning"></i>
+            Điều chỉnh tồn kho
+        </h1>
+        <p class="text-muted mb-0">Cập nhật số lượng tồn kho sản phẩm</p>
+    </div>
+    <a href="/inventory/" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Thông tin điều chỉnh</h5>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                
+                {% if success %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>{{ success }}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Chọn sản phẩm -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Chọn sản phẩm</label>
+                        <select name="product_id" class="form-select" required>
+                            <option value="">-- Chọn sản phẩm --</option>
+                            {% for p in products %}
+                            <option value="{{ p.product_id }}" {% if product_id == p.product_id|stringformat:'s' %}selected{% endif %}>
+                                {{ p.name }} - Tồn kho: {{ p.stock_quantity }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Số lượng hiện tại -->
+                    {% if selected_product %}
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1 small text-muted">Sản phẩm</p>
+                                <p class="mb-0 fw-semibold">{{ selected_product.name }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 small text-muted">Tồn kho hiện tại</p>
+                                <p class="mb-0 fw-semibold">{{ selected_product.stock_quantity }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 small text-muted">Giá bán</p>
+                                <p class="mb-0 fw-semibold">{{ selected_product.price|floatformat:0 }} đ</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Điều chỉnh số lượng -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Số lượng thay đổi</label>
+                            <div class="input-group">
+                                <button type="button" class="btn btn-outline-secondary" onclick="adjustQty(-10)">-10</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="adjustQty(-1)">-1</button>
+                                <input type="number" name="quantity_change" class="form-control text-center fw-bold" 
+                                       id="quantityChange" value="{{ quantity_change|default:'0' }}" 
+                                       min="-9999" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="adjustQty(1)">+1</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="adjustQty(10)">+10</button>
+                            </div>
+                            <small class="text-muted">Dùng số âm (-) để giảm, số dương (+) để tăng</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tồn kho mới (dự kiến)</label>
+                            <div class="form-control bg-light fw-bold text-center" id="newStockDisplay" style="height: calc(3.5rem + 2px); line-height: 2.5rem;">
+                                {{ new_stock|default:'—' }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lý do -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Lý do điều chỉnh</label>
+                        <select name="reason" class="form-select" required>
+                            <option value="">-- Chọn lý do --</option>
+                            <option value="import">Nhập hàng mới</option>
+                            <option value="export">Xuất hàng bán</option>
+                            <option value="return">Trả hàng lại kho</option>
+                            <option value="damage">Hàng hỏng / Mất</option>
+                            <option value="adjustment">Điều chỉnh kiểm kê</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Ghi chú -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Ghi chú (tùy chọn)</label>
+                        <textarea name="notes" class="form-control" rows="3" 
+                                  placeholder="Ghi chú thêm về việc điều chỉnh này...">{{ notes|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Lưu thay đổi
+                        </button>
+                        <a href="/inventory/" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const currentStock = {{ selected_product.stock_quantity|default:0 }};
+
+function adjustQty(amount) {
+    const input = document.getElementById('quantityChange');
+    let val = parseInt(input.value) || 0;
+    val += amount;
+    input.value = val;
+    updateNewStock();
+}
+
+function updateNewStock() {
+    const change = parseInt(document.getElementById('quantityChange').value) || 0;
+    const newStock = currentStock + change;
+    document.getElementById('newStockDisplay').textContent = newStock < 0 ? '⚠️ Âm!' : newStock;
+    document.getElementById('newStockDisplay').className = 'form-control bg-light fw-bold text-center' + (newStock < 0 ? ' border-danger text-danger' : newStock === 0 ? ' border-warning' : ' border-success');
+}
+
+document.getElementById('quantityChange')?.addEventListener('input', updateNewStock);
+updateNewStock();
+</script>
+{% endblock %}

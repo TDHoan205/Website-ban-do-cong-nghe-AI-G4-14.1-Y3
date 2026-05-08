@@ -1,0 +1,261 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title|default:'Quản lý tồn kho' }} - TechShop Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">Tồn kho</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h1 class="page-title">{{ page_title|default:'Quản lý tồn kho' }}</h1>
+        <p class="text-muted mb-0">Theo dõi và quản lý số lượng tồn kho</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'inventory:inventory_adjustment' %}" class="btn btn-outline-primary">
+            <i class="bi bi-sliders me-2"></i>Điều chỉnh tồn kho
+        </a>
+        <button onclick="exportInventory()" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-2"></i>Xuất Excel
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card primary">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stat-label">Tổng sản phẩm</p>
+                    <h3 class="stat-value">{{ total_products|default:0 }}</h3>
+                </div>
+                <div class="stat-icon-wrap primary">
+                    <i class="bi bi-box"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card success">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stat-label">Còn hàng</p>
+                    <h3 class="stat-value text-success">{{ in_stock_count|default:0 }}</h3>
+                </div>
+                <div class="stat-icon-wrap success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card warning">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stat-label">Sắp hết hàng</p>
+                    <h3 class="stat-value text-warning">{{ low_stock_count|default:0 }}</h3>
+                </div>
+                <div class="stat-icon-wrap warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card danger">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stat-label">Hết hàng</p>
+                    <h3 class="stat-value text-danger">{{ out_of_stock_count|default:0 }}</h3>
+                </div>
+                <div class="stat-icon-wrap danger">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i>Bộ lọc & Tìm kiếm
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tên sản phẩm, mã SP..." 
+                           value="{{ search_query|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Danh mục</label>
+                <select name="category" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.pk }}" {% if category_filter == cat.pk|stringformat:'s' %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái tồn kho</label>
+                <select name="status" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="in_stock" {% if status_filter == 'in_stock' %}selected{% endif %}>Còn hàng</option>
+                    <option value="low_stock" {% if status_filter == 'low_stock' %}selected{% endif %}>Sắp hết hàng</option>
+                    <option value="out_of_stock" {% if status_filter == 'out_of_stock' %}selected{% endif %}>Hết hàng</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Lọc
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Inventory Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i>Danh sách tồn kho
+        <span class="badge bg-light text-dark ms-2">{{ inventory.paginator.count|default:0 }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th width="60">Hình</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th width="120" class="text-center">Tồn kho</th>
+                        <th width="120" class="text-center">Trạng thái</th>
+                        <th width="120" class="text-end">Giá bán</th>
+                        <th width="120" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory %}
+                    <tr>
+                        <td>
+                            {% if item.image_url %}
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                     class="rounded" style="width: 45px; height: 45px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 45px; height: 45px;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ item.name }}</strong>
+                                <br><small class="text-muted">#{{ item.pk }}</small>
+                            </div>
+                        </td>
+                        <td>{{ item.category.name|default:'--' }}</td>
+                        <td class="text-center">
+                            <span class="fw-bold fs-5">{{ item.stock_quantity }}</span>
+                        </td>
+                        <td class="text-center">
+                            {% if item.stock_quantity == 0 %}
+                                <span class="badge bg-danger">Hết hàng</span>
+                            {% elif item.stock_quantity < 10 %}
+                                <span class="badge bg-warning">Sắp hết</span>
+                            {% else %}
+                                <span class="badge bg-success">Còn hàng</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-semibold">{{ item.price|floatformat:0|intcomma }} đ</td>
+                        <td class="text-center">
+                            <a href="{% url 'products:product_update' item.pk %}" class="action-btn action-btn-edit" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'inventory:inventory_adjustment' %}?product={{ item.pk %}" class="action-btn action-btn-status" title="Điều chỉnh">
+                                <i class="bi bi-sliders"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-0 fw-medium">Không có sản phẩm nào</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if inventory.paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" {% if inventory.paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if inventory.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ inventory.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                    </li>
+                    {% endif %}
+                    {% for num in inventory.paginator.page_range %}
+                        {% if num >= inventory.number|add:'-2' and num <= inventory.number|add:'2' %}
+                            <li class="page-item {% if num == inventory.number %}active{% endif %}">
+                                {% if num == inventory.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if inventory.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ inventory.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ inventory.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportInventory() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'excel');
+    window.location.href = '/reports/export/inventory/?' + params.toString();
+}
+</script>
+{% endblock %}

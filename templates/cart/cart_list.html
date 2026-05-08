@@ -1,0 +1,178 @@
+{% extends 'admin/base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ page_title }} - TechShop Admin{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title|default:'Quản lý giỏ hàng' }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Giỏ hàng</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách giỏ hàng</h6>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <form method="get" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Tìm kiếm..." 
+                           value="{{ search_query }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="account" class="form-select">
+                        <option value="">-- Tất cả khách hàng --</option>
+                        {% for acc in accounts %}
+                            <option value="{{ acc.pk }}" {% if account_filter == acc.pk|stringformat:'s' %}selected{% endif %}>
+                                {{ acc.username }} - {{ acc.full_name|default:'' }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Lọc
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="50">STT</th>
+                        <th>Khách hàng</th>
+                        <th>Sản phẩm</th>
+                        <th>Biến thể</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th>Ngày thêm</th>
+                        <th width="100">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ item.account.username }}</div>
+                            <small class="text-muted">{{ item.account.full_name|default:'' }}</small>
+                        </td>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.variant.variant_name|default:'--' }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">{{ item.unit_price|floatformat:0|intcomma }}đ</td>
+                        <td class="text-end fw-semibold">{{ item.subtotal|floatformat:0|intcomma }}đ</td>
+                        <td>{{ item.added_date|date:"d/m/Y" }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'cart:cart_detail' item.account.pk %}"
+                               class="action-btn action-btn-edit" title="Xem giỏ hàng">
+                                <i class="bi bi-cart3"></i>
+                            </a>
+                            <button type="button" class="action-btn action-btn-delete btn-remove"
+                                    data-url="{% url 'cart:cart_remove' item.pk %}" title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                Chưa có item nào trong giỏ hàng
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+        <div class="data-table-footer">
+            <div class="page-size-control">
+                <label>Hiển thị:</label>
+                <select class="form-select page-size-select" onchange="location.href=this.value" style="width:auto;">
+                    <option value="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}" {% if paginator.per_page == 5 %}selected{% endif %}>5 / trang</option>
+                    <option value="?page=1&per_page=10{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}">10 / trang</option>
+                    <option value="?page=1&per_page=20{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}">20 / trang</option>
+                </select>
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination mb-0">
+                    {% if cart_items.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ cart_items.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num >= cart_items.number|add:'-2' and num <= cart_items.number|add:'2' %}
+                            <li class="page-item {% if num == cart_items.number %}active{% endif %}">
+                                {% if num == cart_items.number %}
+                                    <span class="page-link">{{ num }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}">{{ num }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if cart_items.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ cart_items.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if account_filter %}&account={{ account_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-remove').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            
+            if (confirm('Bạn có chắc muốn xóa item này?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(function() {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+
+{% block title %}Sản phẩm - TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #d5e4f2;
+        border-radius: 22px;
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+        position: sticky;
+        top: 100px;
+    }
+
+    .filter-header {
+        background: linear-gradient(135deg, #f2f8ff, #e7f2fd);
+        border-bottom: 1px solid #d9e7f4;
+        padding: 16px 18px;
+    }
+
+    .filter-header h5 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #123a64;
+    }
+
+    .filter-body {
+        padding: 18px;
+    }
+
+    .filter-group {
+        margin-bottom: 14px;
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #264d77;
+    }
+
+    .filter-select {
+        width: 100%;
+        border: 1px solid #cadced;
+        border-radius: 12px;
+        padding: 9px 12px;
+        background: #fdfefe;
+        font-size: 0.95rem;
+        color: #1a1a2e;
+        transition: border-color 0.2s ease;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    .btn-filter-apply {
+        border-radius: 999px;
+        padding: 11px 12px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        border: none;
+        color: #fff;
+        background: linear-gradient(135deg, #0284c7, #06b6d4);
+        box-shadow: 0 12px 22px rgba(2, 132, 199, 0.23);
+        width: 100%;
+    }
+
+    .btn-filter-apply:hover {
+        background: linear-gradient(135deg, #0369a1, #0284c7);
+    }
+
+    .products-toolbar {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid #d8e5f2;
+        border-radius: 16px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .results-count {
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: #0f365d;
+    }
+
+    .sort-select {
+        border: 1px solid #dbe7f2;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        background: white;
+    }
+
+    .sort-select:focus {
+        border-color: #0284c7;
+        outline: none;
+    }
+
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-link {
+        width: 42px;
+        height: 42px;
+        border-radius: 50% !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d9e5f1;
+        font-weight: 700;
+        color: #64748b;
+        transition: all 0.25s ease;
+    }
+
+    .page-link:hover {
+        background: linear-gradient(135deg, #0284c7, #06b6d4);
+        border-color: #0284c7;
+        color: white;
+    }
+
+    .page-item.active .page-link {
+        background-color: #0077B6;
+        border-color: #0077B6;
+        color: white;
+    }
+
+    .page-item.disabled .page-link {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        border: 1px dashed #bdd6ea;
+        background: linear-gradient(180deg, #f9fcff, #f2f8ff);
+        border-radius: 18px;
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h4 {
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+    }
+
+    .category-filter-item {
+        display: block;
+        padding: 8px 12px;
+        border-radius: 8px;
+        color: #64748b;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .category-filter-item:hover {
+        background: #f0f9ff;
+        color: #0284c7;
+    }
+
+    .category-filter-item.active {
+        background: #e0f2fe;
+        color: #0284c7;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%); padding: 28px 0;">
+    <div class="container">
+        <h1 class="page-title" style="font-size: 1.6rem; font-weight: 800; color: white; margin: 0 0 4px;">
+            <i class="fas fa-th-large me-2"></i>Sản phẩm
+        </h1>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.88rem; margin: 0;">
+            {% if search_query %}Kết quả tìm kiếm: "{{ search_query }}"{% else %}Khám phá hàng ngàn sản phẩm công nghệ{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}"><i class="fas fa-home"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item active">Sản phẩm</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 col-md-4">
+            <form method="get" action="{% url 'shop:product_list' %}" id="filterForm">
+                <!-- Hidden fields to preserve search -->
+                {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}">
+                {% endif %}
+                {% if filter_type %}
+                <input type="hidden" name="filter" value="{{ filter_type }}">
+                {% endif %}
+
+                <div class="filter-card">
+                    <div class="filter-header">
+                        <h5><i class="fas fa-filter me-2"></i>Bộ lọc</h5>
+                    </div>
+                    <div class="filter-body">
+                        <!-- Categories -->
+                        <div class="filter-group">
+                            <label class="filter-label">Danh mục</label>
+                            <div class="list-group">
+                                <a href="{% url 'shop:product_list' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if filter_type %}?filter={{ filter_type }}{% endif %}" 
+                                   class="category-filter-item {% if not selected_category %}active{% endif %}">
+                                    <i class="fas fa-th me-2"></i>Tất cả
+                                </a>
+                                {% for cat in categories %}
+                                <a href="?category={{ cat.category_id }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}" 
+                                   class="category-filter-item {% if selected_category == cat.category_id %}active{% endif %}">
+                                    {{ cat.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <label class="filter-label">Khoảng giá</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="filter-select" placeholder="Từ" value="{{ min_price }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="filter-select" placeholder="Đến" value="{{ max_price }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="filter-group">
+                            <label class="filter-label">Sắp xếp theo</label>
+                            <select name="sort" class="filter-select">
+                                <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Mới nhất</option>
+                                <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Giá tăng dần</option>
+                                <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>Giá giảm dần</option>
+                                <option value="-rating" {% if sort_by == '-rating' %}selected{% endif %}>Đánh giá cao nhất</option>
+                                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Tên A-Z</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-filter-apply">
+                            <i class="fas fa-search me-2"></i>Áp dụng
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Toolbar -->
+            <div class="products-toolbar">
+                <div class="results-count">
+                    <i class="fas fa-box-open me-2"></i>{{ products.paginator.count }} sản phẩm
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <label class="text-muted fw-semibold">Sắp xếp:</label>
+                    <select class="sort-select" onchange="window.location.href=this.value">
+                        <option value="?sort=-created_at{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" {% if sort_by == '-created_at' %}selected{% endif %}>Mới nhất</option>
+                        <option value="?sort=price{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" {% if sort_by == 'price' %}selected{% endif %}>Giá tăng dần</option>
+                        <option value="?sort=-price{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" {% if sort_by == '-price' %}selected{% endif %}>Giá giảm dần</option>
+                        <option value="?sort=-rating{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" {% if sort_by == '-rating' %}selected{% endif %}>Đánh giá cao nhất</option>
+                        <option value="?sort=name{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" {% if sort_by == 'name' %}selected{% endif %}>Tên A-Z</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if products %}
+            <div class="products-grid-modern">
+                {% for product in products %}
+                <div class="product-card-wrapper">
+                    {% include 'shop/partials/product_card.html' with product=product %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <div class="pagination-wrapper">
+                <nav aria-label="Product pagination">
+                    <ul class="pagination">
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                        </li>
+                        {% endif %}
+
+                        {% for num in products.paginator.page_range %}
+                            {% if products.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h4>Không tìm thấy sản phẩm</h4>
+                <p>Hãy thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
+                <a href="{% url 'shop:product_list' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-redo me-2"></i>Xem tất cả sản phẩm
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

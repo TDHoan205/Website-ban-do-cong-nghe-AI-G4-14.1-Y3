@@ -1,0 +1,534 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Thanh toán - TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 15px;
+    }
+
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .checkout-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-bottom: 10px;
+    }
+
+    .checkout-header p {
+        color: #5C6B7A;
+        font-size: 1rem;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+    }
+
+    .checkout-form-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .checkout-form-header {
+        background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%);
+        color: white;
+        padding: 20px 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .checkout-form-body {
+        padding: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #1a1a2e;
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e1e8ed;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #0077B6;
+        box-shadow: 0 0 0 4px rgba(0,119,182,0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .order-summary-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        position: sticky;
+        top: 20px;
+    }
+
+    .order-summary-header {
+        background: linear-gradient(135deg, #023E8A 0%, #0077B6 100%);
+        color: white;
+        padding: 20px 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .order-items {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .order-item-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f8fbfd;
+    }
+
+    .order-item-info {
+        flex: 1;
+    }
+
+    .order-item-name {
+        font-weight: 600;
+        color: #1a1a2e;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+
+    .order-item-variant {
+        font-size: 0.8rem;
+        color: #9CA8B3;
+    }
+
+    .order-item-qty {
+        font-size: 0.85rem;
+        color: #5C6B7A;
+    }
+
+    .order-item-price {
+        font-weight: 700;
+        color: #0077B6;
+        font-size: 0.95rem;
+    }
+
+    .order-totals {
+        padding: 20px;
+        border-top: 2px solid #f1f5f9;
+    }
+
+    .order-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .order-total-row.total {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        padding-top: 12px;
+        border-top: 2px dashed #e1e8ed;
+        margin-top: 12px;
+    }
+
+    .order-total-row.total .price {
+        color: #EF4444;
+    }
+
+    .btn-checkout {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #EF4444 0%, #F59E0B 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-checkout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239,68,68,0.3);
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-cart i {
+        font-size: 4rem;
+        color: #e1e8ed;
+        margin-bottom: 20px;
+    }
+
+    .empty-cart h3 {
+        color: #5C6B7A;
+        margin-bottom: 10px;
+    }
+
+    .empty-cart p {
+        color: #9CA8B3;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 991px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .order-summary-card {
+            position: static;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Payment Methods */
+    .payment-methods {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid #f1f5f9;
+    }
+    .payment-methods h6 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 15px;
+    }
+    .payment-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 15px;
+        border: 2px solid #e1e8ed;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .payment-option:hover {
+        border-color: var(--primary);
+        background: #f8fbfd;
+    }
+    .payment-option.active {
+        border-color: var(--primary);
+        background: #f0f9ff;
+    }
+    .payment-option input {
+        accent-color: var(--primary);
+    }
+    .payment-option label {
+        flex: 1;
+        cursor: pointer;
+        margin: 0;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+    .payment-icon {
+        width: 36px;
+        height: 36px;
+        background: #f0f9ff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+    }
+
+    /* QR Code Section */
+    .qr-section {
+        display: none;
+        background: #f8fbfd;
+        border: 2px dashed #0077B6;
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        margin-top: 15px;
+    }
+    .qr-section.active {
+        display: block;
+    }
+    .qr-code-wrapper {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .qr-amount {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin: 15px 0 5px;
+    }
+    .qr-note {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .btn-qr-copy {
+        background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+    .btn-qr-copy:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,119,182,0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-header">
+        <h1><i class="bi bi-bag-check me-2"></i>Xác nhận đơn hàng</h1>
+        <p>Vui lòng điền thông tin giao hàng để hoàn tất đặt hàng</p>
+    </div>
+
+    {% if cart_items %}
+    {% with final_total=total|add:30000|default:total %}
+    <form method="POST" action="{% url 'shop:checkout' %}" id="checkoutForm">
+        {% csrf_token %}
+        <div class="checkout-grid">
+            <!-- Form thông tin giao hàng -->
+            <div class="checkout-form-card">
+                <div class="checkout-form-header">
+                    <i class="bi bi-geo-alt me-2"></i>Thông tin giao hàng
+                </div>
+                <div class="checkout-form-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer_name">Họ và tên *</label>
+                            <input type="text" id="customer_name" name="customer_name" 
+                                   value="{{ user.full_name|default:'' }}" required
+                                   placeholder="Nhập họ và tên">
+                        </div>
+                        <div class="form-group">
+                            <label for="customer_phone">Số điện thoại *</label>
+                            <input type="tel" id="customer_phone" name="customer_phone" 
+                                   value="{{ user.phone|default:'' }}" required
+                                   placeholder="Nhập số điện thoại">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer_address">Địa chỉ giao hàng *</label>
+                        <input type="text" id="customer_address" name="customer_address" 
+                               value="{{ user.address|default:'' }}" required
+                               placeholder="Nhập địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Ghi chú đơn hàng (tùy chọn)</label>
+                        <textarea id="notes" name="notes" 
+                                  placeholder="Ví dụ: Giao giờ hành chính, gọi trước khi giao..."></textarea>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <h6><i class="bi bi-credit-card me-2"></i>Phương thức thanh toán</h6>
+                        <div class="payment-option active" onclick="selectPayment('cod')">
+                            <input type="radio" name="payment_method" value="cod" id="payment-cod" checked>
+                            <div class="payment-icon"><i class="bi bi-truck"></i></div>
+                            <label for="payment-cod">Thanh toán khi nhận hàng (COD)</label>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('vnpay')">
+                            <input type="radio" name="payment_method" value="vnpay" id="payment-vnpay">
+                            <div class="payment-icon"><i class="bi bi-qr-code-scan"></i></div>
+                            <label for="payment-vnpay">Thanh toán bằng QR Code</label>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="qr-section" id="qrSection">
+                        <h6 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="bi bi-qr-code me-2"></i>Quét mã QR để thanh toán
+                        </h6>
+                        <div class="qr-code-wrapper">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://img.vietqr.io/image/vietinbank-123456789-xyz123.png?amount={{ total|add:30000|floatformat:0 }}&addInfo=TechStore%20Order" 
+                                 alt="QR Code thanh toán" style="width: 200px; height: 200px;">
+                            <div class="qr-amount">{{ final_total|floatformat:0|intcomma }}đ</div>
+                            <div class="qr-note">
+                                <i class="bi bi-bank me-1"></i>Ngân hàng VietinBank - STK: 123456789<br>
+                                <i class="bi bi-person me-1"></i>Chủ tài khoản: TechStore
+                            </div>
+                        </div>
+                        <button type="button" class="btn-qr-copy" onclick="copyAmount()">
+                            <i class="bi bi-clipboard me-2"></i>Sao chép số tiền
+                        </button>
+                    </div>
+
+                    <!-- Thông tin khác -->
+                    <div style="background: #f8fbfd; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <h6 style="font-weight: 700; color: #0077B6; margin-bottom: 10px;">
+                            <i class="bi bi-truck me-2"></i>Thông tin giao hàng
+                        </h6>
+                        <ul style="font-size: 0.9rem; color: #5C6B7A; margin: 0; padding-left: 20px;">
+                            <li>Giao hàng trong 2-5 ngày làm việc</li>
+                            <li>Miễn phí vận chuyển cho đơn từ 500.000đ</li>
+                            <li>Thanh toán khi nhận hàng (COD)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tóm tắt đơn hàng -->
+            <div class="order-summary-card">
+                <div class="order-summary-header">
+                    <i class="bi bi-cart3 me-2"></i>Đơn hàng ({{ total_items }} sản phẩm)
+                </div>
+
+                <div class="order-items">
+                    {% for item in cart_items %}
+                    <div class="order-item">
+                        <img src="{{ item.product.image_url|default:'/static/images/placeholder.png' }}" 
+                             alt="{{ item.product.name }}" class="order-item-img">
+                        <div class="order-item-info">
+                            <div class="order-item-name">{{ item.product.name }}</div>
+                            {% if item.variant %}
+                            <div class="order-item-variant">{{ item.variant.variant_name }}</div>
+                            {% endif %}
+                            <div class="order-item-qty">x{{ item.quantity }}</div>
+                        </div>
+                        <div class="order-item-price">{{ item.subtotal|floatformat:0|intcomma }}đ</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="order-totals">
+                    <div class="order-total-row">
+                        <span>Tạm tính:</span>
+                        <span>{{ total|floatformat:0|intcomma }}đ</span>
+                    </div>
+                    <div class="order-total-row">
+                        <span>Phí vận chuyển:</span>
+                        <span>
+                            {% if total >= 500000 %}
+                            <span class="text-success">Miễn phí</span>
+                            {% else %}
+                            30.000đ
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="order-total-row">
+                        <span>Giảm giá:</span>
+                        <span class="text-success">0đ</span>
+                    </div>
+                    <div class="order-total-row total">
+                        <span>Tổng cộng:</span>
+                        <span class="price" id="orderTotalAmount">
+                            {% if total >= 500000 %}
+                            {{ total|floatformat:0|intcomma }}đ
+                            {% else %}
+                            {{ final_total|floatformat:0|intcomma }}đ
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <button type="submit" class="btn-checkout mt-3" id="btnPlaceOrder">
+                        <i class="bi bi-bag-check"></i>
+                        <span>Đặt hàng ngay</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% endwith %}
+    {% else %}
+    <!-- Giỏ hàng trống -->
+    <div class="empty-cart">
+        <i class="bi bi-cart-x"></i>
+        <h3>Giỏ hàng trống</h3>
+        <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+        <a href="{% url 'shop:product_list' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-bag me-2"></i>Tiếp tục mua sắm
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function selectPayment(method) {
+        document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+        document.querySelector('input[value="' + method + '"]').closest('.payment-option').classList.add('active');
+        document.querySelector('input[value="' + method + '"]').checked = true;
+        
+        if (method === 'vnpay') {
+            document.getElementById('qrSection').classList.add('active');
+        } else {
+            document.getElementById('qrSection').classList.remove('active');
+        }
+    }
+
+    function copyAmount() {
+        var amount = '{{ final_total|floatformat:0 }}';
+        navigator.clipboard.writeText(amount).then(function() {
+            alert('Đã sao chép số tiền: ' + amount + 'đ');
+        });
+    }
+</script>
+{% endblock %}
