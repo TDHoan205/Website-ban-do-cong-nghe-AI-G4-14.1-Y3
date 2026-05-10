@@ -48,7 +48,7 @@ def category_list(request):
 def category_create(request):
     """Tạo danh mục mới."""
     if request.method == 'POST':
-        form = CategoryForm(request.POST, request.FILES)
+        form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Tạo danh mục thành công!')
@@ -71,7 +71,7 @@ def category_update(request, pk):
     category = get_object_or_404(Category, pk=pk)
 
     if request.method == 'POST':
-        form = CategoryForm(request.POST, request.FILES, instance=category)
+        form = CategoryForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
             messages.success(request, 'Cập nhật danh mục thành công!')

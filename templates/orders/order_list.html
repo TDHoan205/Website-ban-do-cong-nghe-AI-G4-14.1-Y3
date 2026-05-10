@@ -50,7 +50,7 @@
             <a href="?status=Shipped" class="filter-tab {% if status_filter == 'Shipped' %}active{% endif %}">
                 <i class="bi bi-truck me-1"></i>
                 Đang giao
-                <span class="badge bg-purple ms-1" style="background: #8B5CF6;">{{ status_counts.shipped|default:"0" }}</span>
+                <span class="badge bg-purple ms-1" >{{ status_counts.shipped|default:"0" }}</span>
             </a>
             <a href="?status=Delivered" class="filter-tab {% if status_filter == 'Delivered' %}active{% endif %}">
                 <i class="bi bi-bag-check me-1"></i>
@@ -278,7 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('toastContainer');
         if (!container) return;
         const id = 'toast-' + Date.now();
-        const html = '<div class="toast"><div class="toast-body"><i class="bi bi-' + (type === 'success' ? 'check-circle text-success' : type === 'danger' ? 'x-circle text-danger' : 'info-circle text-info') + ' me-2"></i>' + message + '</div></div>';
+        const iconClass = type === 'success' ? 'check-circle text-success' : type === 'danger' ? 'x-circle text-danger' : 'info-circle text-info';
+        const html = '<div id="' + id + '" class="toast"><div class="toast-body"><i class="bi bi-' + iconClass + ' me-2"></i>' + message + '</div></div>';
         container.insertAdjacentHTML('beforeend', html);
         try { new bootstrap.Toast(document.getElementById(id)).show(); } catch(e) {}
     };
@@ -347,6 +348,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         showToast(data.message, 'danger');
                     }
+                .then(function(data) {
+                    if (data.success) {
+                        showToast('Hủy đơn hàng thành công!', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                })
+                .catch(function() {
+                    showToast('Có lỗi xảy ra!', 'danger');
                 });
             }
         });

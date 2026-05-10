@@ -30,7 +30,7 @@
 <ul class="nav nav-pills mb-4" id="chatStatusTabs">
     <li class="nav-item">
         <a class="nav-link {% if not status_filter %}active{% endif %}" href="?status=">
-            Tất cả <span class="badge bg-secondary ms-1">{{ status_counts.active|default:"0"|add:status_counts.waiting|default:"0"|add:status_counts.closed|default:"0" }}</span>
+            Tất cả <span class="badge bg-secondary ms-1">{{ total_chats|default:0 }}</span>
         </a>
     </li>
     <li class="nav-item">

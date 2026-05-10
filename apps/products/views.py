@@ -75,7 +75,7 @@ def product_list(request):
 def product_create(request):
     """Tạo sản phẩm mới."""
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
+        form = ProductForm(request.POST)
         if form.is_valid():
             product = form.save()
             messages.success(request, f'Tạo sản phẩm "{product.name}" thành công!')
@@ -98,7 +98,7 @@ def product_update(request, pk):
     product = get_object_or_404(Product.objects.prefetch_related('variants', 'product_images'), pk=pk)
 
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
+        form = ProductForm(request.POST, instance=product)
         if form.is_valid():
             form.save()
             messages.success(request, f'Cập nhật sản phẩm "{product.name}" thành công!')

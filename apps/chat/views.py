@@ -144,6 +144,8 @@ def chat_list(request):
 
     # Status counts
     status_counts = ChatSession.objects.values('status').annotate(count=Count('status'))
+    status_dict = {item['status'].lower(): item['count'] for item in status_counts}
+    total_chats = sum(status_dict.values())
 
     context = {
         'page_title': 'Quản lý chat',
@@ -152,8 +154,9 @@ def chat_list(request):
         'paginator': paginator,
         'search_query': search_query,
         'status_filter': status_filter,
-        'status_counts': {item['status'].lower(): item['count'] for item in status_counts},
-        'waiting': 0,
+        'status_counts': status_dict,
+        'total_chats': total_chats,
+        'waiting': status_dict.get('waiting', 0),
     }
     return render(request, 'chat/chat_list.html', context)
 
