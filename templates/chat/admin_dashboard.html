@@ -256,104 +256,114 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    initConversationChart();
-    initIntentPieChart();
-    initResponseTimeChart();
-});
+(function() {
+    // Store chart instances globally
+    window._chatConversationChart = null;
+    window._chatIntentChart = null;
+    window._chatResponseChart = null;
 
-function initConversationChart() {
-    const ctx = document.getElementById('conversationChart');
-    if (!ctx) return;
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ chart_labels|default:"['T2','T3','T4','T5','T6','T7','CN']"|safe }},
-            datasets: [{
-                label: 'Tin nhắn',
-                data: {{ chart_data|default:"[12,19,15,22,18,25,20]"|safe }},
-                borderColor: '#0284c7',
-                backgroundColor: 'rgba(2,132,199,0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#0284c7',
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
-                x: { grid: { display: false } }
-            }
+    window.initChatDashboardCharts = function() {
+        if (window._chatConversationChart) { window._chatConversationChart.destroy(); window._chatConversationChart = null; }
+        if (window._chatIntentChart) { window._chatIntentChart.destroy(); window._chatIntentChart = null; }
+        if (window._chatResponseChart) { window._chatResponseChart.destroy(); window._chatResponseChart = null; }
+
+        var convCanvas = document.getElementById('conversationChart');
+        if (convCanvas) {
+            window._chatConversationChart = new Chart(convCanvas, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels|default:"['T2','T3','T4','T5','T6','T7','CN']"|safe }},
+                    datasets: [{
+                        label: 'Tin nhắn',
+                        data: {{ chart_data|default:"[12,19,15,22,18,25,20]"|safe }},
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2,132,199,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0284c7',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        var intentCanvas = document.getElementById('intentPieChart');
+        if (intentCanvas) {
+            window._chatIntentChart = new Chart(intentCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ intent_labels|default:"['Sản phẩm','Giá','Đơn hàng','Thanh toán','Khác']"|safe }},
+                    datasets: [{
+                        data: {{ intent_data|default:"[45,20,15,10,10]"|safe }},
+                        backgroundColor: ['#0284c7','#10B981','#F59E0B','#6366F1','#94A3B8'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { padding: 16, font: { size: 12 } } } },
+                    cutout: '65%',
+                }
+            });
+        }
+
+        var respCanvas = document.getElementById('responseTimeChart');
+        if (respCanvas) {
+            window._chatResponseChart = new Chart(respCanvas, {
+                type: 'bar',
+                data: {
+                    labels: {{ chart_labels|default:"['T2','T3','T4','T5','T6','T7','CN']"|safe }},
+                    datasets: [{
+                        label: 'Thời gian phản hồi (s)',
+                        data: {{ response_time_data|default:"[1.2,1.1,1.4,1.0,1.3,1.1,1.2]"|safe }},
+                        backgroundColor: 'rgba(2,132,199,0.7)',
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', window.initChatDashboardCharts);
+
+    document.addEventListener('spa:contentLoaded', function() {
+        if (document.getElementById('conversationChart') || document.getElementById('intentPieChart')) {
+            window.initChatDashboardCharts();
         }
     });
-}
 
-function initIntentPieChart() {
-    const ctx = document.getElementById('intentPieChart');
-    if (!ctx) return;
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: {{ intent_labels|default:"['Sản phẩm','Giá','Đơn hàng','Thanh toán','Khác']"|safe }},
-            datasets: [{
-                data: {{ intent_data|default:"[45,20,15,10,10]"|safe }},
-                backgroundColor: ['#0284c7','#10B981','#F59E0B','#6366F1','#94A3B8'],
-                borderWidth: 0,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { padding: 16, font: { size: 12 } } } },
-            cutout: '65%',
-        }
-    });
-}
+    function updateDashboard() {
+        var timeRange = document.getElementById('timeRange').value;
+        var intent = document.getElementById('intentFilter').value;
+        window.location.href = '?range=' + timeRange + '&intent=' + intent;
+    }
 
-function initResponseTimeChart() {
-    const ctx = document.getElementById('responseTimeChart');
-    if (!ctx) return;
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {{ chart_labels|default:"['T2','T3','T4','T5','T6','T7','CN']"|safe }},
-            datasets: [{
-                label: 'Thời gian phản hồi (s)',
-                data: {{ response_time_data|default:"[1.2,1.1,1.4,1.0,1.3,1.1,1.2]"|safe }},
-                backgroundColor: 'rgba(2,132,199,0.7)',
-                borderRadius: 8,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-}
+    function viewConversation(sessionId) {
+        window.location.href = '/admin/chat/' + sessionId + '/';
+    }
 
-function updateDashboard() {
-    const timeRange = document.getElementById('timeRange').value;
-    const intent = document.getElementById('intentFilter').value;
-    window.location.href = '?range=' + timeRange + '&intent=' + intent;
-}
-
-function viewConversation(sessionId) {
-    window.location.href = '/admin/chat/' + sessionId + '/';
-}
-
-function exportReport() {
-    window.location.href = '/admin/chat/export/?range=' + document.getElementById('timeRange').value;
-}
+    function exportReport() {
+        window.location.href = '/admin/chat/export/?range=' + document.getElementById('timeRange').value;
+    }
 </script>
 {% endblock %}

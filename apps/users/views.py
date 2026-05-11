@@ -10,11 +10,14 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.db import models
+from django.utils import timezone
+from django.conf import settings
 
 from apps.core.decorators import admin_required, ajax_required
 from apps.core.utils import paginate_queryset, format_currency
-from .models import Account, Employee
+from .models import Account, Employee, PasswordReset
 from .forms import AccountForm, EmployeeForm, LoginForm, RegisterForm, ForgotPasswordForm
+from apps.cart.models import CartItem
 
 
 # =====================
@@ -22,7 +25,7 @@ from .forms import AccountForm, EmployeeForm, LoginForm, RegisterForm, ForgotPas
 # =====================
 
 def login_view(request):
-    """Trang đăng nhập."""
+    """Trang dang nhap - ho tro guest cart merge."""
     if request.user.is_authenticated:
         return redirect('dashboard:index')
 
@@ -34,18 +37,48 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 if user.is_active:
+                    # Merge guest cart vao member cart truoc khi login
+                    if request.session.session_key:
+                        _merge_guest_cart(request, user)
                     login(request, user)
                     next_url = request.GET.get('next', 'dashboard:index')
-                    messages.success(request, f'Chào mừng {user.username}!')
+                    messages.success(request, f'Chao mung {user.username}!')
                     return redirect(next_url)
                 else:
-                    messages.error(request, 'Tài khoản đã bị khóa!')
+                    messages.error(request, 'Tai khoan da bi khoa!')
             else:
-                messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng!')
+                messages.error(request, 'Ten dang nhap hoac mat khau khong dung!')
     else:
         form = LoginForm()
 
     return render(request, 'accounts/login.html', {'form': form})
+
+
+def _merge_guest_cart(request, user):
+    """Gop gio hang cua guest vao tai khoan khi dang nhap."""
+    if request.session.session_key is None:
+        return
+    guest_items = CartItem.objects.filter(session_key=request.session.session_key)
+    for guest_item in guest_items:
+        existing = CartItem.objects.filter(
+            account=user,
+            product=guest_item.product,
+            variant=guest_item.variant
+        ).first()
+        if existing:
+            existing.quantity += guest_item.quantity
+            max_stock = guest_item.variant.stock_quantity if guest_item.variant else guest_item.product.stock_quantity
+            if existing.quantity > max_stock:
+                existing.quantity = max_stock
+            existing.save()
+        else:
+            CartItem.objects.create(
+                account=user,
+                product=guest_item.product,
+                variant=guest_item.variant,
+                quantity=guest_item.quantity
+            )
+        guest_item.delete()
 
 
 def logout_view(request):
@@ -75,22 +108,115 @@ def register_view(request):
 
 
 def forgot_password_view(request):
-    """Trang quên mật khẩu."""
+    """Trang quen mat khau - gui email reset."""
     if request.user.is_authenticated:
         return redirect('dashboard:index')
 
     if request.method == 'POST':
-        email = request.POST.get('email', '')
+        email = request.POST.get('email', '').strip()
         try:
-            account = Account.objects.get(email=email)
-            # TODO: Gửi email đặt lại mật khẩu
-            messages.success(request, f'Đã gửi hướng dẫn đặt lại mật khẩu đến email {email}')
+            account = Account.objects.get(email__iexact=email)
+            # Tao token reset
+            import secrets
+            from django.utils import timezone
+            from datetime import timedelta
+
+            # Vo hieu hoa token cu
+            PasswordReset.objects.filter(account=account, used=False).update(used=True)
+
+            token = secrets.token_urlsafe(48)
+            expires_at = timezone.now() + timedelta(hours=24)
+            reset = PasswordReset.objects.create(
+                account=account,
+                token=token,
+                expires_at=expires_at
+            )
+
+            # Gui email
+            reset_url = request.build_absolute_uri(
+                f'/accounts/reset-password/?token={token}&email={account.email}'
+            )
+
+            try:
+                from django.core.mail import send_mail
+                send_mail(
+                    subject='[TechStore] Dat lai mat khau',
+                    message=f'''Xin chao {account.full_name or account.username},
+
+Ban yeu cau dat lai mat khau cho tai khoan TechStore.
+
+Nhan vao link sau de dat lai mat khau:
+{reset_url}
+
+Link nay co hieu luc trong 24 gio.
+
+Neu ban khong yeu cau dat lai mat khau, vui long bo qua email nay.
+
+TechStore
+''',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[account.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # Neu email that bai, van hien thi thong bao thanh cong
+
+            messages.success(request, f'Da gui link dat lai mat khau den email {email}. Vui long kiem tra hop thu.')
         except Account.DoesNotExist:
-            messages.error(request, 'Email không tồn tại trong hệ thống!')
-        except Exception as e:
-            messages.error(request, 'Có lỗi xảy ra. Vui lòng thử lại.')
+            # Van hien thi thong bao thanh cong de tranh email enumeration
+            messages.success(request, f'Neu email ton tai trong he thong, link dat lai mat khau da duoc gui.')
 
     return render(request, 'accounts/forgot_password.html')
+
+
+def reset_password_view(request):
+    """Trang dat lai mat khau."""
+    if request.user.is_authenticated:
+        return redirect('dashboard:index')
+
+    token = request.GET.get('token', '').strip()
+    email = request.GET.get('email', '').strip()
+
+    if not token or not email:
+        messages.error(request, 'Link dat lai mat khau khong hop le.')
+        return redirect('accounts:forgot_password')
+
+    try:
+        account = Account.objects.get(email__iexact=email)
+        reset = PasswordReset.objects.filter(
+            account=account,
+            token=token,
+            used=False,
+            expires_at__gt=timezone.now()
+        ).first()
+
+        if not reset:
+            messages.error(request, 'Link dat lai mat khau da het han hoac khong ton tai.')
+            return redirect('accounts:forgot_password')
+
+        if request.method == 'POST':
+            password = request.POST.get('password', '').strip()
+            password2 = request.POST.get('password2', '').strip()
+
+            if len(password) < 6:
+                messages.error(request, 'Mat khau phai it nhat 6 ky tu.')
+            elif password != password2:
+                messages.error(request, 'Mat khau xac nhan khong khop.')
+            else:
+                account.set_password(password)
+                account.save()
+                reset.used = True
+                reset.save()
+                messages.success(request, 'Dat lai mat khau thanh cong! Vui long dang nhap.')
+                return redirect('accounts:login')
+
+        return render(request, 'accounts/reset_password.html', {
+            'token': token, 'email': email
+        })
+
+    except Account.DoesNotExist:
+        messages.error(request, 'Link dat lai mat khau khong hop le.')
+        return redirect('accounts:forgot_password')
 
 
 # =====================

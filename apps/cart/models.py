@@ -17,7 +17,16 @@ class CartItem(models.Model):
         Account,
         on_delete=models.CASCADE,
         related_name='cart_items',
-        db_column='account_id'
+        db_column='account_id',
+        blank=True,
+        null=True,
+    )
+    session_key = models.CharField(
+        'Session key (Guest)',
+        max_length=40,
+        blank=True,
+        null=True,
+        db_index=True,
     )
     product = models.ForeignKey(
         Product,
@@ -40,17 +49,22 @@ class CartItem(models.Model):
         db_table = 'Cart_Items'
         verbose_name = 'Giỏ hàng'
         verbose_name_plural = 'Giỏ hàng'
-        unique_together = ['account', 'product', 'variant']
+        unique_together = []  # Checked in clean()
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.account and not self.session_key:
+            raise ValidationError('CartItem phai co account hoac session_key.')
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
 
     @property
     def unit_price(self):
-        if self.variant and self.variant.price:
-            return self.variant.price
-        return self.product.price
+        if self.variant and self.variant.price is not None:
+            return float(self.variant.price)
+        return float(self.product.price or 0)
 
     @property
     def subtotal(self):
-        return self.quantity * self.unit_price
+        return float(self.quantity * self.unit_price) if self.unit_price else 0

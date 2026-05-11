@@ -1,0 +1,140 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Tra cuu don hang - TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-page { padding: 60px 0; min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+    .tracking-card {
+        background: white; border-radius: 20px; padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1); max-width: 600px; width: 100%;
+    }
+    .tracking-title { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+    .tracking-desc { color: #9ca8b3; margin-bottom: 30px; }
+    .form-control-lg { padding: 14px 18px; font-size: 1rem; border-radius: 12px; }
+    .btn-lg { padding: 14px 30px; font-size: 1rem; border-radius: 12px; font-weight: 700; }
+    .tracking-result { margin-top: 30px; }
+    .result-card {
+        border: 2px solid #e1e8ed; border-radius: 16px; padding: 24px; margin-top: 20px;
+    }
+    .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .result-code { font-weight: 800; font-size: 1.1rem; color: #0077B6; }
+    .status-badge-lg {
+        padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 700;
+    }
+    .timeline-tracking { display: flex; flex-direction: column; gap: 0; }
+    .tl-item { display: flex; gap: 16px; position: relative; padding-bottom: 20px; }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-item::before {
+        content: ''; position: absolute; left: 11px; top: 24px;
+        width: 2px; height: calc(100% - 24px); background: #e1e8ed;
+    }
+    .tl-item.done::before { background: #10b981; }
+    .tl-dot { width: 24px; height: 24px; border-radius: 50%; background: #e1e8ed; flex-shrink: 0; z-index: 1; }
+    .tl-item.done .tl-dot { background: #10b981; }
+    .tl-item.current .tl-dot { background: #0077B6; box-shadow: 0 0 0 4px rgba(0,119,182,0.2); }
+    .tl-label { font-weight: 700; font-size: 0.9rem; color: #1e293b; }
+    .tl-time { font-size: 0.78rem; color: #9ca8b3; }
+    .result-items { border-top: 1px solid #e1e8ed; padding-top: 16px; margin-top: 16px; }
+    .result-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+    .result-item-name { font-size: 0.9rem; font-weight: 600; }
+    .result-item-price { font-size: 0.9rem; font-weight: 700; color: #0077B6; }
+    .result-total {
+        display: flex; justify-content: space-between; align-items: center;
+        padding-top: 12px; margin-top: 12px; border-top: 2px solid #e1e8ed;
+        font-weight: 800; font-size: 1.1rem; color: #0077B6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tracking-page">
+    <div class="tracking-card">
+        <h1 class="tracking-title"><i class="fas fa-search me-2"></i>Tra cuu don hang</h1>
+        <p class="tracking-desc">Nhap ma don hang va so dien thoai de tra cuu trang thai don.</p>
+
+        <form method="GET">
+            <div class="mb-3">
+                <label style="font-weight:600; color:#64748b; font-size:0.9rem;">Ma don hang</label>
+                <input type="text" name="order_code" class="form-control form-control-lg mt-1"
+                       placeholder="VD: ORD20250101123456" value="{{ order_code }}" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-weight:600; color:#64748b; font-size:0.9rem;">So dien thoai</label>
+                <input type="tel" name="phone" class="form-control form-control-lg mt-1"
+                       placeholder="VD: 0901234567" value="{{ phone }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="fas fa-search me-2"></i>Tra cuu
+            </button>
+        </form>
+
+        {% if error %}
+        <div class="alert alert-warning mt-4" style="border-radius:12px;">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        {% if order %}
+        <div class="tracking-result">
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-code">
+                        <i class="fas fa-receipt me-1"></i>{{ order.order_code }}
+                    </span>
+                    <span class="status-badge-lg status-{{ order.status|lower }}">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="tl-item {% if order.status != 'Pending' %}done{% endif %}">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-label">Dat hang thanh cong</div><div class="tl-time">{{ order.order_date|date:"d/m/Y H:i" }}</div></div>
+                </div>
+                <div class="tl-item {% if order.status in 'Confirmed,Processing,Shipped,Delivered' %}done{% endif %} {% if order.status == 'Confirmed' %}current{% endif %}">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-label">Da xac nhan</div></div>
+                </div>
+                <div class="tl-item {% if order.status in 'Processing,Shipped,Delivered' %}done{% endif %} {% if order.status == 'Processing' %}current{% endif %}">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-label">Dang chuan bi hang</div></div>
+                </div>
+                <div class="tl-item {% if order.status in 'Shipped,Delivered' %}done{% endif %} {% if order.status == 'Shipped' %}current{% endif %}">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-label">Dang van chuyen</div></div>
+                </div>
+                <div class="tl-item {% if order.status == 'Delivered' %}done current{% endif %}">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-label">Da giao hang</div></div>
+                </div>
+
+                <div class="result-items">
+                    {% for item in order.items.all %}
+                    <div class="result-item">
+                        <div>
+                            <div class="result-item-name">{{ item.product_name }}</div>
+                            {% if item.variant_name %}<div style="font-size:0.78rem; color:#9ca8b3;">{{ item.variant_name }}</div>{% endif %}
+                        </div>
+                        <div class="result-item-price">{{ item.subtotal|floatformat:"0"|intcomma }}đ</div>
+                    </div>
+                    {% endfor %}
+                    <div class="result-total">
+                        <span>Tong cong</span>
+                        <span>{{ order.final_amount|floatformat:"0"|intcomma }}đ</span>
+                    </div>
+                </div>
+
+                {% if order.customer_address %}
+                <div class="mt-3" style="font-size:0.85rem; color:#64748b;">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    Giao den: {{ order.customer_address }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

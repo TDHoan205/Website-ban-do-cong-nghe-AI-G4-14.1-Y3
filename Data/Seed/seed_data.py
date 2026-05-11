@@ -26,12 +26,12 @@ from datetime import datetime
 def seed_categories(db: Session):
     """Tạo dữ liệu danh mục mẫu"""
     categories = [
-        {"name": "Điện thoại", "description": "Điện thoại thông minh các hãng", "image_url": "https://via.placeholder.com/200x200?text=Phone"},
-        {"name": "Laptop", "description": "Máy tính xách tay", "image_url": "https://via.placeholder.com/200x200?text=Laptop"},
-        {"name": "Tablet", "description": "Máy tính bảng", "image_url": "https://via.placeholder.com/200x200?text=Tablet"},
-        {"name": "Tai nghe", "description": "Tai nghe không dây và có dây", "image_url": "https://via.placeholder.com/200x200?text=Headphone"},
-        {"name": "Đồng hồ thông minh", "description": "Smartwatch các hãng", "image_url": "https://via.placeholder.com/200x200?text=Watch"},
-        {"name": "Phụ kiện", "description": "Sạc, cáp, ốp lưng...", "image_url": "https://via.placeholder.com/200x200?text=Accessory"},
+        {"name": "Điện thoại", "description": "Điện thoại thông minh các hãng", "image_url": "/static/images/products/iPhone_15_Pro_Max.png"},
+        {"name": "Laptop", "description": "Máy tính xách tay", "image_url": "/static/images/products/MacBook_Air_M3.png"},
+        {"name": "Tablet", "description": "Máy tính bảng", "image_url": "/static/images/products/iPad_Pro_12.9.png"},
+        {"name": "Tai nghe", "description": "Tai nghe không dây và có dây", "image_url": "/static/images/products/AirPods_Pro_2.png"},
+        {"name": "Đồng hồ thông minh", "description": "Smartwatch các hãng", "image_url": "/static/images/products/Apple_Watch_S9.png"},
+        {"name": "Phụ kiện", "description": "Sạc, cáp, ốp lưng...", "image_url": "/static/images/products/Anker_735_65W.png"},
     ]
 
     for cat_data in categories:
@@ -75,7 +75,7 @@ def seed_products(db: Session):
         {
             "name": "iPhone 15 Pro Max",
             "description": "Điện thoại flagship của Apple với chip A17 Pro, camera 48MP, màn hình OLED 6.7 inch",
-            "image_url": "https://via.placeholder.com/400x400?text=iPhone+15+Pro+Max",
+            "image_url": "/static/images/products/iPhone_15_Pro_Max.png",
             "price": 34990000,
             "original_price": 37990000,
             "stock_quantity": 50,
@@ -89,7 +89,7 @@ def seed_products(db: Session):
         {
             "name": "Samsung Galaxy S24 Ultra",
             "description": "Flagship Android với camera 200MP, S Pen tích hợp, AI features",
-            "image_url": "https://via.placeholder.com/400x400?text=Galaxy+S24+Ultra",
+            "image_url": "/static/images/products/Galaxy_S24_Ultra.png",
             "price": 32990000,
             "original_price": 34990000,
             "stock_quantity": 40,
@@ -102,7 +102,7 @@ def seed_products(db: Session):
         {
             "name": "iPhone 14",
             "description": "iPhone thế hệ trước với chip A15 Bionic, camera 12MP",
-            "image_url": "https://via.placeholder.com/400x400?text=iPhone+14",
+            "image_url": "/static/images/products/iPhone_14.png",
             "price": 22990000,
             "stock_quantity": 80,
             "rating": 4.7,
@@ -114,7 +114,7 @@ def seed_products(db: Session):
         {
             "name": "MacBook Pro M3 14 inch",
             "description": "Laptop chuyên nghiệp với chip M3, 18GB RAM, 512GB SSD",
-            "image_url": "https://via.placeholder.com/400x400?text=MacBook+Pro+M3",
+            "image_url": "/static/images/products/MacBook_Pro_14_M3_Pro.png",
             "price": 45990000,
             "original_price": 49990000,
             "stock_quantity": 20,
@@ -127,7 +127,7 @@ def seed_products(db: Session):
         {
             "name": "Dell XPS 15",
             "description": "Laptop cao cấp Windows với Intel Core i9, 32GB RAM",
-            "image_url": "https://via.placeholder.com/400x400?text=Dell+XPS+15",
+            "image_url": "/static/images/products/Dell_XPS_15.png",
             "price": 38990000,
             "stock_quantity": 15,
             "rating": 4.6,
@@ -139,7 +139,7 @@ def seed_products(db: Session):
         {
             "name": "AirPods Pro 2",
             "description": "Tai nghe không dây chống ồn chủ động, Spatial Audio",
-            "image_url": "https://via.placeholder.com/400x400?text=AirPods+Pro+2",
+            "image_url": "/static/images/products/AirPods_Pro_2.png",
             "price": 6990000,
             "stock_quantity": 100,
             "rating": 4.8,
@@ -150,7 +150,7 @@ def seed_products(db: Session):
         {
             "name": "Sony WH-1000XM5",
             "description": "Tai nghe over-ear chống ồn tốt nhất",
-            "image_url": "https://via.placeholder.com/400x400?text=Sony+XM5",
+            "image_url": "/static/images/products/Sony_WH-1000XM5.png",
             "price": 8990000,
             "original_price": 9990000,
             "stock_quantity": 60,
@@ -164,7 +164,7 @@ def seed_products(db: Session):
         {
             "name": "Apple Watch Ultra 2",
             "description": "Đồng hồ thông minh cho thể thao mạnh mẽ",
-            "image_url": "https://via.placeholder.com/400x400?text=Watch+Ultra+2",
+            "image_url": "/static/images/products/Apple_Watch_S9.png",
             "price": 18990000,
             "stock_quantity": 30,
             "rating": 4.8,

@@ -282,7 +282,7 @@
         products.slice(0, 3).forEach(function(p) {
             var div = document.createElement('div');
             div.className = 'product-suggestion';
-            div.onclick = function() { window.location.href = '/products/' + p.product_id + '/'; };
+            div.onclick = function() { window.location.href = '/shop/products/' + p.product_id + '/'; };
             var price = new Intl.NumberFormat('vi-VN').format(p.price) + 'đ';
             div.innerHTML = '<img src="' + (p.image_url || '/static/images/placeholder.svg') + '" alt="" onerror="this.src=\'/static/images/placeholder.svg\'">' +
                 '<div class="product-suggestion-content"><div class="product-suggestion-name">' + escapeHtml(p.name) + '</div>' +

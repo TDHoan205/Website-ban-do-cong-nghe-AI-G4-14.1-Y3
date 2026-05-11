@@ -1,6 +1,10 @@
 {% extends 'shop/base_shop.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link href="{% static 'css/homepage.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block title %}TechStore - Công nghệ cho cuộc sống hiện đại{% endblock %}
 
 {% block content %}
@@ -25,7 +29,7 @@
                     Cam kết chính hãng với bảo hành đáng tin cậy.
                 </p>
                 <div class="hero-actions-modern">
-                    <a href="{% url 'shop:product_list' %}" class="btn-hero-primary-modern">
+                    <a href="/shop/products/" class="btn-hero-primary-modern">
                         <i class="fas fa-shopping-bag me-2"></i>
                         <span>Mua sắm ngay</span>
                     </a>
@@ -132,57 +136,57 @@
                 </h2>
                 <p class="section-subtitle-modern">Tìm kiếm sản phẩm theo nhu cầu của bạn</p>
             </div>
-            <a href="{% url 'shop:product_list' %}" class="btn-view-all">
+            <a href="/shop/products/" class="btn-view-all">
                 Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>
         <div class="categories-grid">
             {% for category in categories %}
-            <a href="{% url 'shop:product_list' %}?category={{ category.category_id }}" class="category-card-modern">
+            <a href="/shop/products/?category={{ category.category_id }}" class="category-card-modern">
                 <div class="category-icon-wrap">
-                    <i class="bi bi-{{ category.icon_name|default:'box' }}"></i>
+                    <i class="bi {% with icon_name=category.name|lower %}{% if 'dien thoai' in icon_name or 'iphone' in icon_name or 'samsung' in icon_name or 'galaxy' in icon_name or 'xiaomi' in icon_name or 'oppo' in icon_name or 'realme' in icon_name %}bi-phone{% elif 'laptop' in icon_name or 'macbook' in icon_name or 'dell' in icon_name or 'asus' in icon_name or 'hp' in icon_name or 'lenovo' in icon_name or 'acer' in icon_name %}bi-laptop{% elif 'tablet' in icon_name or 'ipad' in icon_name %}bi-tablet{% elif 'tai nghe' in icon_name or 'airpod' in icon_name or 'headphone' in icon_name or 'jbl' in icon_name or 'sony' in icon_name %}bi-headphones{% elif 'dong ho' in icon_name or 'watch' in icon_name %}bi-smartwatch{% elif 'camera' in icon_name %}bi-camera{% elif 'gaming' in icon_name or 'game' in icon_name %}bi-gamepad{% elif 'sac' in icon_name or 'cap' in icon_name or 'phu kien' in icon_name %}bi-plug{% elif 'ban phim' in icon_name or 'chuot' in icon_name or 'keyboard' in icon_name %}bi-keyboard{% elif 'man hinh' in icon_name or 'monitor' in icon_name %}bi-display{% elif 'o cung' in icon_name or 'ssd' in icon_name or 'hdd' in icon_name %}bi-hard-drive{% elif 'loa' in icon_name or 'speaker' in icon_name %}bi-speaker{% elif 'mang' in icon_name or 'wifi' in icon_name or 'router' in icon_name %}bi-wifi{% elif 'may in' in icon_name or 'printer' in icon_name %}bi-printer{% elif 'bao ve' in icon_name or 'op lung' in icon_name or 'kinh' in icon_name %}bi-shield-check{% else %}bi-box{% endif %}{% endwith %}"></i>
                 </div>
                 <span class="category-name-modern">{{ category.name }}</span>
                 <div class="category-card-shimmer"></div>
             </a>
             {% empty %}
             <!-- Default categories if none exist -->
-            <a href="{% url 'shop:product_list' %}?category=1" class="category-card-modern">
+            <a href="/shop/products/?category=1" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-mobile-alt"></i></div>
                 <span class="category-name-modern">Điện thoại</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=2" class="category-card-modern">
+            <a href="/shop/products/?category=2" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-laptop"></i></div>
                 <span class="category-name-modern">Laptop</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=3" class="category-card-modern">
+            <a href="/shop/products/?category=3" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-tablet-alt"></i></div>
                 <span class="category-name-modern">Tablet</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=4" class="category-card-modern">
+            <a href="/shop/products/?category=4" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-headphones"></i></div>
                 <span class="category-name-modern">Tai nghe</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=9" class="category-card-modern">
+            <a href="/shop/products/?category=9" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-smartwatch"></i></div>
                 <span class="category-name-modern">Đồng hồ</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=7" class="category-card-modern">
+            <a href="/shop/products/?category=7" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-camera"></i></div>
                 <span class="category-name-modern">Camera</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=18" class="category-card-modern">
+            <a href="/shop/products/?category=18" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-gamepad"></i></div>
                 <span class="category-name-modern">Gaming</span>
                 <div class="category-card-shimmer"></div>
             </a>
-            <a href="{% url 'shop:product_list' %}?category=5" class="category-card-modern">
+            <a href="/shop/products/?category=5" class="category-card-modern">
                 <div class="category-icon-wrap"><i class="bi bi-plug"></i></div>
                 <span class="category-name-modern">Phụ kiện</span>
                 <div class="category-card-shimmer"></div>
@@ -204,7 +208,7 @@
                 </h2>
                 <p class="section-subtitle-modern">Cập nhật xu hướng công nghệ mới nhất</p>
             </div>
-            <a href="{% url 'shop:product_list' %}?filter=new" class="btn-view-all">
+            <a href="/shop/products/?filter=new" class="btn-view-all">
                 Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>
@@ -269,14 +273,14 @@
                 <span class="deals-label"><i class="fas fa-fire me-2"></i>Flash Sale</span>
                 <h2 class="deals-title">Giảm giá cực sốc</h2>
                 <p class="deals-desc">Ưu đãi có hạn - Nhanh tay chớp ngay!</p>
-                <a href="{% url 'shop:product_list' %}" class="btn-deals">
+                <a href="/shop/products/" class="btn-deals">
                     Mua ngay <i class="fas fa-arrow-right ms-2"></i>
                 </a>
             </div>
             <div class="deals-banner-products">
                 {% for product in deal_products %}
                 <div class="deal-mini-card">
-                    <img src="{{ product.image_url|default:'https://via.placeholder.com/80' }}" alt="{{ product.name }}" class="deal-mini-img" />
+                    <img src="{{ product.image_url|default:'/static/images/products/placeholder.svg' }}" alt="{{ product.name }}" class="deal-mini-img" />
                     <div class="deal-mini-info">
                         <span class="deal-mini-name">{{ product.name|truncatechars:15 }}</span>
                         <span class="deal-mini-price">{{ product.price|floatformat:0 }}đ</span>
@@ -302,7 +306,7 @@
                 </h2>
                 <p class="section-subtitle-modern">Những sản phẩm được yêu thích nhất</p>
             </div>
-            <a href="{% url 'shop:product_list' %}?filter=hot" class="btn-view-all">
+            <a href="/shop/products/?filter=hot" class="btn-view-all">
                 Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>
@@ -363,7 +367,7 @@
                 </h2>
                 <p class="section-subtitle-modern">Top sản phẩm được đánh giá cao nhất</p>
             </div>
-            <a href="{% url 'shop:product_list' %}" class="btn-view-all">
+            <a href="/shop/products/" class="btn-view-all">
                 Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>

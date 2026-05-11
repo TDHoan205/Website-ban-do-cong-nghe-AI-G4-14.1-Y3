@@ -1,6 +1,7 @@
 """
-AI Service - Kết hợp Ollama + OpenRouter + Groq (FREE TIER)
-Ưu tiên: Ollama (local) → OpenRouter → Groq → Rule-based
+AI Service - Ket hop Ollama + OpenRouter + Groq (FREE TIER) + RAG Knowledge Base
+Uu tien: Ollama (local) -> OpenRouter -> Groq -> Gemini -> Rule-based
+RAG: Tu dong lay kien thuc tu KnowledgeChunk, Product, FAQ, Policy
 """
 import os
 import re
@@ -9,11 +10,19 @@ import json
 import time
 from typing import Dict, List, Tuple, Optional
 from django.conf import settings
+from django.db.models import Q
 
 from .rule_based import FAQSystem
 from .product_recommender import ProductRecommender
 
 logger = logging.getLogger(__name__)
+
+# Try to import KnowledgeChunk
+try:
+    from apps.chat.models import KnowledgeChunk
+    HAS_KNOWLEDGE_CHUNK = True
+except ImportError:
+    HAS_KNOWLEDGE_CHUNK = False
 
 
 # ============================================================================
@@ -400,24 +409,90 @@ class AIService:
         confidence = min(sum(intent_scores.values()) / 4.0, 1.0)
         return best_intent, confidence
 
-    def build_context(self, message: str, intent: str) -> str:
-        """Xây dựng context cho AI từ sản phẩm liên quan."""
-        products = self.recommender.get_recommendations(message, top_k=5)
+    def search_knowledge(self, query: str, top_k: int = 5) -> List[Dict]:
+        """
+        Tim kiem kien thuc trong RAG knowledge base.
+        Su dung keyword matching thay vi vector search (de don gian, khong can embeddings).
+        """
+        if not HAS_KNOWLEDGE_CHUNK:
+            return []
 
+        try:
+            query_lower = query.lower()
+            query_words = re.findall(r'\w+', query_lower)
+
+            all_chunks = KnowledgeChunk.objects.filter(is_active=True)
+
+            scored_chunks = []
+            for chunk in all_chunks:
+                content_lower = chunk.content.lower()
+                score = 0
+
+                for word in query_words:
+                    if len(word) < 2:
+                        continue
+                    if word in content_lower:
+                        score += 2
+                    if word in chunk.category.lower():
+                        score += 3
+
+                intent_keywords = {
+                    'giao hang': ['giao hang', 'ship', 'van chuyen', 'nhan hang'],
+                    'thanh toan': ['thanh toan', 'cod', 'chuyen khoan', 'vnpay', 'momo'],
+                    'doi tra': ['doi tra', 'hoan tien', 'bao hanh', 'warranty'],
+                    'san pham': ['san pham', 'mua', 'gia', 'chat luong'],
+                    'ho tro': ['ho tro', 'hotline', 'lien he', 'email'],
+                    'dat hang': ['dat hang', 'order', 'mua hang'],
+                }
+
+                for category, keywords in intent_keywords.items():
+                    if any(kw in query_lower for kw in keywords):
+                        if any(kw in content_lower for kw in keywords):
+                            score += 5
+                            break
+
+                if score > 0:
+                    scored_chunks.append({
+                        'chunk': chunk,
+                        'score': score,
+                        'content': chunk.content,
+                        'source': chunk.source_type,
+                    })
+
+            scored_chunks.sort(key=lambda x: x['score'], reverse=True)
+            return scored_chunks[:top_k]
+        except Exception as e:
+            logger.error(f"Knowledge search error: {e}")
+            return []
+
+    def build_context(self, message: str, intent: str) -> str:
+        """Xay dung context cho AI tu RAG knowledge base + san pham lien quan."""
         context_lines = [
-            "Thông tin cửa hàng:",
-            "- TechStore - Cửa hàng bán đồ công nghệ uy tín",
-            "- Hotline: 1800.6601",
-            "- Địa chỉ: Đường Trịnh Văn Bô, Nam Từ Liêm, Hà Nội",
-            "- Giờ làm việc: 8h-22h (24/7 online)",
+            "Thong tin cua hang TechStore:",
+            "- TechStore - Cu hang ban do cong nghe uy tin",
+            "- Hotline: 0123-456-789",
+            "- Dia chi: 123 Duong ABC, Quan 1, TP.HCM",
+            "- Gio lam viec: 8h-22h (24/7 online)",
         ]
 
+        if HAS_KNOWLEDGE_CHUNK:
+            knowledge = self.search_knowledge(message, top_k=5)
+            if knowledge:
+                context_lines.append("\nKien thuc co the thuong gap:")
+                seen_categories = set()
+                for item in knowledge:
+                    cat = item['chunk'].category
+                    if cat and cat not in seen_categories:
+                        seen_categories.add(cat)
+                        context_lines.append(f"- [{item['source']}] {item['content'][:200]}")
+
+        products = self.recommender.get_recommendations(message, top_k=3)
         if products:
-            context_lines.append("\nSản phẩm liên quan:")
-            for p in products[:3]:
+            context_lines.append("\nSan pham lien quan:")
+            for p in products:
                 price = p.get('price', 0) or 0
-                price_str = f"{price:,.0f}".replace(",", ".") if price else "Liên hệ"
-                context_lines.append(f"- {p.get('name')}: {price_str}đ ({p.get('category', '')})")
+                price_str = f"{price:,.0f}".replace(",", ".") if price else "Lien he"
+                context_lines.append(f"- {p.get('name')}: {price_str}d ({p.get('category', '')})")
 
         return "\n".join(context_lines)
 

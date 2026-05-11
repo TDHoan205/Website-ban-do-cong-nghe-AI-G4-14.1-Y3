@@ -21,10 +21,11 @@ urlpatterns = [
     path('faqs/', include('apps.faqs.urls')),
     path('settings/', include('apps.settings.urls')),
     path('inventory/', include('apps.inventory.urls')),
-    path('shop/', include('apps.shop.urls')),
+    path('shop/', include('apps.shop.urls_public')),
     path('brands/', include('apps.brands.urls')),
     path('slides/', include('apps.slides.urls')),
     path('reviews/', include('apps.reviews.urls')),
+    path('wishlist/', include('apps.wishlist.urls')),
 ]
 
 if settings.DEBUG:

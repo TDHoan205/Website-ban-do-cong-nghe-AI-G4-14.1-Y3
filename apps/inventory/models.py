@@ -44,17 +44,69 @@ class Inventory(models.Model):
 
     def update_stock(self, quantity_change, movement_type='manual', notes=None):
         """
-        Cập nhật số lượng tồn kho.
-        
+        Cap nhat so luong ton kho.
+
         Args:
-            quantity_change: Số lượng thay đổi (dương = nhập kho, âm = xuất kho)
-            movement_type: Loại biến động (manual, order, return)
-            notes: Ghi chú thêm
+            quantity_change: So luong thay doi (duong = nhap kho, am = xuat kho)
+            movement_type: Loai bien dong (manual, order, return)
+            notes: Ghi chu them
         """
         self.stock_quantity += quantity_change
         if self.stock_quantity < 0:
             self.stock_quantity = 0
         self.save()
-        
-        # Log movement (có thể tạo thêm InventoryMovement model)
         return self.stock_quantity
+
+
+class InventoryMovement(models.Model):
+    """
+    Bang theo doi bien dong kho - Nhap/Xuat kho.
+    """
+    MOVEMENT_TYPES = [
+        ('IN', 'Nhap kho'),
+        ('OUT', 'Xuat kho'),
+        ('ADJUST', 'Dieu chinh'),
+        ('RETURN', 'Tra hang'),
+    ]
+
+    movement_id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='inventory_movements',
+        db_column='product_id'
+    )
+    movement_type = models.CharField(
+        'Loai bien dong',
+        max_length=20,
+        choices=MOVEMENT_TYPES,
+    )
+    quantity = models.IntegerField('So luong')
+    reason = models.CharField('Ly do', max_length=200)
+    related_order = models.ForeignKey(
+        'orders.Order',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='inventory_movements',
+        db_column='related_order_id'
+    )
+    created_by = models.ForeignKey(
+        'users.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='inventory_movements',
+        db_column='created_by_id'
+    )
+    created_at = models.DateTimeField('Thoi gian', auto_now_add=True)
+
+    class Meta:
+        db_table = 'InventoryMovements'
+        verbose_name = 'Bien dong kho'
+        verbose_name_plural = 'Bien dong kho'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        prefix = '+' if self.movement_type == 'IN' else '-'
+        return f"{self.product.name} {prefix}{self.quantity} ({self.movement_type}) - {self.reason}"

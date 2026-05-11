@@ -1,0 +1,87 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+
+{% block title %}Chinh sach bao mat - TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .legal-page { padding: 60px 0; }
+    .legal-container { max-width: 800px; margin: 0 auto; }
+    .legal-card {
+        background: white; border-radius: 16px; padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .legal-title { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+    .legal-meta { color: #9ca8b3; font-size: 0.85rem; margin-bottom: 30px; }
+    .legal-content h2 { font-size: 1.3rem; font-weight: 800; color: #0077B6; margin-top: 30px; margin-bottom: 12px; }
+    .legal-content h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-top: 20px; margin-bottom: 8px; }
+    .legal-content p { color: #64748b; line-height: 1.8; margin-bottom: 12px; }
+    .legal-content ul { color: #64748b; padding-left: 20px; margin-bottom: 12px; }
+    .legal-content li { margin-bottom: 6px; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="legal-container">
+        <div class="legal-card">
+            <h1 class="legal-title"><i class="fas fa-shield-alt me-2 text-primary"></i>Chinh sach Bao mat</h1>
+            <div class="legal-meta">Cap nhat lan cuoi: 10/05/2026</div>
+
+            <div class="legal-content">
+                <h2>1. Thu thap thong tin</h2>
+                <p>TechStore thu thap thong tin tu nguoi dung khi:</p>
+                <ul>
+                    <li>Dang ky tai khoan: ten dang nhap, email, mat khau, ho ten, so dien thoai, dia chi.</li>
+                    <li>Dat hang: thong tin giao hang, lich su mua hang, phuong thuc thanh toan.</li>
+                    <li>Su dung chatbot: cac cau hoi, yeu cau ho tro.</li>
+                    <li>Duy tri trinh duyet: cookie de luu phien lam viec.</li>
+                </ul>
+
+                <h2>2. Su dung thong tin</h2>
+                <p>Thong tin duoc su dung de:</p>
+                <ul>
+                    <li>Xu ly don hang va giao hang san pham.</li>
+                    <li>Ho tro khach hang va tu van san pham.</li>
+                    <li>Gui thong bao ve don hang, khuyen mai (co su dong y).</li>
+                    <li>Cai thien chat luong dich vu va trai nghiem nguoi dung.</li>
+                </ul>
+
+                <h2>3. Bao mat thong tin</h2>
+                <p>Chung toi cam ket bao mat thong tin nguoi dung bang cach:</p>
+                <ul>
+                    <li>Mat khau duoc ma hoa bang thuat toan bcrypt.</li>
+                    <li>Du lieu duoc luu tren may chu an toan voi backup deu deu.</li>
+                    <li>Chi nhan vien uy quyen moi co the truy cap du lieu khach hang.</li>
+                    <li>Khong chia se thong tin khach hang cho ben thu ba khi khong co su dong y.</li>
+                </ul>
+
+                <h2>4. Quyen cua nguoi dung</h2>
+                <p>Nguoi dung co quyen:</p>
+                <ul>
+                    <li>Truy cap va xem thong tin ca nhan da dang ky.</li>
+                    <li>Yeu cau chinh sua thong tin ca nhan.</li>
+                    <li>Yeu cau xoa tai khoan va du lieu lien quan.</li>
+                    <li>Tu choi nhan email marketing bat cu luc nao.</li>
+                </ul>
+
+                <h2>5. Cookie</h2>
+                <p>Website su dung cookie de:</p>
+                <ul>
+                    <li>Luu phien dang nhap va gio hang (khong can dang nhap).</li>
+                    <li>Ghi nho phien lam viec nguoi dung.</li>
+                    <li>Phan tich luu luong truy cap (Google Analytics).</li>
+                </ul>
+
+                <h2>6. Lien he</h2>
+                <p>Neu ban co thac mac ve chinh sach bao mat, vui long lien he:</p>
+                <ul>
+                    <li>Email: privacy@techshop.com</li>
+                    <li>Hotline: 0123-456-789</li>
+                    <li>Dia chi: 123 Duong ABC, Quan 1, TP.HCM</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

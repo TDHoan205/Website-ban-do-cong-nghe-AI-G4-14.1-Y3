@@ -214,7 +214,7 @@
     <!-- Breadcrumb -->
     <nav class="breadcrumb-nav" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}"><i class="fas fa-home"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/shop/"><i class="fas fa-home"></i> Trang chủ</a></li>
             <li class="breadcrumb-item active">Sản phẩm</li>
         </ol>
     </nav>
@@ -222,7 +222,7 @@
     <div class="row">
         <!-- Sidebar Filters -->
         <div class="col-lg-3 col-md-4">
-            <form method="get" action="{% url 'shop:product_list' %}" id="filterForm">
+            <form method="get" action="/shop/products/" id="filterForm">
                 <!-- Hidden fields to preserve search -->
                 {% if search_query %}
                 <input type="hidden" name="search" value="{{ search_query }}">
@@ -240,7 +240,7 @@
                         <div class="filter-group">
                             <label class="filter-label">Danh mục</label>
                             <div class="list-group">
-                                <a href="{% url 'shop:product_list' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if filter_type %}?filter={{ filter_type }}{% endif %}" 
+                                <a href="/shop/products/{% if search_query %}?search={{ search_query }}{% endif %}{% if filter_type %}?filter={{ filter_type }}{% endif %}" 
                                    class="category-filter-item {% if not selected_category %}active{% endif %}">
                                     <i class="fas fa-th me-2"></i>Tất cả
                                 </a>
@@ -364,7 +364,7 @@
                 <i class="fas fa-search"></i>
                 <h4>Không tìm thấy sản phẩm</h4>
                 <p>Hãy thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
-                <a href="{% url 'shop:product_list' %}" class="btn btn-primary mt-3">
+                <a href="/shop/products/" class="btn btn-primary mt-3">
                     <i class="fas fa-redo me-2"></i>Xem tất cả sản phẩm
                 </a>
             </div>

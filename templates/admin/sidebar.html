@@ -53,8 +53,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.app_name == 'orders' %}active{% endif %}"
-                   href="{% url 'orders:order_list' %}">
+                <a class="nav-link" href="{% url 'orders:order_list' %}">
                     <i class="bi bi-receipt"></i>
                     <span>Đơn hàng</span>
                 </a>
@@ -92,7 +91,7 @@
 
     <!-- Sidebar Footer - Xem cửa hàng -->
     <div class="sidebar-footer">
-        <a class="shop-link-footer" href="{% url 'shop:home' %}" target="_blank">
+        <a class="shop-link-footer" href="/shop/" target="_blank">
             <i class="bi bi-box-arrow-up-right"></i>
             <span>Xem cửa hàng</span>
         </a>

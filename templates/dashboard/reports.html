@@ -4,7 +4,6 @@
 {% block title %}{{ page_title }} - TechShop Admin{% endblock %}
 
 {% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" rel="stylesheet">
 {% endblock %}
 
 {% block page_header %}
@@ -72,65 +71,89 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Monthly Revenue Chart
-    const ctxRevenue = document.getElementById('monthlyChart').getContext('2d');
-    new Chart(ctxRevenue, {
-        type: 'line',
-        data: {
-            labels: {{ monthly_labels|safe }},
-            datasets: [{
-                label: 'Doanh thu (VNĐ)',
-                data: {{ monthly_revenue|safe }},
-                borderColor: '#3F72AF',
-                backgroundColor: 'rgba(63, 114, 175, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#3F72AF',
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return (value / 1000000).toFixed(0) + 'M';
+(function() {
+    window._monthlyChartInstance = null;
+    window._ordersChartInstance = null;
+
+    window.initReportsCharts = function() {
+        // Destroy existing charts
+        if (window._monthlyChartInstance) { window._monthlyChartInstance.destroy(); window._monthlyChartInstance = null; }
+        if (window._ordersChartInstance) { window._ordersChartInstance.destroy(); window._ordersChartInstance = null; }
+
+        var monthlyCanvas = document.getElementById('monthlyChart');
+        var ordersCanvas = document.getElementById('ordersChart');
+
+        console.log('[Reports] monthly_labels:', {{ monthly_labels|safe }});
+        console.log('[Reports] monthly_revenue:', {{ monthly_revenue|safe }});
+
+        if (monthlyCanvas) {
+            var ctxRevenue = monthlyCanvas.getContext('2d');
+            window._monthlyChartInstance = new Chart(ctxRevenue, {
+                type: 'line',
+                data: {
+                    labels: {{ monthly_labels|safe }},
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: {{ monthly_revenue|safe }},
+                        borderColor: '#3F72AF',
+                        backgroundColor: 'rgba(63, 114, 175, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3F72AF',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000000).toFixed(0) + 'M';
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         }
-    });
 
-    // Monthly Orders Chart
-    const ctxOrders = document.getElementById('ordersChart').getContext('2d');
-    new Chart(ctxOrders, {
-        type: 'bar',
-        data: {
-            labels: {{ monthly_labels|safe }},
-            datasets: [{
-                label: 'Số đơn hàng',
-                data: {{ monthly_orders|safe }},
-                backgroundColor: '#2ECC71',
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            }
+        if (ordersCanvas) {
+            var ctxOrders = ordersCanvas.getContext('2d');
+            window._ordersChartInstance = new Chart(ctxOrders, {
+                type: 'bar',
+                data: {
+                    labels: {{ monthly_labels|safe }},
+                    datasets: [{
+                        label: 'Số đơn hàng',
+                        data: {{ monthly_orders|safe }},
+                        backgroundColor: '#2ECC71',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', window.initReportsCharts);
+
+    document.addEventListener('spa:contentLoaded', function() {
+        if (document.getElementById('monthlyChart') || document.getElementById('ordersChart')) {
+            window.initReportsCharts();
         }
     });
-});
+})();
 </script>
 {% endblock %}

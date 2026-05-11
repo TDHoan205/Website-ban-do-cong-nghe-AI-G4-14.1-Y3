@@ -4,6 +4,7 @@ Map với bảng Accounts, Employees từ SQL Server.
 """
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
 
 class AccountManager(BaseUserManager):
@@ -112,3 +113,33 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.employee_code} - {self.account.full_name if self.account.full_name else self.account.username}"
+
+
+class PasswordReset(models.Model):
+    """
+    Bang luu tru token reset mat khau.
+    """
+    reset_id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name='password_resets',
+        db_column='account_id'
+    )
+    token = models.CharField('Token', max_length=100, unique=True, db_index=True)
+    expires_at = models.DateTimeField('Han cua token')
+    used = models.BooleanField('Da su dung', default=False)
+    created_at = models.DateTimeField('Ngay tao', auto_now_add=True)
+
+    class Meta:
+        db_table = 'PasswordResets'
+        verbose_name = 'Reset mat khau'
+        verbose_name_plural = 'Reset mat khau'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Reset for {self.account.username}"
+
+    @property
+    def is_valid(self):
+        return not self.used and self.expires_at > timezone.now()

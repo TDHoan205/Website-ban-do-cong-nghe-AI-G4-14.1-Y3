@@ -348,8 +348,7 @@
     </div>
 
     {% if cart_items %}
-    {% with final_total=total|add:30000|default:total %}
-    <form method="POST" action="{% url 'shop:checkout' %}" id="checkoutForm">
+    <form method="POST" action="/shop/checkout/" id="checkoutForm">
         {% csrf_token %}
         <div class="checkout-grid">
             <!-- Form thông tin giao hàng -->
@@ -407,7 +406,7 @@
                             <i class="bi bi-qr-code me-2"></i>Quét mã QR để thanh toán
                         </h6>
                         <div class="qr-code-wrapper">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://img.vietqr.io/image/vietinbank-123456789-xyz123.png?amount={{ total|add:30000|floatformat:0 }}&addInfo=TechStore%20Order" 
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://img.vietqr.io/image/vietinbank-123456789-xyz123.png?amount={{ final_total|floatformat:0 }}&addInfo=TechStore%20Order" 
                                  alt="QR Code thanh toán" style="width: 200px; height: 200px;">
                             <div class="qr-amount">{{ final_total|floatformat:0|intcomma }}đ</div>
                             <div class="qr-note">
@@ -443,7 +442,7 @@
                 <div class="order-items">
                     {% for item in cart_items %}
                     <div class="order-item">
-                        <img src="{{ item.product.image_url|default:'/static/images/placeholder.png' }}" 
+                        <img src="{{ item.product.image_url|default:'/static/images/products/placeholder.svg' }}"
                              alt="{{ item.product.name }}" class="order-item-img">
                         <div class="order-item-info">
                             <div class="order-item-name">{{ item.product.name }}</div>
@@ -452,7 +451,7 @@
                             {% endif %}
                             <div class="order-item-qty">x{{ item.quantity }}</div>
                         </div>
-                        <div class="order-item-price">{{ item.subtotal|floatformat:0|intcomma }}đ</div>
+                        <div class="order-item-price">{% if item.subtotal %}{{ item.subtotal|floatformat:0|intcomma }}{% else %}0{% endif %}đ</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -460,15 +459,15 @@
                 <div class="order-totals">
                     <div class="order-total-row">
                         <span>Tạm tính:</span>
-                        <span>{{ total|floatformat:0|intcomma }}đ</span>
+                        <span>{% if total %}{{ total|floatformat:0|intcomma }}{% else %}0{% endif %}đ</span>
                     </div>
                     <div class="order-total-row">
                         <span>Phí vận chuyển:</span>
                         <span>
-                            {% if total >= 500000 %}
+                            {% if total and total >= 500000 %}
                             <span class="text-success">Miễn phí</span>
                             {% else %}
-                            30.000đ
+                            {% if shipping_fee %}{{ shipping_fee|floatformat:0|intcomma }}{% else %}30.000{% endif %}đ
                             {% endif %}
                         </span>
                     </div>
@@ -479,11 +478,7 @@
                     <div class="order-total-row total">
                         <span>Tổng cộng:</span>
                         <span class="price" id="orderTotalAmount">
-                            {% if total >= 500000 %}
-                            {{ total|floatformat:0|intcomma }}đ
-                            {% else %}
-                            {{ final_total|floatformat:0|intcomma }}đ
-                            {% endif %}
+                            {% if final_total %}{{ final_total|floatformat:0|intcomma }}{% else %}0{% endif %}đ
                         </span>
                     </div>
 
@@ -495,14 +490,13 @@
             </div>
         </div>
     </form>
-    {% endwith %}
     {% else %}
     <!-- Giỏ hàng trống -->
     <div class="empty-cart">
         <i class="bi bi-cart-x"></i>
         <h3>Giỏ hàng trống</h3>
         <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-        <a href="{% url 'shop:product_list' %}" class="btn btn-primary rounded-pill px-4">
+        <a href="/shop/products/" class="btn btn-primary rounded-pill px-4">
             <i class="bi bi-bag me-2"></i>Tiếp tục mua sắm
         </a>
     </div>

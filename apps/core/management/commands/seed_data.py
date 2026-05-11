@@ -1,10 +1,11 @@
 """
-Management command để seed dữ liệu mẫu.
-Mirror từ SeedData.cs của dự án C# Webstore.
+Management command de seed du lieu mau.
+Mirror tu SeedData.cs cua du an C# Webstore.
 
 Usage:
     python manage.py seed_data
-    python manage.py seed_data --reset  # Xóa dữ liệu cũ trước khi seed
+    python manage.py seed_data --reset  # Xoa du lieu cu truoc khi seed
+    python manage.py seed_data --reset --refresh-images # Seed lai voi hinh anh moi
 """
 import random
 from decimal import Decimal
@@ -16,10 +17,11 @@ from apps.users.models import Account
 from apps.categories.models import Category
 from apps.suppliers.models import Supplier
 from apps.products.models import Product, ProductVariant, ProductImage
-from apps.orders.models import Order, OrderItem
+from apps.orders.models import Order, OrderItem, OrderStatusHistory
 from apps.inventory.models import Inventory
 from apps.faqs.models import FAQ
-from apps.chat.models import ChatSession, ChatMessage
+from apps.chat.models import ChatSession, ChatMessage, KnowledgeChunk
+from apps.core.services.image_service import get_product_image, get_product_gallery
 
 
 class Command(BaseCommand):
@@ -29,15 +31,22 @@ class Command(BaseCommand):
         parser.add_argument(
             '--reset',
             action='store_true',
-            help='Xóa dữ liệu cũ trước khi seed',
+            help='Xoa du lieu cu truoc khi seed',
+        )
+        parser.add_argument(
+            '--refresh-images',
+            action='store_true',
+            help='Cap nhat lai hinh anh san pham',
         )
 
     def handle(self, *args, **options):
         if options['reset']:
-            self.stdout.write('🗑️  Đang xóa dữ liệu cũ...')
+            self.stdout.write('Xoa du lieu cu...')
             self._reset_data()
 
-        self.stdout.write('🚀 Bắt đầu seed dữ liệu...')
+        self._refresh_images = options.get('refresh_images', False)
+
+        self.stdout.write('Bat dau seed du lieu...')
 
         with transaction.atomic():
             self._seed_categories()
@@ -49,12 +58,14 @@ class Command(BaseCommand):
             self._seed_inventory()
             self._seed_faqs()
             self._seed_orders()
+            self._seed_knowledge_base()
 
-        self.stdout.write(self.style.SUCCESS('✅ Seed dữ liệu hoàn tất!'))
+        self.stdout.write(self.style.SUCCESS('Seed du lieu hoan tat!'))
 
     def _reset_data(self):
-        """Xóa dữ liệu theo thứ tự để tránh lỗi foreign key."""
+        """Xoa du lieu theo thu tu de tranh loi foreign key."""
         OrderItem.objects.all().delete()
+        OrderStatusHistory.objects.all().delete()
         Order.objects.all().delete()
         ProductImage.objects.all().delete()
         ProductVariant.objects.all().delete()
@@ -63,11 +74,12 @@ class Command(BaseCommand):
         FAQ.objects.all().delete()
         ChatMessage.objects.all().delete()
         ChatSession.objects.all().delete()
+        KnowledgeChunk.objects.all().delete()
         Supplier.objects.all().delete()
         Category.objects.all().delete()
         Account.objects.filter(role='Customer').delete()
         Account.objects.filter(role='Admin').delete()
-        self.stdout.write('   Đã xóa dữ liệu cũ.')
+        self.stdout.write('   Da xoa du lieu cu.')
 
     def _seed_categories(self):
         """Seed 20 categories."""
@@ -407,32 +419,37 @@ class Command(BaseCommand):
         self.stdout.write(f'   Đã tạo {ProductVariant.objects.count()} product variants')
 
     def _seed_product_images(self):
-        """Seed product images cho mỗi sản phẩm."""
-        self.stdout.write('🖼️  Đang seed Product Images...')
+        """Seed hinh anh thuc cho san pham tu Picsum Photos (mien phi, khong can API key)."""
+        self.stdout.write('IMG  Dang seed Product Images (hinh anh thuc)...')
+
+        refresh = getattr(self, '_refresh_images', False)
 
         for product in Product.objects.all():
-            # Skip if already has images
-            if product.product_images.exists():
-                continue
+            if refresh:
+                product.product_images.all().delete()
+                product.image_url = ''
 
-            # Primary image
-            ProductImage.objects.create(
-                product=product,
-                image_url=f'/images/products/{product.product_id}.png',
-                is_primary=True,
-                is_thumbnail=True,
-                display_order=1,
-            )
-            # Secondary gallery image
-            ProductImage.objects.create(
-                product=product,
-                image_url=f'/images/products/{product.product_id}_2.png',
-                is_primary=False,
-                is_thumbnail=False,
-                display_order=2,
-            )
+            if not product.image_url:
+                cat_name = product.category.name if product.category else ''
+                image_url = get_product_image(product.name, product.product_id, cat_name)
+                product.image_url = image_url
+                product.save()
 
-        self.stdout.write(f'   Đã tạo {ProductImage.objects.count()} product images')
+            if not product.product_images.exists():
+                gallery = get_product_gallery(product.name, product.product_id, 4)
+                images_to_create = []
+                for idx, url in enumerate(gallery):
+                    images_to_create.append(ProductImage(
+                        product=product,
+                        image_url=url,
+                        is_primary=(idx == 0),
+                        is_thumbnail=(idx == 0),
+                        alt_text=f"{product.name} - Hinh {idx + 1}",
+                        display_order=idx + 1,
+                    ))
+                ProductImage.objects.bulk_create(images_to_create)
+
+        self.stdout.write(f'   Da tao {ProductImage.objects.count()} product images (hinh anh thuc)')
 
     def _seed_inventory(self):
         """Seed inventory cho mỗi sản phẩm."""
@@ -534,4 +551,66 @@ class Command(BaseCommand):
                     subtotal=total_amount,
                 )
 
-        self.stdout.write(f'   Đã tạo {Order.objects.count()} orders với {OrderItem.objects.count()} order items')
+        self.stdout.write(f'   Da tao {Order.objects.count()} orders voi {OrderItem.objects.count()} order items')
+
+    def _seed_knowledge_base(self):
+        """Seed RAG knowledge base cho AI chatbot."""
+        self.stdout.write('KB   Dang seed Knowledge Base cho AI...')
+
+        if KnowledgeChunk.objects.exists():
+            self.stdout.write('   Knowledge Base da ton tai, bo qua.')
+            return
+
+        chunks = []
+
+        # Product knowledge chunks
+        for product in Product.objects.all():
+            cat_name = product.category.name if product.category else ''
+            supplier_name = product.supplier.name if product.supplier else ''
+            price_str = f"{float(product.price):,.0f}".replace(",", ".")
+
+            content = f"{product.name}. Danh muc: {cat_name}. Nha cung cap: {supplier_name}. Gia: {price_str}d. "
+            if product.description:
+                content += product.description
+            if product.specifications:
+                content += f" Thong so: {product.specifications}"
+
+            chunks.append(KnowledgeChunk(
+                source_type='product',
+                source_id=product.product_id,
+                content=content,
+                category=cat_name,
+                priority=5,
+            ))
+
+        # FAQ knowledge chunks
+        for faq in FAQ.objects.filter(is_active=True):
+            chunks.append(KnowledgeChunk(
+                source_type='faq',
+                source_id=faq.faq_id,
+                content=f"Cau hoi: {faq.question}\nTra loi: {faq.answer}",
+                category=faq.category,
+                priority=faq.priority,
+            ))
+
+        # Policy chunks
+        policy_texts = [
+            ("policy", "chinh sach dat hang", "Quy trinh dat hang: Chon san pham -> Them vao gio -> Thanh toan -> Xac nhan. Don hang se duoc xu ly trong 1-2 ngay lam viec."),
+            ("policy", "chinh sach thanh toan", "Chung toi chap nhan thanh toan COD (nhan hang tra tien), chuyen khoan ngan hang, va thanh toan qua VNPAY."),
+            ("policy", "chinh sach doi tra", "Khach hang duoc doi tra trong vong 7 ngay neu san pham bi loi tu nha san xuat. San pham phai con nguyen van, chua qua su dung."),
+            ("policy", "chinh sach bao hanh", "Tat ca san pham deu duoc bao hanh chinh hang. Thoi gian bao hanh tuy theo san pham, thong thuong 12-24 thang."),
+            ("policy", "chinh sach van chuyen", "Giao hang trong 2-5 ngay lam viec. Phi van chuyen 30.000d cho don duoi 500.000d. Mien phi van chuyen cho don tu 500.000d tro len."),
+            ("policy", "hotline ho tro", "Hotline ho tro: 0123-456-789. Email: support@techshop.com. Gio lam viec: 8h-22h, 24/7 online."),
+            ("policy", "tai khoan", "Tai khoan co the dang ky tai trang web. Mat khau can it nhat 6 ky tu. Co the dat lai mat khau qua email."),
+        ]
+
+        for source_type, category, content in policy_texts:
+            chunks.append(KnowledgeChunk(
+                source_type=source_type,
+                content=content,
+                category=category,
+                priority=3,
+            ))
+
+        KnowledgeChunk.objects.bulk_create(chunks, batch_size=100)
+        self.stdout.write(f'   Da tao {len(chunks)} knowledge chunks cho AI chatbot')

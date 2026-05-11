@@ -1,0 +1,81 @@
+{% extends 'shop/base_shop.html' %}
+{% load static %}
+
+{% block title %}Dieu khoan su dung - TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .legal-page { padding: 60px 0; }
+    .legal-container { max-width: 800px; margin: 0 auto; }
+    .legal-card {
+        background: white; border-radius: 16px; padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .legal-title { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+    .legal-meta { color: #9ca8b3; font-size: 0.85rem; margin-bottom: 30px; }
+    .legal-content h2 { font-size: 1.3rem; font-weight: 800; color: #0077B6; margin-top: 30px; margin-bottom: 12px; }
+    .legal-content p { color: #64748b; line-height: 1.8; margin-bottom: 12px; }
+    .legal-content ul { color: #64748b; padding-left: 20px; margin-bottom: 12px; }
+    .legal-content li { margin-bottom: 6px; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="legal-container">
+        <div class="legal-card">
+            <h1 class="legal-title"><i class="fas fa-file-contract me-2 text-primary"></i>Dieu khoan Su dung</h1>
+            <div class="legal-meta">Co hieu luc: 10/05/2026</div>
+
+            <div class="legal-content">
+                <h2>1. Chap nhan dieu khoan</h2>
+                <p>Khi su dung website TechStore, ban dong y chap nhan cac dieu khoan su dung nay. Neu ban khong dong y voi bat cu dieu khoan nao, vui long khong su dung website.</p>
+
+                <h2>2. Tai khoan nguoi dung</h2>
+                <p>Khi dang ky tai khoan, ban phai cung cap thong tin chinh xac va hoan chinh. Ban chiu trach nhiem bao mat thong tin tai khoan, bao gom mat khau. TechStore khong chiu trach nhiem bat ky ton that nao phat sinh do mat mat khau.</p>
+
+                <h2>3. Dat hang va thanh toan</h2>
+                <p>Khi dat hang tren website:</p>
+                <ul>
+                    <li>Ban dong y cung cap thong tin giao hang chinh xac va day du.</li>
+                    <li>Don hang se duoc xu ly sau khi xac nhan thanh toan (doi voi thanh toan online).</li>
+                    <li>TechStore co quyen huy don neu san pham khong con trong kho hoac gia sai.</li>
+                    <li>Gia tri don hang co the thay doi truoc khi xac nhan thanh toan.</li>
+                </ul>
+
+                <h2>4. Giao hang</h2>
+                <p>Thoi gian giao hang uu tien:</p>
+                <ul>
+                    <li>Noi thanh TP.HCM: 1-2 ngay lam viec.</li>
+                    <li>Cac tinh thanh khac: 2-5 ngay lam viec.</li>
+                    <li>Phi van chuyen: 30.000d cho don duoi 500.000d, mien phi cho don tu 500.000d tro len.</li>
+                </ul>
+
+                <h2>5. Doi tra va bao hanh</h2>
+                <p>Chinh sach doi tra:</p>
+                <ul>
+                    <li>San pham loi do nha san xuat: doi tra trong 7 ngay.</li>
+                    <li>San pham phai con nguyen van, chua qua su dung.</li>
+                    <li>Bao hanh theo chinh sach cua nha san xuat (thong thuong 12-24 thang).</li>
+                </ul>
+
+                <h2>6. So huu tri tue</h2>
+                <p>Toan bo noi dung tren website (san pham, hinh anh, mo ta, logo) la so huu tri tue cua TechStore hoac nha cung cap. Ban khong duoc phep sao chep, chinh sua hoac su dung noi dung nay khi khong co su cho phep bang văn ban.</p>
+
+                <h2>7. Gioi han trach nhiem</h2>
+                <p>TechStore khong chiu trach nhiem ve bat ky ton that gian tiep nao phat sinh tu viec su dung website, bao gom nhung khong gioi han: mat doanh thu, mat du lieu, loi lap hoac cac ton that dac thu.</p>
+
+                <h2>8. Thay doi dieu khoan</h2>
+                <p>TechStore co quyen thay doi cac dieu khoan su dung nay bat cu luc nao ma khong can thong bao truoc. Viet cuoi cung duoc cong bo tren website se la phien ban hieu luc.</p>
+
+                <h2>9. Lien he</h2>
+                <p>Neu co thac mac ve dieu khoan su dung, vui long lien he:</p>
+                <ul>
+                    <li>Email: legal@techshop.com</li>
+                    <li>Hotline: 0123-456-789</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -121,3 +121,43 @@ class AIConversationLog(models.Model):
 
     def __str__(self):
         return f"Log {self.log_id} - {self.intent_detected}"
+
+
+class KnowledgeChunk(models.Model):
+    """
+    Bang luu tru kien thuc cho RAG chatbot AI.
+    Chua noi dung tu product, FAQ, policy de AI co the tra loi chinh xac.
+    """
+    chunk_id = models.AutoField(primary_key=True)
+    source_type = models.CharField(
+        'Loai nguon',
+        max_length=20,
+        choices=[
+            ('product', 'San pham'),
+            ('faq', 'Cau hoi thuong gap'),
+            ('policy', 'Chinh sach'),
+        ],
+        db_index=True,
+    )
+    source_id = models.IntegerField('ID nguon', null=True, blank=True)
+    content = models.TextField('Noi dung')
+    category = models.CharField('Danh muc', max_length=50, blank=True, db_index=True)
+    priority = models.IntegerField('Uu tien', default=1)
+    embedding = models.JSONField('Vector embedding', null=True, blank=True)
+    is_active = models.BooleanField('Kich hoat', default=True)
+    created_at = models.DateTimeField('Ngay tao', auto_now_add=True)
+    updated_at = models.DateTimeField('Ngay cap nhat', auto_now=True)
+
+    class Meta:
+        db_table = 'KnowledgeChunks'
+        verbose_name = 'Kien thuc chatbot'
+        verbose_name_plural = 'Kien thuc chatbot'
+        ordering = ['-priority', '-created_at']
+
+    def __str__(self):
+        return f"[{self.source_type}] {self.content[:80]}"
+
+    def save(self, *args, **kwargs):
+        if not self.embedding:
+            self.embedding = None
+        super().save(*args, **kwargs)
