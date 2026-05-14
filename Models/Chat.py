@@ -113,7 +113,7 @@ class KnowledgeChunk(Base):
     source_id = Column(Integer)  # Reference to source entity
     source_table = Column(String(50))  # Table name
     embedding_vector = Column(Text)  # Vector embedding
-    metadata = Column(Text)  # JSON metadata
+    metadata_json = Column(Text)  # JSON metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):

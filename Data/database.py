@@ -9,8 +9,8 @@ import urllib
 
 # Cấu hình SQL Server - Sửa theo server của bạn
 SQL_SERVER_CONFIG = {
-    "server": "localhost",
-    "database": "TechShopWebsite1",
+    "server": "QUANTRAN161204\\SQLEXPRESS",
+    "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication
     # Nếu dùng SQL Authentication:

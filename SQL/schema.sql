@@ -1,10 +1,8 @@
 -- =====================================================
--- Tech Store - Database Schema
--- SQL Server - Tương thích với ASP.NET Core EF Core
+-- TechShopWebsite1 - Schema aligned to Models
 -- =====================================================
 
--- Tạo Database nếu chưa có
-IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TechShopWebsite1')
+IF DB_ID(N'TechShopWebsite1') IS NULL
 BEGIN
     CREATE DATABASE TechShopWebsite1;
 END
@@ -12,315 +10,219 @@ GO
 
 USE TechShopWebsite1;
 GO
+-- Accounts
+CREATE TABLE Accounts (
+    account_id INT IDENTITY(1,1) PRIMARY KEY,
+    username NVARCHAR(50) NOT NULL UNIQUE,
+    password_hash NVARCHAR(255) NOT NULL,
+    email NVARCHAR(100) NULL UNIQUE,
+    full_name NVARCHAR(100) NULL,
+    phone NVARCHAR(20) NULL,
+    address NVARCHAR(255) NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    role_id INT NOT NULL,
+    reset_token NVARCHAR(64) NULL,
+    reset_token_expiry DATETIME2 NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
+    CONSTRAINT FK_Accounts_Roles FOREIGN KEY (role_id) REFERENCES Roles(role_id)
+);
 
--- =====================================================
--- Categories Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Categories')
-BEGIN
-    CREATE TABLE Categories (
-        category_id INT IDENTITY(1,1) PRIMARY KEY,
-        name NVARCHAR(100) NOT NULL UNIQUE,
-        description NVARCHAR(MAX),
-        image_url NVARCHAR(500),
-        display_order INT DEFAULT 0,
-        is_active BIT DEFAULT 1,
-        created_at DATETIME DEFAULT GETDATE()
-    );
-END
-GO
+-- Employees
+CREATE TABLE Employees (
+    employee_id INT IDENTITY(1,1) PRIMARY KEY,
+    account_id INT NOT NULL UNIQUE,
+    department NVARCHAR(50) NULL,
+    position NVARCHAR(50) NULL,
+    hire_date DATETIME2 NULL,
+    salary INT NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_Employees_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
 
--- =====================================================
--- Suppliers Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Suppliers')
-BEGIN
-    CREATE TABLE Suppliers (
-        supplier_id INT IDENTITY(1,1) PRIMARY KEY,
-        name NVARCHAR(255) NOT NULL,
-        contact_person NVARCHAR(100),
-        phone NVARCHAR(20),
-        email NVARCHAR(100),
-        address NVARCHAR(255),
-        is_active BIT DEFAULT 1,
-        created_at DATETIME DEFAULT GETDATE()
-    );
-END
-GO
+-- Users (separate from Accounts; present in Models)
+CREATE TABLE Users (
+    user_id INT IDENTITY(1,1) PRIMARY KEY,
+    username NVARCHAR(50) NOT NULL UNIQUE,
+    email NVARCHAR(100) NOT NULL UNIQUE,
+    password_hash NVARCHAR(255) NOT NULL,
+    full_name NVARCHAR(100) NULL,
+    phone NVARCHAR(20) NULL,
+    address NVARCHAR(255) NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    role NVARCHAR(20) NOT NULL DEFAULT 'Customer',
+    avatar_url NVARCHAR(500) NULL,
+    reset_token NVARCHAR(64) NULL,
+    reset_token_expiry DATETIME2 NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL
+);
 
--- =====================================================
--- Users Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Users')
-BEGIN
-    CREATE TABLE Users (
-        user_id INT IDENTITY(1,1) PRIMARY KEY,
-        username NVARCHAR(50) NOT NULL UNIQUE,
-        email NVARCHAR(100) NOT NULL UNIQUE,
-        password_hash NVARCHAR(255) NOT NULL,
-        full_name NVARCHAR(100),
-        phone NVARCHAR(20),
-        address NVARCHAR(255),
-        is_active BIT DEFAULT 1,
-        role NVARCHAR(20) DEFAULT 'Customer',
-        avatar_url NVARCHAR(500),
-        reset_token NVARCHAR(64),
-        reset_token_expiry DATETIME,
-        created_at DATETIME DEFAULT GETDATE(),
-        updated_at DATETIME
-    );
-END
-GO
+-- Categories
+CREATE TABLE Categories (
+    category_id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL UNIQUE,
+    description NVARCHAR(MAX) NULL,
+    image_url NVARCHAR(500) NULL,
+    display_order INT NOT NULL DEFAULT 0,
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL
+);
 
--- =====================================================
--- Products Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Products')
-BEGIN
-    CREATE TABLE Products (
-        product_id INT IDENTITY(1,1) PRIMARY KEY,
-        name NVARCHAR(255) NOT NULL,
-        description NVARCHAR(MAX),
-        image_url NVARCHAR(500),
-        price DECIMAL(10, 2) NOT NULL,
-        original_price DECIMAL(10, 2),
-        stock_quantity INT DEFAULT 50,
-        rating DECIMAL(2, 1) DEFAULT 4.5,
-        is_new BIT DEFAULT 0,
-        is_hot BIT DEFAULT 0,
-        discount_percent INT DEFAULT 0,
-        specifications NVARCHAR(MAX),
-        category_id INT,
-        supplier_id INT,
-        is_available BIT DEFAULT 1,
-        created_at DATETIME DEFAULT GETDATE(),
-        updated_at DATETIME,
-        FOREIGN KEY (category_id) REFERENCES Categories(category_id),
-        FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id)
-    );
-END
-GO
+-- Suppliers
+CREATE TABLE Suppliers (
+    supplier_id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    contact_person NVARCHAR(100) NULL,
+    phone NVARCHAR(20) NULL,
+    email NVARCHAR(100) NULL,
+    address NVARCHAR(255) NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL
+);
 
--- =====================================================
--- ProductVariants Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProductVariants')
-BEGIN
-    CREATE TABLE ProductVariants (
-        variant_id INT IDENTITY(1,1) PRIMARY KEY,
-        product_id INT NOT NULL,
-        color NVARCHAR(50),
-        storage NVARCHAR(20),
-        ram NVARCHAR(20),
-        variant_name NVARCHAR(100),
-        sku NVARCHAR(50),
-        price DECIMAL(10, 2),
-        original_price DECIMAL(10, 2),
-        stock_quantity INT DEFAULT 0,
-        display_order INT DEFAULT 0,
-        is_active BIT DEFAULT 1,
-        created_at DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
-    );
-END
-GO
+-- Products
+CREATE TABLE Products (
+    product_id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX) NULL,
+    image_url NVARCHAR(500) NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    original_price DECIMAL(10, 2) NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    is_available BIT NOT NULL DEFAULT 1,
+    rating DECIMAL(2, 1) NOT NULL DEFAULT 4.5,
+    is_new BIT NOT NULL DEFAULT 0,
+    is_hot BIT NOT NULL DEFAULT 0,
+    discount_percent INT NOT NULL DEFAULT 0,
+    specifications NVARCHAR(MAX) NULL,
+    category_id INT NULL,
+    supplier_id INT NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
+    CONSTRAINT FK_Products_Categories FOREIGN KEY (category_id) REFERENCES Categories(category_id),
+    CONSTRAINT FK_Products_Suppliers FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id)
+);
 
--- =====================================================
--- ProductImages Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProductImages')
-BEGIN
-    CREATE TABLE ProductImages (
-        image_id INT IDENTITY(1,1) PRIMARY KEY,
-        product_id INT NOT NULL,
-        image_url NVARCHAR(500) NOT NULL,
-        display_order INT DEFAULT 0,
-        is_primary BIT DEFAULT 0,
-        created_at DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
-    );
-END
-GO
+-- ProductVariants
+CREATE TABLE ProductVariants (
+    variant_id INT IDENTITY(1,1) PRIMARY KEY,
+    product_id INT NOT NULL,
+    color NVARCHAR(50) NULL,
+    storage NVARCHAR(20) NULL,
+    ram NVARCHAR(20) NULL,
+    variant_name NVARCHAR(100) NULL,
+    sku NVARCHAR(50) NULL,
+    price DECIMAL(10, 2) NULL,
+    original_price DECIMAL(10, 2) NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    display_order INT NOT NULL DEFAULT 0,
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_ProductVariants_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+);
 
--- =====================================================
--- Inventory Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Inventory')
-BEGIN
-    CREATE TABLE Inventory (
-        inventory_id INT IDENTITY(1,1) PRIMARY KEY,
-        product_id INT NOT NULL UNIQUE,
-        quantity_in_stock INT DEFAULT 0,
-        min_stock_level INT DEFAULT 5,
-        max_stock_level INT DEFAULT 100,
-        last_restock_date DATETIME,
-        updated_at DATETIME,
-        FOREIGN KEY (product_id) REFERENCES Products(product_id)
-    );
-END
-GO
+-- ProductImages
+CREATE TABLE ProductImages (
+    image_id INT IDENTITY(1,1) PRIMARY KEY,
+    product_id INT NOT NULL,
+    image_url NVARCHAR(500) NOT NULL,
+    display_order INT NOT NULL DEFAULT 0,
+    is_primary BIT NOT NULL DEFAULT 0,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+);
 
--- =====================================================
--- Carts Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Carts')
-BEGIN
-    CREATE TABLE Carts (
-        cart_id INT IDENTITY(1,1) PRIMARY KEY,
-        user_id INT NOT NULL UNIQUE,
-        session_id NVARCHAR(100),
-        created_at DATETIME DEFAULT GETDATE(),
-        updated_at DATETIME,
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
-    );
-END
-GO
+-- Inventory
+CREATE TABLE Inventory (
+    inventory_id INT IDENTITY(1,1) PRIMARY KEY,
+    product_id INT NOT NULL UNIQUE,
+    quantity_in_stock INT NOT NULL DEFAULT 0,
+    min_stock_level INT NOT NULL DEFAULT 5,
+    max_stock_level INT NOT NULL DEFAULT 100,
+    last_restock_date DATETIME2 NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
+    CONSTRAINT FK_Inventory_Products FOREIGN KEY (product_id) REFERENCES Products(product_id)
+);
 
--- =====================================================
--- CartItems Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CartItems')
-BEGIN
-    CREATE TABLE CartItems (
-        cart_item_id INT IDENTITY(1,1) PRIMARY KEY,
-        cart_id INT NOT NULL,
-        product_id INT NOT NULL,
-        variant_id INT,
-        quantity INT NOT NULL DEFAULT 1,
-        added_date DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (cart_id) REFERENCES Carts(cart_id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES Products(product_id),
-        FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id)
-    );
-END
-GO
+-- Carts
+CREATE TABLE Carts (
+    cart_id INT IDENTITY(1,1) PRIMARY KEY,
+    account_id INT NOT NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
+    CONSTRAINT FK_Carts_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
 
--- =====================================================
--- Orders Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
-BEGIN
-    CREATE TABLE Orders (
-        order_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_number NVARCHAR(50) NOT NULL UNIQUE,
-        user_id INT NOT NULL,
-        status NVARCHAR(20) DEFAULT 'Pending',
-        subtotal DECIMAL(10, 2) NOT NULL,
-        shipping_fee DECIMAL(10, 2) DEFAULT 0,
-        tax_amount DECIMAL(10, 2) DEFAULT 0,
-        total_amount DECIMAL(10, 2) NOT NULL,
-        shipping_address NVARCHAR(500),
-        shipping_phone NVARCHAR(20),
-        shipping_name NVARCHAR(100),
-        notes NVARCHAR(MAX),
-        order_date DATETIME DEFAULT GETDATE(),
-        confirmed_date DATETIME,
-        shipped_date DATETIME,
-        delivered_date DATETIME,
-        cancelled_date DATETIME,
-        cancellation_reason NVARCHAR(255),
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
-    );
-END
-GO
+-- CartItems
+CREATE TABLE CartItems (
+    cart_item_id INT IDENTITY(1,1) PRIMARY KEY,
+    cart_id INT NOT NULL,
+    product_id INT NOT NULL,
+    variant_id INT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    added_date DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_CartItems_Carts FOREIGN KEY (cart_id) REFERENCES Carts(cart_id) ON DELETE CASCADE,
+    CONSTRAINT FK_CartItems_Products FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    CONSTRAINT FK_CartItems_ProductVariants FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id)
+);
 
--- =====================================================
--- OrderItems Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderItems')
-BEGIN
-    CREATE TABLE OrderItems (
-        order_item_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_id INT NOT NULL,
-        product_id INT NOT NULL,
-        variant_id INT,
-        product_name NVARCHAR(255) NOT NULL,
-        variant_name NVARCHAR(100),
-        quantity INT NOT NULL,
-        unit_price DECIMAL(10, 2) NOT NULL,
-        subtotal DECIMAL(10, 2) NOT NULL,
-        FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES Products(product_id),
-        FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id)
-    );
-END
-GO
+-- Orders
+CREATE TABLE Orders (
+    order_id INT IDENTITY(1,1) PRIMARY KEY,
+    account_id INT NULL,
+    order_date DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status NVARCHAR(20) NOT NULL DEFAULT 'Pending',
+    customer_name NVARCHAR(100) NULL,
+    customer_phone NVARCHAR(20) NULL,
+    customer_address NVARCHAR(255) NULL,
+    notes NVARCHAR(500) NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
+    CONSTRAINT FK_Orders_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
 
--- =====================================================
--- Payments Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Payments')
-BEGIN
-    CREATE TABLE Payments (
-        payment_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_id INT NOT NULL UNIQUE,
-        payment_method NVARCHAR(50),
-        payment_status NVARCHAR(20) DEFAULT 'Pending',
-        transaction_id NVARCHAR(100),
-        amount DECIMAL(10, 2) NOT NULL,
-        payment_date DATETIME,
-        created_at DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (order_id) REFERENCES Orders(order_id)
-    );
-END
-GO
+-- OrderItems
+CREATE TABLE OrderItems (
+    order_item_id INT IDENTITY(1,1) PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    variant_id INT NULL,
+    product_name NVARCHAR(255) NOT NULL,
+    variant_name NVARCHAR(100) NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    CONSTRAINT FK_OrderItems_Orders FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
+    CONSTRAINT FK_OrderItems_Products FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    CONSTRAINT FK_OrderItems_ProductVariants FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id)
+);
 
--- =====================================================
--- Shipments Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Shipments')
-BEGIN
-    CREATE TABLE Shipments (
-        shipment_id INT IDENTITY(1,1) PRIMARY KEY,
-        order_id INT NOT NULL UNIQUE,
-        shipping_method NVARCHAR(50),
-        tracking_number NVARCHAR(100),
-        shipping_status NVARCHAR(20) DEFAULT 'Pending',
-        estimated_delivery DATETIME,
-        actual_delivery DATETIME,
-        shipping_note NVARCHAR(MAX),
-        created_at DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (order_id) REFERENCES Orders(order_id)
-    );
-END
-GO
+-- ReceiptShipments
+CREATE TABLE ReceiptShipments (
+    receipt_id INT IDENTITY(1,1) PRIMARY KEY,
+    product_id INT NOT NULL,
+    supplier_id INT NOT NULL,
+    order_id INT NULL,
+    receipt_type NVARCHAR(20) NOT NULL,
+    quantity INT NOT NULL,
+    unit_price INT NULL,
+    total_amount INT NULL,
+    notes NVARCHAR(500) NULL,
+    receipt_date DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    created_by INT NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_ReceiptShipments_Products FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    CONSTRAINT FK_ReceiptShipments_Suppliers FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id),
+    CONSTRAINT FK_ReceiptShipments_Orders FOREIGN KEY (order_id) REFERENCES Orders(order_id),
+    CONSTRAINT FK_ReceiptShipments_Accounts FOREIGN KEY (created_by) REFERENCES Accounts(account_id)
+);
 
--- =====================================================
--- ChatSessions Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ChatSessions')
-BEGIN
-    CREATE TABLE ChatSessions (
-        session_id INT IDENTITY(1,1) PRIMARY KEY,
-        session_uuid NVARCHAR(36) NOT NULL UNIQUE,
-        user_id INT,
-        device_info NVARCHAR(255),
-        started_at DATETIME DEFAULT GETDATE(),
-        ended_at DATETIME,
-        is_active BIT DEFAULT 1,
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
-    );
-END
-GO
 
--- =====================================================
--- ChatMessages Table
--- =====================================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ChatMessages')
-BEGIN
-    CREATE TABLE ChatMessages (
-        message_id INT IDENTITY(1,1) PRIMARY KEY,
-        session_id INT NOT NULL,
-        sender_type NVARCHAR(20) NOT NULL,
-        message_content NVARCHAR(MAX) NOT NULL,
-        intent NVARCHAR(50),
-        confidence_score NVARCHAR(10),
-        is_product_recommendation BIT DEFAULT 0,
-        recommended_product_ids NVARCHAR(255),
-        created_at DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (session_id) REFERENCES ChatSessions(session_id) ON DELETE CASCADE
-    );
-END
-GO
 
-PRINT 'Database schema created successfully!';
+

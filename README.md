@@ -10,7 +10,7 @@
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-Google-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-*Được xây dựng theo mô hình MVC — tương tự ASP.NET Core nhưng bằng Python*
+*Được xây dựng theo mô hình MVC bằng Python/FastAPI*
 
 </div>
 
@@ -114,27 +114,6 @@
 
 ---
 
-## 🔄 So sánh ASP.NET Core ↔ Python FastAPI
-
-| Thành phần | ASP.NET Core (C#) | **Dự án này (Python)** |
-|:-----------|:-----------------|:----------------------|
-| Entry Point | `Program.cs` | `app.py` |
-| Controller | `Controllers/*.cs` | `Controllers/*.py` |
-| Trả về View | `return View(model)` | `TemplateResponse("file.html", {...})` |
-| Service | `Services/*.cs` | `Services/*.py` |
-| Model (Entity) | `Models/*.cs` (EF Core) | `Models/*.py` (SQLAlchemy) |
-| View Template | `Views/*.cshtml` (Razor) | `Views/*.html` (Jinja2) |
-| Layout | `_Layout.cshtml` | `Shared/base.html` |
-| Include partial | `@Html.Partial()` | `{% include "file.html" %}` |
-| Biến trong View | `@Model.Name` | `{{ product.name }}` |
-| Vòng lặp View | `@foreach(var p in Model)` | `{% for p in products %}` |
-| ORM | Entity Framework Core | SQLAlchemy |
-| Database config | `appsettings.json` | `Data/database.py` |
-| Static files | `wwwroot/` | `wwwroot/` → mount `/static` |
-| DI Container | `services.AddScoped<>()` | `Depends(get_db)` |
-
----
-
 ## ⚙️ Công nghệ sử dụng
 
 <div align="center">
@@ -142,7 +121,7 @@
 | 🔧 Layer | 🛠️ Công nghệ | 📝 Mục đích |
 |:--------|:------------|:-----------|
 | **Web Framework** | FastAPI 0.109 | Xử lý HTTP requests, routing |
-| **Template Engine** | Jinja2 3.1 | Render HTML (thay Razor) |
+| **Template Engine** | Jinja2 3.1 | Render HTML |
 | **Database** | SQL Server | Lưu trữ dữ liệu chính |
 | **ORM** | SQLAlchemy 2.0 | Kết nối & truy vấn DB bằng Python |
 | **DB Driver** | pyodbc | Giao tiếp với SQL Server |
@@ -243,7 +222,7 @@ uvicorn app:app --reload
 ```
 📦 Website-ban-do-cong-nghe-AI-G4-14.1-Y3/
 │
-├── 📄 app.py                     # Entry point (≈ Program.cs)
+├── 📄 app.py                     # Entry point FastAPI
 ├── 📄 requirements.txt           # Python packages
 │
 ├── 📂 Controllers/               # 🎮 Nhận request → gọi Service → trả View

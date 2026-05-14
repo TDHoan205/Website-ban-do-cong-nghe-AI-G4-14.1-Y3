@@ -1,6 +1,5 @@
 """
 Tech Store - Main Application Entry Point
-Tương đương Program.cs trong ASP.NET Core
 
 Chạy: uvicorn app:app --reload
 """
@@ -26,7 +25,6 @@ from Controllers import (
     OrderItemsController,
     ReceiptShipmentsController,
     CartItemsController,
-    SeedController,
     ShopController,
     StatisticsController,
 )
@@ -42,14 +40,14 @@ app = FastAPI(
 )
 
 # =====================================================================
-# Static Files (tương đương app.UseStaticFiles() trong .NET)
+# Static Files
 # =====================================================================
 wwwroot_path = os.path.join(os.path.dirname(__file__), "wwwroot")
 os.makedirs(wwwroot_path, exist_ok=True)
 app.mount("/static", StaticFiles(directory=wwwroot_path), name="static")
 
 # =====================================================================
-# Templates Configuration (tương đương AddRazorPages() trong .NET)
+# Templates Configuration
 # =====================================================================
 views_path = os.path.join(os.path.dirname(__file__), "Views")
 templates = Jinja2Templates(directory=views_path)
@@ -87,7 +85,6 @@ app.include_router(OrdersController.router)
 app.include_router(OrderItemsController.router)
 app.include_router(ReceiptShipmentsController.router)
 app.include_router(CartItemsController.router)
-app.include_router(SeedController.router)
 app.include_router(ShopController.router)
 app.include_router(StatisticsController.router)
 
