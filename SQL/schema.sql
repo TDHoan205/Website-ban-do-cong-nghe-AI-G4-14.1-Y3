@@ -2,14 +2,20 @@
 -- TechShopWebsite1 - Schema aligned to Models
 -- =====================================================
 
-IF DB_ID(N'TechShopWebsite1') IS NULL
+IF DB_ID(N'TechShopWebsite2') IS NULL
 BEGIN
-    CREATE DATABASE TechShopWebsite1;
+    CREATE DATABASE TechShopWebsite2;
 END
 GO
 
-USE TechShopWebsite1;
+USE TechShopWebsite2;
 GO
+-- Roles
+CREATE TABLE Roles (
+    role_id INT IDENTITY(1,1) PRIMARY KEY,
+    role_name NVARCHAR(50) NOT NULL UNIQUE,
+    description NVARCHAR(255) NULL
+);
 -- Accounts
 CREATE TABLE Accounts (
     account_id INT IDENTITY(1,1) PRIMARY KEY,
@@ -203,25 +209,6 @@ CREATE TABLE OrderItems (
     CONSTRAINT FK_OrderItems_ProductVariants FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id)
 );
 
--- ReceiptShipments
-CREATE TABLE ReceiptShipments (
-    receipt_id INT IDENTITY(1,1) PRIMARY KEY,
-    product_id INT NOT NULL,
-    supplier_id INT NOT NULL,
-    order_id INT NULL,
-    receipt_type NVARCHAR(20) NOT NULL,
-    quantity INT NOT NULL,
-    unit_price INT NULL,
-    total_amount INT NULL,
-    notes NVARCHAR(500) NULL,
-    receipt_date DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    created_by INT NULL,
-    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT FK_ReceiptShipments_Products FOREIGN KEY (product_id) REFERENCES Products(product_id),
-    CONSTRAINT FK_ReceiptShipments_Suppliers FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id),
-    CONSTRAINT FK_ReceiptShipments_Orders FOREIGN KEY (order_id) REFERENCES Orders(order_id),
-    CONSTRAINT FK_ReceiptShipments_Accounts FOREIGN KEY (created_by) REFERENCES Accounts(account_id)
-);
 
 
 

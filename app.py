@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import os
 
-from Data.database import init_db, get_connection_info
+from Data.database import init_db, get_connection_info, engine
 from Controllers import (
     HomeController,
     ProductsController,
@@ -97,6 +97,14 @@ app.include_router(StatisticsController.router)
 async def startup():
     """Khởi động ứng dụng"""
     db_info = get_connection_info()
+    db_status = "FAILED"
+    db_error = None
+    try:
+        with engine.connect() as connection:
+            connection.execute("SELECT 1")
+        db_status = "OK"
+    except Exception as exc:
+        db_error = str(exc)
     print(f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║              🚀 TECH STORE APPLICATION STARTED              ║
@@ -104,10 +112,13 @@ async def startup():
 ║  📦 Database : {db_info['database']:<40} ║
 ║  🖥️  Server  : {db_info['server']:<40} ║
 ║  🔐 Auth     : {db_info['auth_mode']:<40} ║
+║  ✅ SQL Test : {db_status:<40} ║
 ║  🌐 URL      : http://localhost:8000                        ║
 ║  📖 Docs     : http://localhost:8000/docs                   ║
 ╚══════════════════════════════════════════════════════════════╝
     """)
+    if db_error:
+        print(f"SQL Test Error: {db_error}")
 
 
 @app.on_event("shutdown")

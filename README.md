@@ -300,5 +300,5 @@ uvicorn app:app --reload
 ---
 
 ## 📄 License
-
+python -m uvicorn app:app --reload
 MIT License © 2026 — Tech Store AI Team

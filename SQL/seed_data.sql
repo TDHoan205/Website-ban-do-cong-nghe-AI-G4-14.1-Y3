@@ -2,21 +2,21 @@
 -- TechShopWebsite1 - Sample data aligned to Models
 -- Run after schema.sql
 -- =====================================================
-USE TechShopWebsite1;
+USE TechShopWebsite2;
 GO
 
 -- Roles (10)
-INSERT INTO Roles (role_name, description, permissions) VALUES
-('Customer', 'Default customer role', '{}'),
-('Staff', 'Staff role', '{}'),
-('Admin', 'Admin role', '{}'),
-('Role 04', 'Role 04', '{}'),
-('Role 05', 'Role 05', '{}'),
-('Role 06', 'Role 06', '{}'),
-('Role 07', 'Role 07', '{}'),
-('Role 08', 'Role 08', '{}'),
-('Role 09', 'Role 09', '{}'),
-('Role 10', 'Role 10', '{}');
+INSERT INTO Roles (role_name, description) VALUES
+('Customer', 'Default customer role'),
+('Staff', 'Staff role'),
+('Admin', 'Admin role'),
+('Role 04', 'Role 04'),
+('Role 05', 'Role 05'),
+('Role 06', 'Role 06'),
+('Role 07', 'Role 07'),
+('Role 08', 'Role 08'),
+('Role 09', 'Role 09'),
+('Role 10', 'Role 10');
 
 -- Accounts (10)
 INSERT INTO Accounts (username, password_hash, email, full_name, phone, address, is_active, role_id, reset_token, reset_token_expiry)
@@ -194,17 +194,4 @@ VALUES
 (9, 9, 9, 'Product 09', 'Variant 09', 1, 180.00, 180.00),
 (10, 10, 10, 'Product 10', 'Variant 10', 1, 190.00, 190.00);
 
--- ReceiptShipments (10)
-INSERT INTO ReceiptShipments (product_id, supplier_id, order_id, receipt_type, quantity, unit_price, total_amount, notes, created_by)
-VALUES
-(1, 1, 1, 'Import', 10, 80, 800, 'Note 01', 1),
-(2, 2, 2, 'Import', 10, 85, 850, 'Note 02', 2),
-(3, 3, 3, 'Import', 10, 90, 900, 'Note 03', 3),
-(4, 4, 4, 'Import', 10, 95, 950, 'Note 04', 4),
-(5, 5, 5, 'Import', 10, 100, 1000, 'Note 05', 5),
-(6, 6, 6, 'Export', 5, 110, 550, 'Note 06', 6),
-(7, 7, 7, 'Export', 5, 115, 575, 'Note 07', 7),
-(8, 8, 8, 'Export', 5, 120, 600, 'Note 08', 8),
-(9, 9, 9, 'Export', 5, 125, 625, 'Note 09', 9),
-(10, 10, 10, 'Export', 5, 130, 650, 'Note 10', 10);
 

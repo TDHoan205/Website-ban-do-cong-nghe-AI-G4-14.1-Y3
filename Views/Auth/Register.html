@@ -1,71 +1,114 @@
-{% extends "Shared/base.html" %}
-
-{% block title %}Đăng ký{% endblock %}
-
-{% block content %}
 <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white text-center py-3">
-                    <h4 class="mb-0"><i class="fas fa-user-plus"></i> Đăng ký tài khoản</h4>
-                </div>
-                <div class="card-body p-4">
-                    <form action="/Auth/Register" method="POST">
-                        <div class="mb-3">
-                            <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                            <input type="text" name="username" class="form-control" required placeholder="Nhập tên đăng nhập">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control" required placeholder="Nhập email của bạn">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Họ và tên</label>
-                            <input type="text" name="full_name" class="form-control" placeholder="Nhập họ và tên">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Số điện thoại</label>
-                            <input type="tel" name="phone" class="form-control" placeholder="Nhập số điện thoại">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                            <input type="password" name="password" class="form-control" required placeholder="Nhập mật khẩu">
-                            <small class="text-muted">Tối thiểu 6 ký tự</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
-                            <input type="password" name="confirm_password" class="form-control" required placeholder="Nhập lại mật khẩu">
-                        </div>
-
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="agree" required>
-                            <label class="form-check-label" for="agree">
-                                Tôi đồng ý với <a href="/Terms">Điều khoản sử dụng</a>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn btn-success w-100 mb-3">
-                            <i class="fas fa-user-plus"></i> Đăng ký
-                        </button>
-                    </form>
-
-                    <hr>
-
-                    <div class="text-center">
-                        <p class="text-muted mb-2">Đã có tài khoản?</p>
-                        <a href="/Auth/Login" class="btn btn-outline-success">
-                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                        </a>
-                    </div>
-                </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow">
+        <div class="card-header bg-success text-white text-center py-3">
+          <h4 class="mb-0">
+            <i class="fas fa-user-plus"></i> Đăng ký tài khoản
+          </h4>
         </div>
+        <div class="card-body p-4">
+          <form action="/Auth/Register" method="POST">
+            <div class="mb-3">
+              <label class="form-label"
+                >Tên đăng nhập <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                name="username"
+                class="form-control"
+                required
+                placeholder="Nhập tên đăng nhập"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label"
+                >Email <span class="text-danger">*</span></label
+              >
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                required
+                placeholder="Nhập email của bạn"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Họ và tên</label>
+              <input
+                type="text"
+                name="full_name"
+                class="form-control"
+                placeholder="Nhập họ và tên"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Số điện thoại</label>
+              <input
+                type="tel"
+                name="phone"
+                class="form-control"
+                placeholder="Nhập số điện thoại"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label"
+                >Mật khẩu <span class="text-danger">*</span></label
+              >
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                required
+                placeholder="Nhập mật khẩu"
+              />
+              <small class="text-muted">Tối thiểu 6 ký tự</small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label"
+                >Xác nhận mật khẩu <span class="text-danger">*</span></label
+              >
+              <input
+                type="password"
+                name="confirm_password"
+                class="form-control"
+                required
+                placeholder="Nhập lại mật khẩu"
+              />
+            </div>
+
+            <div class="mb-3 form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="agree"
+                required
+              />
+              <label class="form-check-label" for="agree">
+                Tôi đồng ý với <a href="/Terms">Điều khoản sử dụng</a>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mb-3">
+              <i class="fas fa-user-plus"></i> Đăng ký
+            </button>
+          </form>
+
+          <hr />
+
+          <div class="text-center">
+            <p class="text-muted mb-2">Đã có tài khoản?</p>
+            <a href="/Auth/Login" class="btn btn-outline-success">
+              <i class="fas fa-sign-in-alt"></i> Đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %}
