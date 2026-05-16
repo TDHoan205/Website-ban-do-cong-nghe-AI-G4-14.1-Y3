@@ -1,114 +1,599 @@
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow">
-        <div class="card-header bg-success text-white text-center py-3">
-          <h4 class="mb-0">
-            <i class="fas fa-user-plus"></i> Đăng ký tài khoản
-          </h4>
-        </div>
-        <div class="card-body p-4">
-          <form action="/Auth/Register" method="POST">
-            <div class="mb-3">
-              <label class="form-label"
-                >Tên đăng nhập <span class="text-danger">*</span></label
-              >
-              <input
-                type="text"
-                name="username"
-                class="form-control"
-                required
-                placeholder="Nhập tên đăng nhập"
-              />
-            </div>
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký - Tech Store AI</title>
 
-            <div class="mb-3">
-              <label class="form-label"
-                >Email <span class="text-danger">*</span></label
-              >
-              <input
-                type="email"
-                name="email"
-                class="form-control"
-                required
-                placeholder="Nhập email của bạn"
-              />
-            </div>
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-            <div class="mb-3">
-              <label class="form-label">Họ và tên</label>
-              <input
-                type="text"
-                name="full_name"
-                class="form-control"
-                placeholder="Nhập họ và tên"
-              />
-            </div>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-            <div class="mb-3">
-              <label class="form-label">Số điện thoại</label>
-              <input
-                type="tel"
-                name="phone"
-                class="form-control"
-                placeholder="Nhập số điện thoại"
-              />
-            </div>
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a6fc4 0%, #0d47a1 50%, #1565c0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
 
-            <div class="mb-3">
-              <label class="form-label"
-                >Mật khẩu <span class="text-danger">*</span></label
-              >
-              <input
-                type="password"
-                name="password"
-                class="form-control"
-                required
-                placeholder="Nhập mật khẩu"
-              />
-              <small class="text-muted">Tối thiểu 6 ký tự</small>
-            </div>
+      /* Back button top left */
+      .back-home {
+        position: fixed;
+        top: 20px;
+        left: 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s;
+        z-index: 100;
+      }
 
-            <div class="mb-3">
-              <label class="form-label"
-                >Xác nhận mật khẩu <span class="text-danger">*</span></label
-              >
-              <input
-                type="password"
-                name="confirm_password"
-                class="form-control"
-                required
-                placeholder="Nhập lại mật khẩu"
-              />
-            </div>
+      .back-home:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+      }
 
-            <div class="mb-3 form-check">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                id="agree"
-                required
-              />
-              <label class="form-check-label" for="agree">
-                Tôi đồng ý với <a href="/Terms">Điều khoản sử dụng</a>
-              </label>
-            </div>
+      /* Auth card */
+      .auth-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 480px;
+        padding: 36px 32px;
+        animation: fadeInUp 0.4s ease-out;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
 
-            <button type="submit" class="btn btn-success w-100 mb-3">
-              <i class="fas fa-user-plus"></i> Đăng ký
-            </button>
-          </form>
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-          <hr />
+      /* Scrollbar for overflow */
+      .auth-card::-webkit-scrollbar {
+        width: 4px;
+      }
+      .auth-card::-webkit-scrollbar-thumb {
+        background: #e5e7eb;
+        border-radius: 4px;
+      }
 
-          <div class="text-center">
-            <p class="text-muted mb-2">Đã có tài khoản?</p>
-            <a href="/Auth/Login" class="btn btn-outline-success">
-              <i class="fas fa-sign-in-alt"></i> Đăng nhập
-            </a>
+      /* Icon - green */
+      .auth-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.35);
+      }
+
+      .auth-icon i {
+        font-size: 1.8rem;
+        color: white;
+      }
+
+      /* Title */
+      .auth-title {
+        text-align: center;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 6px;
+      }
+
+      .auth-subtitle {
+        text-align: center;
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 24px;
+      }
+
+      /* Alerts */
+      .auth-alert {
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .auth-alert-error {
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        color: #dc2626;
+      }
+
+      .auth-alert-success {
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        color: #16a34a;
+      }
+
+      /* Form */
+      .auth-form-group {
+        margin-bottom: 16px;
+      }
+
+      .auth-form-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+
+      .auth-form-label .required {
+        color: #ef4444;
+        margin-left: 2px;
+      }
+
+      .auth-input-wrapper {
+        position: relative;
+      }
+
+      .auth-input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 0.9rem;
+        pointer-events: none;
+        transition: color 0.2s;
+      }
+
+      .auth-form-input {
+        width: 100%;
+        padding: 12px 42px 12px 42px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        color: #1f2937;
+        background: #f9fafb;
+        transition: all 0.2s;
+        outline: none;
+        font-family: 'Be Vietnam Pro', sans-serif;
+      }
+
+      .auth-form-input:focus {
+        border-color: #16a34a;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+      }
+
+      .auth-form-input:focus ~ .auth-input-icon {
+        color: #16a34a;
+      }
+
+      .auth-form-input::placeholder {
+        color: #9ca3af;
+      }
+
+      /* Toggle password */
+      .toggle-pw {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: color 0.2s;
+        background: none;
+        border: none;
+        padding: 0;
+      }
+
+      .toggle-pw:hover {
+        color: #16a34a;
+      }
+
+      /* Agreement */
+      .auth-agreement {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: #6b7280;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 10px;
+      }
+
+      .auth-agreement input[type="checkbox"] {
+        accent-color: #16a34a;
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .auth-agreement a {
+        color: #16a34a;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .auth-agreement a:hover {
+        text-decoration: underline;
+      }
+
+      /* Submit button - green */
+      .auth-submit-btn {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        margin-bottom: 18px;
+      }
+
+      .auth-submit-btn:hover {
+        background: linear-gradient(135deg, #15803d, #166534);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+      }
+
+      .auth-submit-btn:active {
+        transform: translateY(0);
+      }
+
+      /* Divider */
+      .auth-divider {
+        text-align: center;
+        color: #9ca3af;
+        font-size: 0.85rem;
+        margin-bottom: 14px;
+        position: relative;
+      }
+
+      .auth-divider::before,
+      .auth-divider::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: calc(50% - 70px);
+        height: 1px;
+        background: #e5e7eb;
+      }
+
+      .auth-divider::before { left: 0; }
+      .auth-divider::after { right: 0; }
+
+      /* Login link */
+      .auth-switch-prompt {
+        text-align: center;
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+
+      .auth-switch-prompt a {
+        color: #16a34a;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .auth-switch-prompt a:hover {
+        text-decoration: underline;
+      }
+
+      /* Brand footer */
+      .auth-brand {
+        text-align: center;
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid #f3f4f6;
+      }
+
+      .auth-brand-text {
+        font-size: 0.8rem;
+        color: #9ca3af;
+      }
+
+      .auth-brand-text i {
+        color: #1a6fc4;
+        margin-right: 4px;
+      }
+
+      /* Responsive */
+      @media (max-width: 480px) {
+        body {
+          padding: 16px;
+          align-items: flex-start;
+          padding-top: 70px;
+        }
+
+        .auth-card {
+          padding: 28px 20px;
+          max-height: none;
+        }
+
+        .back-home {
+          top: 16px;
+          left: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Back to home -->
+    <a href="/" class="back-home">
+      <i class="fas fa-arrow-left"></i>
+      Về trang chủ
+    </a>
+
+    <div class="auth-card">
+      <!-- Icon -->
+      <div class="auth-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+
+      <!-- Title -->
+      <h1 class="auth-title">Tạo tài khoản mới</h1>
+      <p class="auth-subtitle">Đăng ký để bắt đầu mua sắm</p>
+
+      <!-- Error message -->
+      {% if request.query_params.get('error') %}
+      <div class="auth-alert auth-alert-error">
+        <i class="fas fa-circle-exclamation"></i>
+        {{ request.query_params.get('error') }}
+      </div>
+      {% endif %}
+
+      <!-- Form -->
+      <form action="/Auth/Register" method="POST" onsubmit="return validateForm()">
+        <!-- Username -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Tên đăng nhập <span class="required">*</span></label>
+          <div class="auth-input-wrapper">
+            <input
+              type="text"
+              name="username"
+              class="auth-form-input"
+              placeholder="Nhập tên đăng nhập"
+              required
+              minlength="3"
+              maxlength="50"
+              autocomplete="username"
+            />
+            <i class="fas fa-user auth-input-icon"></i>
           </div>
         </div>
+
+        <!-- Password -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Mật khẩu <span class="required">*</span></label>
+          <div class="auth-input-wrapper">
+            <input
+              type="password"
+              name="password"
+              class="auth-form-input"
+              placeholder="Mật khẩu"
+              required
+              minlength="6"
+              autocomplete="new-password"
+              id="passwordInput"
+            />
+            <i class="fas fa-lock auth-input-icon"></i>
+            <button type="button" class="toggle-pw" onclick="togglePassword('passwordInput', 'togglePassword')">
+              <i class="fas fa-eye" id="togglePassword"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+          <div class="auth-input-wrapper">
+            <input
+              type="password"
+              name="confirm_password"
+              class="auth-form-input"
+              placeholder="Nhập lại mật khẩu"
+              required
+              minlength="6"
+              autocomplete="new-password"
+              id="confirmPasswordInput"
+            />
+            <i class="fas fa-lock auth-input-icon"></i>
+            <button type="button" class="toggle-pw" onclick="togglePassword('confirmPasswordInput', 'toggleConfirmPassword')">
+              <i class="fas fa-eye" id="toggleConfirmPassword"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Full name -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Họ và tên</label>
+          <div class="auth-input-wrapper">
+            <input
+              type="text"
+              name="full_name"
+              class="auth-form-input"
+              placeholder="Nhập họ và tên"
+              autocomplete="name"
+            />
+            <i class="fas fa-id-card auth-input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Email <span class="required">*</span></label>
+          <div class="auth-input-wrapper">
+            <input
+              type="email"
+              name="email"
+              class="auth-form-input"
+              placeholder="Nhập địa chỉ email"
+              required
+              autocomplete="email"
+            />
+            <i class="fas fa-envelope auth-input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Số điện thoại</label>
+          <div class="auth-input-wrapper">
+            <input
+              type="tel"
+              name="phone"
+              class="auth-form-input"
+              placeholder="Nhập số điện thoại"
+              autocomplete="tel"
+            />
+            <i class="fas fa-phone auth-input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Địa chỉ</label>
+          <div class="auth-input-wrapper">
+            <input
+              type="text"
+              name="address"
+              class="auth-form-input"
+              placeholder="Nhập địa chỉ của bạn"
+              autocomplete="street-address"
+            />
+            <i class="fas fa-map-marker-alt auth-input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Role Selection -->
+        <div class="auth-form-group">
+          <label class="auth-form-label">Đăng ký với vai trò</label>
+          <div class="auth-input-wrapper">
+            <select
+              name="role"
+              class="auth-form-input"
+              style="padding-left: 42px; appearance: none; cursor: pointer;"
+            >
+              <option value="Customer" selected>&#9989; Khách hàng - Mua sắm trực tuyến</option>
+              <option value="Admin">&#128737;&#127998; Quản trị viên - Quản lý cửa hàng</option>
+            </select>
+            <i class="fas fa-user-shield auth-input-icon" style="pointer-events: none;"></i>
+          </div>
+        </div>
+
+        <!-- Agreement -->
+        <div class="auth-agreement">
+          <input type="checkbox" id="agreeCheckbox" required />
+          <label for="agreeCheckbox">
+            Tôi đồng ý với <a href="/Terms">Điều khoản sử dụng</a>
+            và <a href="/Privacy">Chính sách bảo mật</a> của Tech Store AI
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="auth-submit-btn">
+          <i class="fas fa-user-plus"></i>
+          Tạo tài khoản
+        </button>
+      </form>
+
+      <p class="auth-switch-prompt">
+        Nhớ mật khẩu rồi?
+        <a href="/Auth/Login">Đăng nhập ngay</a>
+      </p>
+
+      <!-- Brand -->
+      <div class="auth-brand">
+        <span class="auth-brand-text">
+          <i class="fas fa-robot"></i> Tech Store AI
+        </span>
       </div>
     </div>
-  </div>
-</div>
+
+    <script>
+      function togglePassword(inputId, iconId) {
+        var input = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        } else {
+          input.type = 'password';
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+
+      function validateForm() {
+        var password = document.getElementById('passwordInput').value;
+        var confirmPassword = document.getElementById('confirmPasswordInput').value;
+        if (password.length < 6) {
+          alert('Mật khẩu phải có tối thiểu 6 ký tự.');
+          return false;
+        }
+        if (password !== confirmPassword) {
+          alert('Mật khẩu xác nhận không khớp.');
+          return false;
+        }
+        return true;
+      }
+    </script>
+  </body>
+</html>

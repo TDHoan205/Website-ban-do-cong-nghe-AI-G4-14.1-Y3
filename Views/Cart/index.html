@@ -1,11 +1,633 @@
-<div class="container py-4">
-  <h1 class="mb-4"><i class="fas fa-shopping-cart"></i> Giỏ hàng</h1>
-  <div class="text-center py-5">
-    <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
-    <h3>Giỏ hàng trống</h3>
-    <p class="text-muted">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
-    <a href="/Products/" class="btn btn-primary btn-lg">
-      <i class="fas fa-store"></i> Mua sắm ngay
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giỏ hàng - Tech Store AI</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      a { text-decoration: none; transition: color 0.2s; }
+      a:hover { color: #0d6efd; }
+      .main-content { flex: 1; }
+
+      /* ===== TOP BAR ===== */
+      .top-bar { background: #2D3436; color: rgba(255,255,255,0.7); font-size: 0.78rem; padding: 6px 0; }
+      .top-bar-inner {
+        max-width: 1200px; margin: 0 auto; padding: 0 16px;
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+      }
+      .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+      .top-bar-item { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.7); }
+      .top-bar-item i { color: #ff6b00; font-size: 0.8rem; }
+      .top-bar-item:hover { color: white; }
+      .top-bar-divider { color: rgba(255,255,255,0.2); }
+
+      /* ===== HEADER ===== */
+      .main-header {
+        background: white; padding: 14px 0;
+        border-bottom: 1px solid #e8e8e8;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        position: sticky; top: 0; z-index: 999;
+      }
+      .header-inner {
+        max-width: 1200px; margin: 0 auto; padding: 0 16px;
+        display: flex; align-items: center; gap: 20px;
+      }
+      .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+      .header-logo-icon {
+        width: 44px; height: 44px; background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 1.3rem;
+      }
+      .header-logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+      .header-logo-name { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
+      .header-logo-sub { font-size: 0.68rem; color: #9ca3af; }
+      .header-search { flex: 1; max-width: 520px; }
+      .header-search-form {
+        display: flex; border: 2px solid #0d6efd; border-radius: 8px; overflow: hidden; background: white;
+      }
+      .header-search-input {
+        flex: 1; border: none; outline: none; padding: 10px 14px;
+        font-size: 0.88rem; font-family: 'Be Vietnam Pro', sans-serif;
+        color: #374151; background: transparent;
+      }
+      .header-search-input::placeholder { color: #9ca3af; }
+      .header-search-btn {
+        background: #0d6efd; color: white; border: none; padding: 10px 18px;
+        font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
+        font-family: 'Be Vietnam Pro', sans-serif; font-weight: 500; transition: background 0.2s;
+      }
+      .header-search-btn:hover { background: #0a58ca; }
+      .header-actions { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+      .header-action { display: flex; align-items: center; gap: 8px; color: #374151; font-size: 0.82rem; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+      .header-action:hover { color: #0d6efd; }
+      .header-action-icon { position: relative; font-size: 1.4rem; color: #374151; }
+      .header-action-badge { position: absolute; top: -6px; right: -8px; background: #ff6b00; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+      .header-action-text { display: flex; flex-direction: column; line-height: 1.2; }
+      .header-action-label { font-size: 0.68rem; color: #9ca3af; }
+
+      /* ===== NAV BAR ===== */
+      .nav-bar { background: #0d6efd; position: sticky; top: 72px; z-index: 998; }
+      .nav-bar-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; }
+      .nav-categories-btn { background: #ff6b00; color: white; border: none; padding: 11px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Be Vietnam Pro', sans-serif; white-space: nowrap; flex-shrink: 0; }
+      .nav-links { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; flex: 1; overflow-x: auto; }
+      .nav-links li a { display: block; padding: 11px 16px; color: rgba(255,255,255,0.85); font-size: 0.88rem; font-weight: 500; text-decoration: none; white-space: nowrap; transition: all 0.2s; border-bottom: 3px solid transparent; }
+      .nav-links li a:hover, .nav-links li a.active { color: white; background: rgba(255,255,255,0.1); border-bottom-color: #ff6b00; }
+      .nav-links li a.nav-new { color: #ffd700; }
+      .nav-links li a.nav-hot { color: #ff4757; }
+      .nav-support { display: flex; align-items: center; gap: 6px; padding: 0 16px; color: white; font-size: 0.82rem; font-weight: 500; white-space: nowrap; }
+      .nav-support i { color: #ffd700; }
+
+      /* ===== PAGE TITLE ===== */
+      .page-title-bar {
+        background: white; padding: 20px 0; border-bottom: 1px solid #f0f0f0;
+      }
+      .page-title-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+      .page-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+      .page-subtitle { font-size: 0.85rem; color: #9ca3af; }
+      .page-subtitle span { color: #ff6b00; font-weight: 600; }
+
+      /* ===== CART LAYOUT ===== */
+      .cart-page { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+      .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+
+      /* ===== CART ITEMS PANEL ===== */
+      .cart-panel {
+        background: white; border-radius: 12px; border: 1px solid #f0f0f0;
+        overflow: hidden;
+      }
+      .cart-panel-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 20px; border-bottom: 1px solid #f0f0f0; background: #fafafa;
+      }
+      .cart-select-all { display: flex; align-items: center; gap: 10px; }
+      .cart-select-all input[type="checkbox"] { accent-color: #0d6efd; width: 18px; height: 18px; cursor: pointer; }
+      .cart-select-all-label { font-size: 0.88rem; font-weight: 600; color: #374151; cursor: pointer; user-select: none; }
+      .cart-delete-selected {
+        background: none; border: none; color: #dc2626; font-size: 0.85rem;
+        font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+        font-family: 'Be Vietnam Pro', sans-serif; transition: color 0.2s; padding: 0;
+      }
+      .cart-delete-selected:hover { color: #b91c1c; }
+      .cart-items-list { padding: 0; }
+      .cart-item {
+        display: grid; grid-template-columns: auto 1fr auto auto;
+        gap: 16px; align-items: center;
+        padding: 16px 20px; border-bottom: 1px solid #f5f5f5;
+        transition: background 0.2s;
+      }
+      .cart-item:last-child { border-bottom: none; }
+      .cart-item:hover { background: #fafafa; }
+      .cart-item-check { display: flex; align-items: center; }
+      .cart-item-check input[type="checkbox"] { accent-color: #0d6efd; width: 18px; height: 18px; cursor: pointer; }
+      .cart-item-img {
+        width: 80px; height: 80px; border-radius: 8px;
+        border: 1px solid #f0f0f0; overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        background: #f8f9fa; flex-shrink: 0;
+      }
+      .cart-item-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+      .cart-item-info { min-width: 0; }
+      .cart-item-name {
+        font-size: 0.9rem; font-weight: 600; color: #1a1a2e;
+        margin-bottom: 4px; line-height: 1.4;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        text-decoration: none; transition: color 0.2s;
+      }
+      .cart-item-name:hover { color: #0d6efd; }
+      .cart-item-desc { font-size: 0.78rem; color: #9ca3af; margin-bottom: 6px; }
+      .cart-item-price {
+        font-size: 1rem; font-weight: 700; color: #dc2626;
+      }
+      .cart-item-qty {
+        display: flex; align-items: center; gap: 0; border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+      }
+      .qty-btn {
+        width: 32px; height: 32px; background: white; border: none;
+        font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        color: #6b7280; transition: all 0.15s; font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .qty-btn:hover { background: #f3f4f6; color: #374151; }
+      .qty-value {
+        width: 40px; height: 32px; display: flex; align-items: center; justify-content: center;
+        font-size: 0.88rem; font-weight: 600; color: #374151;
+        border-left: 1.5px solid #e5e7eb; border-right: 1.5px solid #e5e7eb;
+      }
+      .cart-item-total {
+        text-align: right; min-width: 100px; flex-shrink: 0;
+      }
+      .cart-item-total-price {
+        font-size: 1.05rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;
+      }
+      .cart-item-delete-btn {
+        display: flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; border-radius: 50%; border: none;
+        background: none; color: #9ca3af; cursor: pointer; font-size: 0.85rem;
+        transition: all 0.2s; margin-top: 4px;
+      }
+      .cart-item-delete-btn:hover { background: #fee2e2; color: #dc2626; }
+      .cart-continue-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        color: #0d6efd; font-size: 0.88rem; font-weight: 600;
+        text-decoration: none; padding: 12px 0; transition: color 0.2s;
+      }
+      .cart-continue-btn:hover { color: #0a58ca; }
+      .cart-continue-btn i { font-size: 0.8rem; }
+
+      /* ===== ORDER SUMMARY ===== */
+      .order-summary {
+        background: white; border-radius: 12px; border: 1px solid #f0f0f0;
+        padding: 24px; position: sticky; top: 130px;
+      }
+      .summary-title {
+        font-size: 1.05rem; font-weight: 700; color: #1a1a2e;
+        margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0;
+      }
+      .summary-row {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 12px; font-size: 0.88rem;
+      }
+      .summary-row-label { color: #6b7280; }
+      .summary-row-value { font-weight: 600; color: #374151; }
+      .summary-divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+      .summary-total-row {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px;
+      }
+      .summary-total-label { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+      .summary-total-value { font-size: 1.3rem; font-weight: 800; color: #dc2626; }
+      .checkout-btn {
+        width: 100%; padding: 14px; background: #ff6b00; color: white;
+        border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        font-family: 'Be Vietnam Pro', sans-serif; transition: all 0.2s; text-decoration: none;
+      }
+      .checkout-btn:hover { background: #e55c00; color: white; transform: translateY(-1px); }
+      .summary-note {
+        display: flex; align-items: flex-start; gap: 8px;
+        margin-top: 16px; font-size: 0.78rem; color: #9ca3af; line-height: 1.5;
+      }
+      .summary-note i { color: #16a34a; margin-top: 2px; flex-shrink: 0; }
+
+      /* ===== EMPTY CART ===== */
+      .empty-cart {
+        text-align: center; padding: 80px 20px; background: white; border-radius: 12px; border: 1px solid #f0f0f0;
+      }
+      .empty-cart-icon {
+        width: 100px; height: 100px; margin: 0 auto 24px;
+        background: #f3f4f6; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.5rem; color: #d1d5db;
+      }
+      .empty-cart-title { font-size: 1.3rem; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+      .empty-cart-desc { font-size: 0.9rem; color: #9ca3af; margin-bottom: 28px; line-height: 1.6; }
+      .empty-cart-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #0d6efd; color: white; padding: 14px 32px;
+        border-radius: 10px; font-size: 1rem; font-weight: 700;
+        font-family: 'Be Vietnam Pro', sans-serif; border: none; cursor: pointer;
+        transition: all 0.2s; text-decoration: none;
+      }
+      .empty-cart-btn:hover { background: #0a58ca; color: white; transform: translateY(-1px); }
+
+      /* ===== FOOTER ===== */
+      .main-footer { background: #1a1a2e; padding: 50px 0 0; color: rgba(255,255,255,0.6); }
+      .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+      .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 40px; }
+      .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; text-decoration: none; }
+      .footer-brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #0d6efd, #0a58ca); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; }
+      .footer-brand-name { font-size: 1.2rem; font-weight: 700; color: white; }
+      .footer-brand-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+      .footer-desc { font-size: 0.85rem; line-height: 1.7; margin-bottom: 18px; }
+      .footer-socials { display: flex; gap: 10px; }
+      .footer-social { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); transition: all 0.2s; text-decoration: none; font-size: 0.9rem; }
+      .footer-social:hover { background: #0d6efd; color: white; }
+      .footer-col-title { font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+      .footer-links li a { color: rgba(255,255,255,0.55); font-size: 0.85rem; text-decoration: none; transition: color 0.2s; display: flex; align-items: center; gap: 6px; }
+      .footer-links li a:hover { color: white; }
+      .footer-links li a i { font-size: 0.7rem; color: #ff6b00; }
+      .footer-contact-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; }
+      .footer-contact-item i { color: #ff6b00; margin-top: 3px; width: 16px; text-align: center; }
+      .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+      .footer-copyright { font-size: 0.82rem; }
+      .footer-payments { display: flex; gap: 10px; align-items: center; }
+      .footer-payment { width: 40px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 600; }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 1024px) {
+        .cart-layout { grid-template-columns: 1fr; }
+        .order-summary { position: static; }
+        .footer-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 768px) {
+        .top-bar { display: none; }
+        .header-search { display: none; }
+        .nav-support { display: none; }
+        .cart-item { grid-template-columns: auto 1fr auto; }
+        .cart-item-total { display: none; }
+        .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+        .footer-bottom { flex-direction: column; text-align: center; }
+      }
+      @media (max-width: 480px) {
+        .cart-item { grid-template-columns: 1fr auto; }
+        .cart-item-check { display: none; }
+        .cart-item-qty { grid-column: 1 / -1; justify-self: start; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== TOP BAR ===== -->
+    <div class="top-bar">
+      <div class="top-bar-inner">
+        <div class="top-bar-left">
+          <a href="tel:18006601" class="top-bar-item"><i class="fas fa-phone"></i> 1800.6601</a>
+          <span class="top-bar-divider">|</span>
+          <a href="mailto:hotro@techstore.com" class="top-bar-item"><i class="fas fa-envelope"></i> hotro@techstore.com</a>
+        </div>
+        <div class="top-bar-right">
+          <span class="top-bar-item"><i class="fas fa-truck"></i> Miễn phí vận chuyển toàn quốc</span>
+          <span class="top-bar-divider">|</span>
+          <span class="top-bar-item"><i class="fas fa-shield-alt"></i> Bảo hành chính hãng</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="main-header">
+      <div class="header-inner">
+        <a href="/" class="header-logo">
+          <div class="header-logo-icon"><i class="fas fa-robot"></i></div>
+          <div class="header-logo-text">
+            <span class="header-logo-name">Tech Store AI</span>
+            <span class="header-logo-sub">Công nghệ thông minh</span>
+          </div>
+        </a>
+        <div class="header-search">
+          <form action="/Products/" method="GET" class="header-search-form">
+            <input type="text" name="search" class="header-search-input" placeholder="Tìm kiếm sản phẩm..." />
+            <button type="submit" class="header-search-btn"><i class="fas fa-search"></i> Tìm kiếm</button>
+          </form>
+        </div>
+        <div class="header-actions">
+          <a href="/Cart/" class="header-action">
+            <div class="header-action-icon">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="header-action-badge">{{ cart_count | default(0) }}</span>
+            </div>
+            <div class="header-action-text">
+              <span class="header-action-label">Giỏ hàng</span>
+            </div>
+          </a>
+          <a href="/Auth/Login" class="header-action">
+            <div class="header-action-icon"><i class="fas fa-user"></i></div>
+            <div class="header-action-text">
+              <span class="header-action-label">Đăng nhập</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== NAV BAR ===== -->
+    <nav class="nav-bar">
+      <div class="nav-bar-inner">
+        <button class="nav-categories-btn"><i class="fas fa-bars"></i> Danh mục</button>
+        <ul class="nav-links">
+          <li><a href="/">Trang chủ</a></li>
+          <li><a href="/Products/">Sản phẩm</a></li>
+          <li><a href="/Cart/" class="active">Giỏ hàng</a></li>
+          <li><a href="/Chat/">AI Tư vấn</a></li>
+          <li><a href="/Products/?sort=new" class="nav-new"><i class="fas fa-bolt"></i> Sản phẩm mới</a></li>
+          <li><a href="/Products/?sort=hot" class="nav-hot"><i class="fas fa-fire"></i> Hot</a></li>
+        </ul>
+        <div class="nav-support"><i class="fas fa-headset"></i> Hỗ trợ: 1800.6601</div>
+      </div>
+    </nav>
+
+    <!-- ===== PAGE TITLE ===== -->
+    <div class="page-title-bar">
+      <div class="page-title-inner">
+        <h1 class="page-title"><i class="fas fa-shopping-cart" style="color:#ff6b00;margin-right:8px;"></i>Giỏ hàng của bạn</h1>
+        <p class="page-subtitle">
+          {% if cart_items and cart_items | length > 0 %}
+          <span>{{ cart_items | length }}</span> sản phẩm trong giỏ hàng
+          {% else %}
+          0 sản phẩm trong giỏ hàng
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+      <div class="cart-page">
+
+        {% if cart_items and cart_items | length > 0 %}
+        <!-- ===== CART WITH ITEMS ===== -->
+        <div class="cart-layout">
+          <!-- Left: Cart items -->
+          <div class="cart-panel">
+            <div class="cart-panel-header">
+              <div class="cart-select-all">
+                <input type="checkbox" id="selectAll" onchange="toggleAll(this)" />
+                <label class="cart-select-all-label" for="selectAll">Chọn tất cả</label>
+              </div>
+              <button class="cart-delete-selected" onclick="deleteSelected()">
+                <i class="fas fa-trash-alt"></i> Xóa sản phẩm đã chọn
+              </button>
+            </div>
+
+            <div class="cart-items-list">
+              {% for item in cart_items %}
+              <div class="cart-item" id="cart-item-{{ item.cart_item_id }}">
+                <div class="cart-item-check">
+                  <input type="checkbox" class="item-checkbox" value="{{ item.cart_item_id }}" />
+                </div>
+
+                <div class="cart-item-img">
+                  <img
+                    src="{{ item.product.image_url if item.product and item.product.image_url else '/static/images/no-image.png' }}"
+                    alt="{{ item.product.name if item.product else 'San pham' }}"
+                    onerror="this.src='/static/images/no-image.png'"
+                  />
+                </div>
+
+                <div class="cart-item-info">
+                  <a href="/Products/{{ item.product_id }}" class="cart-item-name">
+                    {{ item.product.name if item.product else 'San pham' }}
+                  </a>
+                  {% if item.variant %}
+                  <p class="cart-item-desc">{{ item.variant.variant_name if item.variant.variant_name else '' }}</p>
+                  {% else %}
+                  <p class="cart-item-desc">&nbsp;</p>
+                  {% endif %}
+                  <div class="cart-item-price">{{ "{:,.0f}".format(item.unit_price) }} đ</div>
+                </div>
+
+                <div class="cart-item-qty">
+                  <a href="/Cart/update/{{ item.cart_item_id }}?qty={{ item.quantity - 1 }}" class="qty-btn" onclick="updateQty(event, {{ item.cart_item_id }}, {{ item.quantity - 1 }})">-</a>
+                  <span class="qty-value" id="qty-{{ item.cart_item_id }}">{{ item.quantity }}</span>
+                  <a href="/Cart/update/{{ item.cart_item_id }}?qty={{ item.quantity + 1 }}" class="qty-btn" onclick="updateQty(event, {{ item.cart_item_id }}, {{ item.quantity + 1 }})">+</a>
+                </div>
+
+                <div class="cart-item-total">
+                  <div class="cart-item-total-price">{{ "{:,.0f}".format(item.subtotal) }} đ</div>
+                  <button class="cart-item-delete-btn" onclick="removeItem({{ item.cart_item_id }})" title="Xoa san pham">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div style="padding: 16px 20px; border-top: 1px solid #f0f0f0; background: #fafafa;">
+              <a href="/Products/" class="cart-continue-btn">
+                <i class="fas fa-arrow-left"></i> Tiếp tục mua hàng
     </a>
   </div>
 </div>
+
+          <!-- Right: Order summary -->
+          <div class="order-summary">
+            <h3 class="summary-title">Thông tin đơn hàng</h3>
+
+            <div class="summary-row">
+              <span class="summary-row-label">Tổng sản phẩm</span>
+              <span class="summary-row-value">{{ cart_items | length }} sản phẩm</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row">
+              <span class="summary-row-label">Tạm tính</span>
+              <span class="summary-row-value">{{ "{:,.0f}".format(cart_total | float) }} đ</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">Giảm giá</span>
+              <span class="summary-row-value" style="color:#16a34a;">- 0 đ</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">Phí vận chuyển</span>
+              <span class="summary-row-value" style="color:#16a34a;">Miễn phí</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-total-row">
+              <span class="summary-total-label">Tổng cộng</span>
+              <span class="summary-total-value">{{ "{:,.0f}".format(cart_total | float) }} đ</span>
+            </div>
+
+            <a href="/Orders/Checkout" class="checkout-btn">
+              <i class="fas fa-credit-card"></i>
+              Tiến hành thanh toán
+            </a>
+
+            <div class="summary-note">
+              <i class="fas fa-check-circle"></i>
+              <span>Cam kết giao hàng nhanh trong 2-4 giờ. Miễn phí đổi trả trong 7 ngày.</span>
+            </div>
+          </div>
+        </div>
+
+        {% else %}
+        <!-- ===== EMPTY CART ===== -->
+        <div class="empty-cart">
+          <div class="empty-cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <h2 class="empty-cart-title">Giỏ hàng trống</h2>
+          <p class="empty-cart-desc">
+            Bạn chưa có sản phẩm nào trong giỏ hàng.<br />
+            Hãy bắt đầu mua hàng ngay!
+          </p>
+          <a href="/Products/" class="empty-cart-btn">
+            <i class="fas fa-shopping-bag"></i>
+            Mua hàng ngay
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="main-footer">
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div>
+            <a href="/" class="footer-brand">
+              <div class="footer-brand-icon"><i class="fas fa-robot"></i></div>
+              <div>
+                <div class="footer-brand-name">Tech Store AI</div>
+                <div class="footer-brand-sub">Công nghệ thông minh</div>
+              </div>
+            </a>
+            <p class="footer-desc">Cua hang cong nghe hang dau Viet Nam voi tro ly AI thong minh, giup ban tim kiem va chon lua san pham cong nghe phu hop nhat.</p>
+            <div class="footer-socials">
+              <a href="#" class="footer-social"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-youtube"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-tiktok"></i></a>
+            </div>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Mua hàng</h4>
+            <ul class="footer-links">
+              <li><a href="/Products/"><i class="fas fa-chevron-right"></i> Sản phẩm</a></li>
+              <li><a href="/Products/?sort=new"><i class="fas fa-chevron-right"></i> Sản phẩm mới</a></li>
+              <li><a href="/Products/?sort=hot"><i class="fas fa-chevron-right"></i> Sản phẩm hot</a></li>
+              <li><a href="/Products/?category_id=1"><i class="fas fa-chevron-right"></i> Điện thoại</a></li>
+              <li><a href="/Products/?category_id=2"><i class="fas fa-chevron-right"></i> Laptop</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Hỗ trợ</h4>
+            <ul class="footer-links">
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Trung tâm trợ giúp</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Hướng dẫn mua hàng</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách đổi trả</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách bảo hành</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Liên hệ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Liên hệ</h4>
+            <div class="footer-contact-item"><i class="fas fa-map-marker-alt"></i><span>Tầng 5, Toà nhà ABC Tower,<br />123 Nguyễn Huệ, Q.1, TP.HCM</span></div>
+            <div class="footer-contact-item"><i class="fas fa-phone"></i><span>1800.6601</span></div>
+            <div class="footer-contact-item"><i class="fas fa-envelope"></i><span>hotro@techstore.com</span></div>
+            <div class="footer-contact-item"><i class="fas fa-clock"></i><span>Thứ 2 - CN: 8:00 - 22:00</span></div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copyright">&copy; 2026 Tech Store AI. Tat ca quyen duoc bao luu.</div>
+          <div class="footer-payments">
+            <div class="footer-payment">VISA</div>
+            <div class="footer-payment">MC</div>
+            <div class="footer-payment">JCB</div>
+            <div class="footer-payment">COD</div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Hidden form for delete action -->
+    <form id="removeForm" method="POST" action="/Cart/remove/" style="display:none;">
+      <input type="hidden" name="item_id" id="removeItemId" />
+    </form>
+    <form id="updateQtyForm" method="POST" action="/Cart/update/" style="display:none;">
+      <input type="hidden" name="item_id" id="updateItemId" />
+      <input type="hidden" name="quantity" id="updateQuantity" />
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+      function toggleAll(checkbox) {
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+          cb.checked = checkbox.checked;
+        });
+      }
+
+      function removeItem(itemId) {
+        if (confirm('Ban co muon xoa san pham nay?')) {
+          document.getElementById('removeItemId').value = itemId;
+          document.getElementById('removeForm').action = '/Cart/remove/' + itemId;
+          document.getElementById('removeForm').submit();
+        }
+      }
+
+      function updateQty(event, itemId, qty) {
+        if (qty < 1) {
+          event.preventDefault();
+          removeItem(itemId);
+          return;
+        }
+        // Let the link proceed normally
+      }
+
+      function deleteSelected() {
+        const checked = document.querySelectorAll('.item-checkbox:checked');
+        if (checked.length === 0) {
+          alert('Vui lòng chọn sản phẩm cần xóa.');
+          return;
+        }
+        if (!confirm('Bạn có muốn xóa ' + checked.length + ' sản phẩm đã chọn?')) return;
+        checked.forEach(cb => {
+          fetch('/Cart/remove/' + cb.value, { method: 'POST' }).then(() => {
+            const row = document.getElementById('cart-item-' + cb.value);
+            if (row) row.remove();
+          });
+        });
+        setTimeout(() => location.reload(), 500);
+      }
+    </script>
+  </body>
+</html>

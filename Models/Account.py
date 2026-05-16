@@ -72,9 +72,6 @@ class Role(Base):
 
     role_id = Column(Integer, primary_key=True, index=True)
     role_name = Column(String(50), unique=True, nullable=False)
-    description = Column(String(255))
-    permissions = Column(String(1000))  # JSON string
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     accounts = relationship("Account", back_populates="role")
 

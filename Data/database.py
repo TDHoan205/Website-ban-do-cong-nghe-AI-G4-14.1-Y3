@@ -9,7 +9,7 @@ import urllib
 
 # Cấu hình SQL Server - Sửa theo server của bạn
 SQL_SERVER_CONFIG = {
-    "server": "QUANTRAN161204\\SQLEXPRESS",
+    "server": "(local)",
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication
@@ -21,7 +21,7 @@ SQL_SERVER_CONFIG = {
 
 
 def build_connection_string() -> str:
-    """Xây dựng Connection String cho SQL Server"""
+    """Build connection string for SQL Server"""
     if SQL_SERVER_CONFIG.get("trusted_connection", "yes") == "yes":
         params = urllib.parse.quote(
             f"DRIVER={{{SQL_SERVER_CONFIG['driver']}}};"

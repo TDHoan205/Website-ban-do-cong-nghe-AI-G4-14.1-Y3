@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tech Store AI</title>
+    <title>Tech Store AI - Cong nghe thong minh hon</title>
 
     <!-- Bootstrap 5 -->
     <link
@@ -17,356 +17,1720 @@
     />
     <!-- Google Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      a { text-decoration: none; transition: color 0.2s; }
+      a:hover { color: #0d6efd; }
+      .main-content { flex: 1; }
+
+      /* ===== TOP INFO BAR ===== */
+      .top-bar {
+        background: #2D3436;
+        color: rgba(255,255,255,0.7);
+        font-size: 0.78rem;
+        padding: 6px 0;
+      }
+      .top-bar-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .top-bar-left, .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .top-bar-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,0.7);
+      }
+      .top-bar-item i { color: #ff6b00; font-size: 0.8rem; }
+      .top-bar-item:hover { color: white; }
+      .top-bar-divider { color: rgba(255,255,255,0.2); }
+
+      /* ===== MAIN HEADER ===== */
+      .main-header {
+        background: white;
+        padding: 14px 0;
+        border-bottom: 1px solid #e8e8e8;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        position: sticky;
+        top: 0;
+        z-index: 999;
+      }
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+      .header-logo-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+      }
+      .header-logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .header-logo-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        letter-spacing: -0.3px;
+      }
+      .header-logo-sub {
+        font-size: 0.68rem;
+        color: #9ca3af;
+        font-weight: 400;
+      }
+      .header-search {
+        flex: 1;
+        max-width: 520px;
+      }
+      .header-search-form {
+        display: flex;
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+      }
+      .header-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        color: #374151;
+        background: transparent;
+      }
+      .header-search-input::placeholder { color: #9ca3af; }
+      .header-search-btn {
+        background: #0d6efd;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      .header-search-btn:hover { background: #0a58ca; }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .header-action {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .header-action:hover { color: #0d6efd; }
+      .header-action-icon {
+        position: relative;
+        font-size: 1.4rem;
+        color: #374151;
+      }
+      .header-action-badge {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: #ff6b00;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+      }
+      .header-action-text { display: flex; flex-direction: column; line-height: 1.2; }
+      .header-action-label { font-size: 0.68rem; color: #9ca3af; }
+
+      /* User dropdown */
+      .header-user-menu {
+        position: relative;
+      }
+      .header-user-action {
+        cursor: pointer;
+      }
+      .header-user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        min-width: 180px;
+        padding: 6px 0;
+        z-index: 1000;
+        display: none;
+        margin-top: 8px;
+      }
+      .header-user-dropdown .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        color: #374151;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s;
+      }
+      .header-user-dropdown .dropdown-item:hover {
+        background: #f3f4f6;
+        color: #0d6efd;
+      }
+      .header-user-dropdown .dropdown-item i { width: 16px; text-align: center; }
+      .header-user-dropdown .dropdown-item-red { color: #dc2626; }
+      .header-user-dropdown .dropdown-item-red:hover { background: #fef2f2; color: #dc2626; }
+      .header-user-dropdown .dropdown-divider {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 4px 0;
+      }
+
+      /* ===== NAV BAR ===== */
+      .nav-bar {
+        background: #0d6efd;
+        position: sticky;
+        top: 72px;
+        z-index: 998;
+      }
+      .nav-bar-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        position: relative;
+      }
+      .nav-categories-btn {
+        background: #ff6b00;
+        color: white;
+        border: none;
+        padding: 11px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .nav-categories-btn i { font-size: 0.8rem; }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+        flex: 1;
+        overflow-x: auto;
+      }
+      .nav-links li a {
+        display: block;
+        padding: 11px 16px;
+        color: rgba(255,255,255,0.85);
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.2s;
+        border-bottom: 3px solid transparent;
+      }
+      .nav-links li a:hover,
+      .nav-links li a.active {
+        color: white;
+        background: rgba(255,255,255,0.1);
+        border-bottom-color: #ff6b00;
+      }
+      .nav-links li a.nav-new {
+        color: #ffd700;
+        font-weight: 700;
+      }
+      .nav-links li a.nav-hot {
+        color: #ff4757;
+        font-weight: 700;
+      }
+      .nav-support {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+        color: white;
+        font-size: 0.82rem;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .nav-support i { color: #ffd700; }
+
+      /* ===== HERO ===== */
+      .hero-section {
+        background: linear-gradient(135deg, #0a1128 0%, #1a237e 50%, #0d1b3e 100%);
+        padding: 60px 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+      .hero-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        position: relative;
+        z-index: 1;
+      }
+      .hero-content { flex: 1; }
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,107,0,0.15);
+        border: 1px solid rgba(255,107,0,0.3);
+        color: #ff6b00;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 20px;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .hero-eyebrow i { font-size: 0.75rem; }
+      .hero-title {
+        font-size: 2.6rem;
+        font-weight: 800;
+        color: white;
+        line-height: 1.2;
+        margin-bottom: 18px;
+      }
+      .hero-title span { color: #ff6b00; }
+      .hero-desc {
+        font-size: 1rem;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.7;
+        margin-bottom: 30px;
+        max-width: 480px;
+      }
+      .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
+      .hero-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #ff6b00;
+        color: white;
+        padding: 13px 28px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .hero-btn-primary:hover { background: #e55c00; color: white; transform: translateY(-1px); }
+      .hero-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: white;
+        padding: 13px 28px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        border: 2px solid rgba(255,255,255,0.3);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .hero-btn-secondary:hover { border-color: white; color: white; background: rgba(255,255,255,0.08); }
+      .hero-product {
+        flex-shrink: 0;
+        width: 340px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+      }
+      .hero-product-img {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 16px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .hero-product-img i {
+        font-size: 4rem;
+        color: rgba(255,255,255,0.2);
+      }
+      .hero-product-name {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 4px;
+      }
+      .hero-product-price {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #ff6b00;
+        margin-bottom: 4px;
+      }
+      .hero-product-original {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.4);
+        text-decoration: line-through;
+      }
+      .hero-product-rating {
+        color: #ffd700;
+        font-size: 0.85rem;
+        margin: 8px 0;
+      }
+      .hero-product-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ff6b00;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .hero-product-btn:hover { background: #e55c00; color: white; }
+
+      /* ===== SECTION COMMON ===== */
+      .section-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        gap: 16px;
+      }
+      .section-title-group { display: flex; align-items: center; gap: 12px; }
+      .section-title-en {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .section-title-vn {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        line-height: 1.2;
+      }
+      .section-title-vn i { color: #ff6b00; margin-right: 4px; }
+      .section-viewall {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #0d6efd;
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+      .section-viewall:hover { color: #0a58ca; }
+      .section-viewall i { font-size: 0.8rem; transition: transform 0.2s; }
+      .section-viewall:hover i { transform: translateX(3px); }
+
+      /* ===== TRUST BADGES ===== */
+      .trust-section { padding: 32px 0; background: white; }
+      .trust-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+      }
+      .trust-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 20px;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        background: #fafafa;
+        transition: all 0.2s;
+      }
+      .trust-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 4px 15px rgba(13,110,253,0.08);
+        transform: translateY(-2px);
+      }
+      .trust-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.3rem;
+      }
+      .trust-icon-blue { background: #eff6ff; color: #2563eb; }
+      .trust-icon-green { background: #f0fdf4; color: #16a34a; }
+      .trust-icon-orange { background: #fff7ed; color: #ea580c; }
+      .trust-icon-purple { background: #f5f3ff; color: #7c3aed; }
+      .trust-text-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 2px;
+      }
+      .trust-text-desc {
+        font-size: 0.78rem;
+        color: #9ca3af;
+      }
+
+      /* ===== CATEGORIES ===== */
+      .categories-section { padding: 40px 0; }
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .cat-card {
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 20px 16px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.25s;
+        display: block;
+      }
+      .cat-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 6px 20px rgba(13,110,253,0.12);
+        transform: translateY(-3px);
+      }
+      .cat-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 12px;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #2563eb;
+        transition: all 0.25s;
+      }
+      .cat-card:hover .cat-icon {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+      }
+      .cat-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+      .cat-count {
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
+
+      /* ===== PRODUCTS ===== */
+      .products-section { padding: 40px 0; }
+      .products-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .tab-btn {
+        padding: 8px 20px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        color: #6b7280;
+        font-size: 0.88rem;
+        font-weight: 600;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .tab-btn.active,
+      .tab-btn:hover {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+      }
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .product-card {
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.25s;
+        display: flex;
+        flex-direction: column;
+      }
+      .product-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 8px 25px rgba(13,110,253,0.12);
+        transform: translateY(-4px);
+      }
+      .product-img-wrap {
+        position: relative;
+        background: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .product-img-wrap img {
+        max-height: 140px;
+        max-width: 100%;
+        object-fit: contain;
+      }
+      .product-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .badge-new { background: #16a34a; color: white; }
+      .badge-hot { background: #dc2626; color: white; }
+      .badge-sale { background: #ff6b00; color: white; }
+      .product-discount {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc2626;
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+      .product-info {
+        padding: 14px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .product-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 6px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .product-name:hover { color: #0d6efd; }
+      .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 8px;
+        font-size: 0.75rem;
+      }
+      .product-stars { color: #f59e0b; }
+      .product-reviews { color: #9ca3af; }
+      .product-price-wrap { margin-bottom: 10px; }
+      .product-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #dc2626;
+      }
+      .product-price-original {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        text-decoration: line-through;
+        margin-left: 6px;
+      }
+      .product-add-btn {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .product-add-btn:hover { background: #0a58ca; color: white; }
+      .product-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+      }
+      .product-empty i { font-size: 3rem; margin-bottom: 12px; color: #e5e7eb; }
+      .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 32px;
+        flex-wrap: wrap;
+      }
+      .page-btn {
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1.5px solid #e5e7eb;
+        background: white;
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        padding: 0 10px;
+      }
+      .page-btn.active, .page-btn:hover {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+      }
+
+      /* ===== WHY US ===== */
+      .why-section {
+        padding: 50px 0;
+        background: white;
+      }
+      .why-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+      .why-card {
+        padding: 28px 24px;
+        border: 1px solid #f0f0f0;
+        border-radius: 14px;
+        text-align: center;
+        transition: all 0.25s;
+      }
+      .why-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 8px 25px rgba(13,110,253,0.1);
+        transform: translateY(-3px);
+      }
+      .why-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+      .why-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+      }
+      .why-desc {
+        font-size: 0.85rem;
+        color: #6b7280;
+        line-height: 1.6;
+      }
+
+      /* ===== SUPPORT BANNER ===== */
+      .support-section {
+        background: linear-gradient(135deg, #1a237e, #0d47a1);
+        padding: 50px 0;
+        text-align: center;
+      }
+      .support-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 8px;
+      }
+      .support-sub {
+        font-size: 1rem;
+        color: rgba(255,255,255,0.7);
+        margin-bottom: 30px;
+      }
+      .support-btns { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+      .support-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .support-btn-phone {
+        background: white;
+        color: #1a237e;
+        border: none;
+      }
+      .support-btn-phone:hover { background: #ffd700; color: #1a1a2e; }
+      .support-btn-chat {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+      }
+      .support-btn-chat:hover { background: rgba(255,255,255,0.2); color: white; border-color: white; }
+      .support-hotline {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ffd700;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+      }
+
+      /* ===== FOOTER ===== */
+      .main-footer {
+        background: #1a1a2e;
+        padding: 50px 0 0;
+        color: rgba(255,255,255,0.6);
+      }
+      .footer-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1fr;
+        gap: 40px;
+        padding-bottom: 40px;
+      }
+      .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        text-decoration: none;
+      }
+      .footer-brand-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+      }
+      .footer-brand-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+      }
+      .footer-brand-sub {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.4);
+      }
+      .footer-desc {
+        font-size: 0.85rem;
+        line-height: 1.7;
+        margin-bottom: 18px;
+      }
+      .footer-socials {
+        display: flex;
+        gap: 10px;
+      }
+      .footer-social {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.08);
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .footer-social:hover { background: #0d6efd; color: white; }
+      .footer-col-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .footer-links li a {
+        color: rgba(255,255,255,0.55);
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .footer-links li a:hover { color: white; }
+      .footer-links li a i { font-size: 0.7rem; color: #ff6b00; }
+      .footer-contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+      }
+      .footer-contact-item i { color: #ff6b00; margin-top: 3px; width: 16px; text-align: center; }
+      .footer-bottom {
+        border-top: 1px solid rgba(255,255,255,0.08);
+        padding: 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .footer-copyright { font-size: 0.82rem; }
+      .footer-payments {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .footer-payment {
+        width: 40px;
+        height: 26px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.4);
+        font-weight: 600;
+      }
+
+      /* ===== FLOATING CHAT ===== */
+      .floating-chat {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+      }
+      .floating-chat-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(13,110,253,0.4);
+        transition: all 0.3s;
+        text-decoration: none;
+      }
+      .floating-chat-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 25px rgba(13,110,253,0.5);
+        color: white;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 1024px) {
+        .hero-inner { flex-direction: column; }
+        .hero-product { width: 100%; }
+        .trust-grid { grid-template-columns: repeat(2, 1fr); }
+        .cat-grid { grid-template-columns: repeat(3, 1fr); }
+        .products-grid { grid-template-columns: repeat(3, 1fr); }
+        .footer-grid { grid-template-columns: repeat(2, 1fr); }
+        .why-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 768px) {
+        .top-bar { display: none; }
+        .main-header { position: relative; top: 0; }
+        .header-search { display: none; }
+        .nav-bar { position: relative; top: 0; }
+        .nav-support { display: none; }
+        .hero-title { font-size: 1.8rem; }
+        .hero-product { width: 100%; }
+        .trust-grid { grid-template-columns: repeat(2, 1fr); }
+        .cat-grid { grid-template-columns: repeat(3, 1fr); }
+        .products-grid { grid-template-columns: repeat(2, 1fr); }
+        .why-grid { grid-template-columns: 1fr; }
+        .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+        .footer-bottom { flex-direction: column; text-align: center; }
+      }
+      @media (max-width: 480px) {
+        .cat-grid { grid-template-columns: repeat(2, 1fr); }
+        .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .hero-section { padding: 40px 0; }
+        .hero-title { font-size: 1.5rem; }
+        .hero-buttons { flex-direction: column; }
+      }
+    </style>
   </head>
   <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-      <div class="container">
-        <a class="navbar-brand" href="/">
-          <i class="fas fa-robot"></i> Tech Store AI
+    <!-- ===== TOP INFO BAR ===== -->
+    <div class="top-bar">
+      <div class="top-bar-inner">
+        <div class="top-bar-left">
+          <a href="tel:18006601" class="top-bar-item">
+            <i class="fas fa-phone"></i> 1800.6601
+          </a>
+          <span class="top-bar-divider">|</span>
+          <a href="mailto:hotro@techstore.com" class="top-bar-item">
+            <i class="fas fa-envelope"></i> hotro@techstore.com
+          </a>
+        </div>
+        <div class="top-bar-right">
+          <span class="top-bar-item">
+            <i class="fas fa-truck"></i> Mien phi van chuyen toan quoc
+          </span>
+          <span class="top-bar-divider">|</span>
+          <span class="top-bar-item">
+            <i class="fas fa-shield-alt"></i> Bao hanh chinh hang
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MAIN HEADER ===== -->
+    <header class="main-header">
+      <div class="header-inner">
+        <a href="/" class="header-logo">
+          <div class="header-logo-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="header-logo-text">
+            <span class="header-logo-name">Tech Store AI</span>
+            <span class="header-logo-sub">Cong nghe thong minh</span>
+          </div>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
+
+        <div class="header-search">
+          <form action="/Products/" method="GET" class="header-search-form">
+            <input
+              type="text"
+              name="search"
+              class="header-search-input"
+              placeholder="Tim kiem san pham..."
+              value="{{ search | default('') }}"
+            />
+            <button type="submit" class="header-search-btn">
+              <i class="fas fa-search"></i> Tim kiem
+            </button>
+          </form>
+        </div>
+
+        <div class="header-actions">
+          <a href="/Cart/" class="header-action">
+            <div class="header-action-icon">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="header-action-badge">{{ cart_count | default(0) }}</span>
+            </div>
+            <div class="header-action-text">
+              <span class="header-action-label">Gio hang</span>
+            </div>
+          </a>
+
+          {% if current_user %}
+          <div class="header-user-menu">
+            <div class="header-action header-user-action">
+              <div class="header-action-icon">
+                <i class="fas fa-user-check" style="color:#16a34a;"></i>
+              </div>
+              <div class="header-action-text">
+                <span class="header-action-label" style="color:#16a34a;">{{ current_user.full_name or current_user.username }}</span>
+              </div>
+            </div>
+            <div class="header-user-dropdown">
+              <a href="/Auth/Profile" class="dropdown-item"><i class="fas fa-user"></i> Thong tin ca nhan</a>
+              <a href="/Orders/" class="dropdown-item"><i class="fas fa-shopping-bag"></i> Don hang cua toi</a>
+              {% if current_user.role_name == 'Admin' %}
+              <a href="/Admin/Dashboard" class="dropdown-item"><i class="fas fa-cog"></i> Quan ly Admin</a>
+              {% endif %}
+              <div class="dropdown-divider"></div>
+              <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"><i class="fas fa-sign-out-alt"></i> Dang xuat</a>
+            </div>
+          </div>
+          {% else %}
+          <a href="/Auth/Login" class="header-action">
+            <div class="header-action-icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="header-action-text">
+              <span class="header-action-label">Dang nhap</span>
+            </div>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== NAV BAR ===== -->
+    <nav class="nav-bar">
+      <div class="nav-bar-inner">
+        <button class="nav-categories-btn">
+          <i class="fas fa-bars"></i>
+          Danh muc
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/"
-                ><i class="fas fa-home"></i> Trang chu</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/Products/"
-                ><i class="fas fa-store"></i> San pham</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/Chat/"
-                ><i class="fas fa-robot"></i> AI Tu van</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/About"
-                ><i class="fas fa-info-circle"></i> Gioi thieu</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/Contact"
-                ><i class="fas fa-phone"></i> Lien he</a
-              >
-            </li>
-          </ul>
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="/Cart/">
-                <i class="fas fa-shopping-cart"></i> Gio hang
-                <span class="badge bg-warning text-dark">0</span>
-              </a>
-            </li>
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                data-bs-toggle="dropdown"
-              >
-                <i class="fas fa-user"></i> Tai khoan
-              </a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item" href="/Auth/Login"
-                    ><i class="fas fa-sign-in-alt"></i> Dang nhap</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/Auth/Register"
-                    ><i class="fas fa-user-plus"></i> Dang ky</a
-                  >
-                </li>
-              </ul>
-            </li>
-          </ul>
+        <ul class="nav-links">
+          <li><a href="/" class="active">Trang chu</a></li>
+          <li><a href="/Products/">San pham</a></li>
+          <li><a href="/Cart/">Gio hang</a></li>
+          <li><a href="/Chat/">AI Tu van</a></li>
+          <li><a href="/Products/?sort=new" class="nav-new"><i class="fas fa-bolt"></i> San pham moi</a></li>
+          <li><a href="/Products/?sort=hot" class="nav-hot"><i class="fas fa-fire"></i> Hot</a></li>
+        </ul>
+        <div class="nav-support">
+          <i class="fas fa-headset"></i>
+          Ho tro: 1800.6601
         </div>
       </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content">
-      <!-- Hero Section -->
-      <section class="hero-section bg-light py-5 mb-4">
-        <div class="container">
-          <div class="row align-items-center">
-            <div class="col-lg-6">
-              <h1 class="display-4 fw-bold">
-                Chào mừng đến <span class="text-primary">Tech Store AI</span>
-              </h1>
-              <p class="lead">
-                Cửa hàng công nghệ hàng đầu với
-                <strong>AI tư vấn thông minh</strong>
-              </p>
-              <div class="mb-3">
-                <span class="badge bg-success me-1"
-                  ><i class="fas fa-check"></i> Hàng chính hãng</span
-                >
-                <span class="badge bg-info me-1"
-                  ><i class="fas fa-truck"></i> Giao hàng nhanh</span
-                >
-                <span class="badge bg-warning text-dark"
-                  ><i class="fas fa-headset"></i> Hỗ trợ 24/7</span
-                >
-              </div>
-              <a href="/Products/" class="btn btn-primary btn-lg">
-                <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+
+      <!-- ===== HERO ===== -->
+      <section class="hero-section">
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-eyebrow">
+              <i class="fas fa-robot"></i>
+              AI Shopping Assistant
+            </div>
+            <h1 class="hero-title">
+              Kham pha<br />
+              Cong nghe<br />
+              <span>Thong minh hon</span>
+            </h1>
+            <p class="hero-desc">
+              Trai nghiem mua sam cong nghe voi tro ly AI thong minh,
+              tu van san pham phu hop 24/7. Hang chinh hang, gia tot nhat thi truong.
+            </p>
+            <div class="hero-buttons">
+              <a href="/Products/" class="hero-btn-primary">
+                <i class="fas fa-shopping-bag"></i>
+                Mua sam ngay
+              </a>
+              <a href="/Products/" class="hero-btn-secondary">
+                <i class="fas fa-eye"></i>
+                Xem san pham
               </a>
             </div>
-            <div class="col-lg-6 text-center">
-              <img
-                src="/static/images/hero.png"
-                alt="Tech Store"
-                class="img-fluid"
-                style="max-height: 300px"
-                onerror="this.style.display = 'none'"
-              />
+          </div>
+          <div class="hero-product">
+            <div class="hero-product-img">
+              <i class="fas fa-mobile-alt"></i>
+            </div>
+            <div class="hero-product-name">iPhone 15 Pro Max</div>
+            <div class="hero-product-rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              &nbsp;5.0
+            </div>
+            <div class="hero-product-price">24.990.000 đ</div>
+            <div class="hero-product-original">27.990.000 đ</div>
+            <a href="/Products/" class="hero-product-btn">
+              <i class="fas fa-shopping-cart"></i>
+              Mua ngay
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TRUST BADGES ===== -->
+      <section class="trust-section">
+        <div class="section-wrap">
+          <div class="trust-grid">
+            <div class="trust-card">
+              <div class="trust-icon trust-icon-blue">
+                <i class="fas fa-certificate"></i>
+              </div>
+              <div>
+                <div class="trust-text-title">Chinh hang 100%</div>
+                <div class="trust-text-desc">Cam ket hang chinh hang</div>
+              </div>
+            </div>
+            <div class="trust-card">
+              <div class="trust-icon trust-icon-green">
+                <i class="fas fa-truck"></i>
+              </div>
+              <div>
+                <div class="trust-text-title">Giao hang nhanh</div>
+                <div class="trust-text-desc">Giao trong 2-4 gio noi thanh</div>
+              </div>
+            </div>
+            <div class="trust-card">
+              <div class="trust-icon trust-icon-orange">
+                <i class="fas fa-sync-alt"></i>
+              </div>
+              <div>
+                <div class="trust-text-title">Doi tra 7 ngay</div>
+                <div class="trust-text-desc">Mien phi doi tra trong tuan</div>
+              </div>
+            </div>
+            <div class="trust-card">
+              <div class="trust-icon trust-icon-purple">
+                <i class="fas fa-headset"></i>
+              </div>
+              <div>
+                <div class="trust-text-title">Ho tro 24/7</div>
+                <div class="trust-text-desc">Tu van online moi luc</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- ===== CATEGORIES ===== -->
+      <section class="categories-section">
+        <div class="section-wrap">
+          <div class="section-header">
+            <div class="section-title-group">
+              <div>
+                <div class="section-title-en">Kham pha</div>
+                <div class="section-title-vn">
+                  <i class="fas fa-th-large"></i> Danh muc san pham
+                </div>
+              </div>
+            </div>
+            <a href="/Products/" class="section-viewall">
+              Xem tat ca <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="cat-grid">
+            {% for cat in categories %}
+            <a href="/Products/?category_id={{ cat.category_id }}" class="cat-card">
+              <div class="cat-icon">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <div class="cat-name">{{ cat.name }}</div>
+              <div class="cat-count">{{ cat.products | length if cat.products else '' }} san pham</div>
+            </a>
+            {% endfor %}
+
+            {% if not categories %}
+            <a href="/Products/?category_id=1" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-mobile-alt"></i></div>
+              <div class="cat-name">Dien thoai di dong</div>
+              <div class="cat-count">24 san pham</div>
+            </a>
+            <a href="/Products/?category_id=2" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-laptop"></i></div>
+              <div class="cat-name">Laptop</div>
+              <div class="cat-count">18 san pham</div>
+            </a>
+            <a href="/Products/?category_id=3" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-tablet-alt"></i></div>
+              <div class="cat-name">Tablet</div>
+              <div class="cat-count">12 san pham</div>
+            </a>
+            <a href="/Products/?category_id=4" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-headphones"></i></div>
+              <div class="cat-name">Tai nghe</div>
+              <div class="cat-count">20 san pham</div>
+            </a>
+            <a href="/Products/?category_id=5" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-keyboard"></i></div>
+              <div class="cat-name">Phu kien</div>
+              <div class="cat-count">35 san pham</div>
+            </a>
+            <a href="/Products/?category_id=6" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-clock"></i></div>
+              <div class="cat-name">Dong ho thong minh</div>
+              <div class="cat-count">15 san pham</div>
+            </a>
+            <a href="/Products/?category_id=7" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-mouse"></i></div>
+              <div class="cat-name">Ban phim & Chuot</div>
+              <div class="cat-count">28 san pham</div>
+            </a>
+            <a href="/Products/?category_id=8" class="cat-card">
+              <div class="cat-icon"><i class="fas fa-camera"></i></div>
+              <div class="cat-name">May anh</div>
+              <div class="cat-count">10 san pham</div>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== NEW PRODUCTS ===== -->
+      <section class="products-section">
+        <div class="section-wrap">
+          <div class="section-header">
+            <div class="section-title-group">
+              <div>
+                <div class="section-title-en">Moi nhat</div>
+                <div class="section-title-vn">
+                  <i class="fas fa-bolt"></i> San pham moi ve
+                </div>
+              </div>
+            </div>
+            <a href="/Products/" class="section-viewall">
+              Xem tat ca <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="products-grid">
+            {% if new_products %}
+              {% for product in new_products %}
+              <div class="product-card">
+                <div class="product-img-wrap">
+                  {% if product.is_new %}
+                  <span class="product-badge badge-new">Moi</span>
+                  {% endif %}
+                  {% if product.is_hot %}
+                  <span class="product-badge badge-hot">Hot</span>
+                  {% endif %}
+                  {% if product.discount_percent > 0 %}
+                  <span class="product-discount">-{{ product.discount_percent }}%</span>
+                  {% endif %}
+                  <img
+                    src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
+                    alt="{{ product.name }}"
+                    onerror="this.src='/static/images/no-image.png'"
+                  />
+                </div>
+                <div class="product-info">
+                  <a href="/Products/{{ product.product_id }}" class="product-name">
+                    {{ product.name }}
+                  </a>
+                  <div class="product-rating">
+                    <span class="product-reviews">{{ product.rating | default(4.5) }}</span>
+                  </div>
+                  <div class="product-price-wrap">
+                    <span class="product-price">{{ "{:,.0f}".format(product.price | float) }} đ</span>
+                    {% if product.original_price and product.original_price > product.price %}
+                    <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
+                    {% endif %}
+                  </div>
+                  <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
+                    <button type="submit" class="product-add-btn">
+                      <i class="fas fa-cart-plus"></i> Them vao gio hang
+                    </button>
+                  </form>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="product-empty">
+                <i class="fas fa-box-open"></i>
+                <p>Chua co san pham nao</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="pagination-wrap">
+            <a href="/Products/?sort=new" class="page-btn active">1</a>
+            <a href="/Products/?sort=new&page=2" class="page-btn">2</a>
+            <a href="/Products/?sort=new&page=3" class="page-btn">3</a>
+            <a href="/Products/?sort=new&page=2" class="page-btn">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== HOT PRODUCTS ===== -->
+      <section class="products-section" style="background: white; padding: 40px 0;">
+        <div class="section-wrap">
+          <div class="section-header">
+            <div class="section-title-group">
+              <div>
+                <div class="section-title-en">Xu huong</div>
+                <div class="section-title-vn">
+                  <i class="fas fa-fire"></i> San pham hot
+                </div>
+              </div>
+            </div>
+            <a href="/Products/?sort=hot" class="section-viewall">
+              Xem tat ca <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="products-grid">
+            {% if featured_products %}
+              {% for product in featured_products %}
+              <div class="product-card">
+                <div class="product-img-wrap">
+                  {% if product.is_hot %}
+                  <span class="product-badge badge-hot">Hot</span>
+                  {% endif %}
+                  {% if product.is_new %}
+                  <span class="product-badge badge-new">Moi</span>
+                  {% endif %}
+                  {% if product.discount_percent > 0 %}
+                  <span class="product-discount">-{{ product.discount_percent }}%</span>
+                  {% endif %}
+                  <img
+                    src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
+                    alt="{{ product.name }}"
+                    onerror="this.src='/static/images/no-image.png'"
+                  />
+                </div>
+                <div class="product-info">
+                  <a href="/Products/{{ product.product_id }}" class="product-name">
+                    {{ product.name }}
+                  </a>
+                  <div class="product-rating">
+                    <span class="product-stars">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star-half-alt"></i>
+                    </span>
+                    <span class="product-reviews">{{ product.rating | default(4.5) }}</span>
+                  </div>
+                  <div class="product-price-wrap">
+                    <span class="product-price">{{ "{:,.0f}".format(product.price | float) }} đ</span>
+                    {% if product.original_price and product.original_price > product.price %}
+                    <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
+                    {% endif %}
+                  </div>
+                  <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
+                    <button type="submit" class="product-add-btn">
+                      <i class="fas fa-cart-plus"></i> Them vao gio hang
+                    </button>
+                  </form>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="product-empty">
+                <i class="fas fa-fire-alt"></i>
+                <p>Chua co san pham hot</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== WHY CHOOSE US ===== -->
+      <section class="why-section">
+        <div class="section-wrap">
+          <div class="section-header" style="justify-content: center; margin-bottom: 36px;">
+            <div class="section-title-group">
+              <div style="text-align:center;">
+                <div class="section-title-en">Cam ket</div>
+                <div class="section-title-vn" style="font-size:1.6rem;">
+                  <i class="fas fa-shield-alt"></i> Tai sao chon chung toi
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="why-grid">
+            <div class="why-card">
+              <div class="why-icon" style="background:#eff6ff;">
+                <i class="fas fa-badge-check" style="color:#2563eb;"></i>
+              </div>
+              <div class="why-title">100% Chinh hang</div>
+              <div class="why-desc">Cam ket moi san pham deu la hang chinh hang, co day du giay to va bao hanh tu nha san xuat.</div>
+            </div>
+            <div class="why-card">
+              <div class="why-icon" style="background:#f0fdf4;">
+                <i class="fas fa-money-bill-wave" style="color:#16a34a;"></i>
+              </div>
+              <div class="why-title">Gia tot nhat</div>
+              <div class="why-desc">Chung toi luon cam ket gia canh cạnh tranh nhat thi truong, nhieu uu dai hap dan moi ngay.</div>
+            </div>
+            <div class="why-card">
+              <div class="why-icon" style="background:#fff7ed;">
+                <i class="fas fa-shipping-fast" style="color:#ea580c;"></i>
+              </div>
+              <div class="why-title">Giao hang nhanh</div>
+              <div class="why-desc">Giao hang trong 2-4 gio doi voi noi thanh. Mien phi van chuyen cho don hang tu 500.000đ.</div>
+            </div>
+            <div class="why-card">
+              <div class="why-icon" style="background:#f5f3ff;">
+                <i class="fas fa-undo" style="color:#7c3aed;"></i>
+              </div>
+              <div class="why-title">Doi tra de dang</div>
+              <div class="why-desc">Doi tra mien phi trong vong 7 ngay neu san pham khong dung nhu mo ta hoac bi loi.</div>
+            </div>
+            <div class="why-card">
+              <div class="why-icon" style="background:#fdf2f8;">
+                <i class="fas fa-headset" style="color:#db2777;"></i>
+              </div>
+              <div class="why-title">Ho tro 24/7</div>
+              <div class="why-desc">Doi ngu tu van vien va tro ly AI san sang ho tro ban moi luc, moi noi qua dien thoai va chat.</div>
+            </div>
+            <div class="why-card">
+              <div class="why-icon" style="background:#ecfdf5;">
+                <i class="fas fa-lock" style="color:#059669;"></i>
+              </div>
+              <div class="why-title">Thanh toan an toan</div>
+              <div class="why-desc">Nhieu phuong thuc thanh toan an toan: COD, chuyen khoan, the tin dung, vi dien tu.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SUPPORT BANNER ===== -->
+      <section class="support-section">
+        <div class="section-wrap" style="text-align:center;">
+          <h2 class="support-title">Ban can ho tro?</h2>
+          <p class="support-sub">Doi ngu ho tro cua chung toi luon san sang giup do ban</p>
+          <div class="support-hotline">
+            <i class="fas fa-phone-alt"></i> 1800.6601
+          </div>
+          <div class="support-btns">
+            <a href="tel:18006601" class="support-btn support-btn-phone">
+              <i class="fas fa-phone-alt"></i>
+              Goi ngay
+            </a>
+            <a href="/Chat/" class="support-btn support-btn-chat">
+              <i class="fas fa-comments"></i>
+              Chat voi AI
+            </a>
+          </div>
+        </div>
+      </section>
+
     </main>
 
-    <!-- Chatbot Floating Button -->
-    <div class="chatbot-float">
-      <a
-        href="/Chat/"
-        class="btn btn-primary btn-lg rounded-circle"
-        title="Chat voi AI"
-      >
+    <!-- ===== FOOTER ===== -->
+    <footer class="main-footer">
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div>
+            <a href="/" class="footer-brand">
+              <div class="footer-brand-icon">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div>
+                <div class="footer-brand-name">Tech Store AI</div>
+                <div class="footer-brand-sub">Cong nghe thong minh</div>
+              </div>
+            </a>
+            <p class="footer-desc">
+              Cua hang cong nghe hang dau Viet Nam voi tro ly AI thong minh,
+              giup ban tim kiem va chon lua san pham cong nghe phu hop nhat.
+            </p>
+            <div class="footer-socials">
+              <a href="#" class="footer-social"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-youtube"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-tiktok"></i></a>
+            </div>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Mua hang</h4>
+            <ul class="footer-links">
+              <li><a href="/Products/"><i class="fas fa-chevron-right"></i> San pham</a></li>
+              <li><a href="/Products/?sort=new"><i class="fas fa-chevron-right"></i> San pham moi</a></li>
+              <li><a href="/Products/?sort=hot"><i class="fas fa-chevron-right"></i> San pham hot</a></li>
+              <li><a href="/Products/?category_id=1"><i class="fas fa-chevron-right"></i> Dien thoai</a></li>
+              <li><a href="/Products/?category_id=2"><i class="fas fa-chevron-right"></i> Laptop</a></li>
+              <li><a href="/Products/?category_id=4"><i class="fas fa-chevron-right"></i> Tai nghe</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Ho tro</h4>
+            <ul class="footer-links">
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Trung tam tro giup</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Huong dan mua hang</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Chinh sach doi tra</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Chinh sach bao hanh</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Lien he</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Lien he</h4>
+            <div class="footer-contact-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Tang 5, Toa nha ABC Tower,<br />123 Nguyen Hue, Q.1, TP.HCM</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-phone"></i>
+              <span>1800.6601</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-envelope"></i>
+              <span>hotro@techstore.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-clock"></i>
+              <span>Thu 2 - CN: 8:00 - 22:00</span>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copyright">
+            &copy; 2026 Tech Store AI. Tat ca quyen duoc bao luu.
+          </div>
+          <div class="footer-payments">
+            <div class="footer-payment">VISA</div>
+            <div class="footer-payment">MC</div>
+            <div class="footer-payment">JCB</div>
+            <div class="footer-payment">COD</div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ===== FLOATING CHAT ===== -->
+    <div class="floating-chat">
+      <a href="/Chat/" class="floating-chat-btn" title="Chat voi AI">
         <i class="fas fa-comments"></i>
       </a>
     </div>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-4 mt-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-4">
-            <h5><i class="fas fa-robot"></i> Tech Store AI</h5>
-            <p>Cua hang cong nghe voi AI tu van thong minh 24/7</p>
-          </div>
-          <div class="col-md-4">
-            <h5>Lien ket nhanh</h5>
-            <ul class="list-unstyled">
-              <li><a href="/" class="text-white-50">Trang chu</a></li>
-              <li><a href="/Products/" class="text-white-50">San pham</a></li>
-              <li><a href="/Chat/" class="text-white-50">AI Tu van</a></li>
-            </ul>
-          </div>
-          <div class="col-md-4">
-            <h5>Lien he</h5>
-            <p class="text-white-50 mb-1">
-              <i class="fas fa-envelope"></i> support@techstore.com
-            </p>
-            <p class="text-white-50 mb-1">
-              <i class="fas fa-phone"></i> 0123-456-789
-            </p>
-            <p class="text-white-50">
-              <i class="fas fa-map-marker-alt"></i> Ha Noi, Viet Nam
-            </p>
-          </div>
-        </div>
-        <hr class="bg-secondary" />
-        <p class="text-center text-white-50 mb-0">
-          &copy; 2026 Tech Store AI. All rights reserved.
-        </p>
-      </div>
-    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="/static/js/main.js"></script>
+    <!-- Dropdown Fix -->
+    <script>
+      (function() {
+        var menu = document.querySelector('.header-user-menu');
+        var dropdown = document.querySelector('.header-user-dropdown');
+        if (!menu || !dropdown) return;
+
+        var isOpen = false;
+        var action = menu.querySelector('.header-user-action');
+        if (action) {
+          action.addEventListener('click', function(e) {
+            e.preventDefault();
+            isOpen = !isOpen;
+            dropdown.style.display = isOpen ? 'block' : 'none';
+          });
+        }
+        document.addEventListener('click', function(e) {
+          if (!menu.contains(e.target)) {
+            isOpen = false;
+            dropdown.style.display = 'none';
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
-
-<!-- Sản phẩm nổi bật -->
-<section class="featured-products py-4">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2><i class="fas fa-fire text-danger"></i> Sản phẩm nổi bật</h2>
-      <a
-        href="/Products/?sort_by=is_hot&sort_order=desc"
-        class="btn btn-outline-primary"
-      >
-        Xem tất cả <i class="fas fa-arrow-right"></i>
-      </a>
-    </div>
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="product-card card h-100 shadow-sm">
-          <span class="badge bg-danger position-absolute top-0 end-0 m-2"
-            >Hot</span
-          >
-          <span class="badge bg-success position-absolute top-0 start-0 m-2"
-            >Mới</span
-          >
-
-          <a href="/Products/1">
-            <img
-              src="/static/images/no-image.png"
-              class="card-img-top product-image"
-              alt="San pham mau"
-              onerror="this.src = '/static/images/no-image.png'"
-            />
-          </a>
-
-          <div class="card-body text-center">
-            <h6 class="card-title">
-              <a href="/Products/1" class="text-decoration-none text-dark">
-                San pham mau
-              </a>
-            </h6>
-            <p class="text-muted small">Danh muc mau</p>
-
-            <div class="rating mb-2">
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-secondary"></i>
-              <i class="fas fa-star text-secondary"></i>
-            </div>
-
-            <div class="price-section mb-2">
-              <span class="current-price text-danger fw-bold fs-5"
-                >12,000,000 đ</span
-              >
-              <br />
-              <span
-                class="original-price text-muted text-decoration-line-through small"
-                >14,000,000 đ</span
-              >
-            </div>
-
-            <form action="/Products/1/add-to-cart" method="POST">
-              <button type="submit" class="btn btn-primary btn-sm w-100">
-                <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Sản phẩm mới -->
-<section class="new-products py-4 bg-light">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2><i class="fas fa-star text-warning"></i> Sản phẩm mới</h2>
-      <a
-        href="/Products/?sort_by=is_new&sort_order=desc"
-        class="btn btn-outline-primary"
-      >
-        Xem tất cả <i class="fas fa-arrow-right"></i>
-      </a>
-    </div>
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="product-card card h-100 shadow-sm">
-          <span class="badge bg-success position-absolute top-0 start-0 m-2"
-            >Mới</span
-          >
-
-          <a href="/Products/2">
-            <img
-              src="/static/images/no-image.png"
-              class="card-img-top product-image"
-              alt="San pham moi"
-              onerror="this.src = '/static/images/no-image.png'"
-            />
-          </a>
-
-          <div class="card-body text-center">
-            <h6 class="card-title">
-              <a href="/Products/2" class="text-decoration-none text-dark">
-                San pham moi
-              </a>
-            </h6>
-
-            <div class="price-section mb-2">
-              <span class="current-price text-danger fw-bold">9,500,000 đ</span>
-            </div>
-
-            <form action="/Products/2/add-to-cart" method="POST">
-              <button
-                type="submit"
-                class="btn btn-outline-primary btn-sm w-100"
-              >
-                <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Danh mục -->
-<section class="categories py-4">
-  <div class="container">
-    <h2 class="mb-4"><i class="fas fa-th-large"></i> Danh mục sản phẩm</h2>
-    <div class="row">
-      <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
-        <a
-          href="/Products/?category_id=1"
-          class="category-card text-center d-block p-3 rounded bg-white shadow-sm text-decoration-none"
-        >
-          <i class="fas fa-laptop fa-2x text-primary mb-2"></i>
-          <p class="mb-0 fw-medium text-dark">Laptop</p>
-        </a>
-      </div>
-      <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
-        <a
-          href="/Products/?category_id=2"
-          class="category-card text-center d-block p-3 rounded bg-white shadow-sm text-decoration-none"
-        >
-          <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
-          <p class="mb-0 fw-medium text-dark">Dien thoai</p>
-        </a>
-      </div>
-      <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
-        <a
-          href="/Products/?category_id=3"
-          class="category-card text-center d-block p-3 rounded bg-white shadow-sm text-decoration-none"
-        >
-          <i class="fas fa-headphones fa-2x text-primary mb-2"></i>
-          <p class="mb-0 fw-medium text-dark">Phu kien</p>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- AI Banner -->
-<section
-  class="ai-banner bg-gradient py-5 text-white text-center"
-  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
->
-  <div class="container">
-    <i class="fas fa-robot fa-3x mb-3"></i>
-    <h2>Trợ lý AI thông minh</h2>
-    <p class="lead">Tư vấn sản phẩm 24/7 với trí tuệ nhân tạo</p>
-    <a href="/Chat/" class="btn btn-light btn-lg">
-      <i class="fas fa-comments"></i> Bắt đầu trò chuyện
-    </a>
-  </div>
-</section>

@@ -1,169 +1,223 @@
-<div class="container py-4">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-      <li class="breadcrumb-item"><a href="/Products/">Sản phẩm</a></li>
-      <li class="breadcrumb-item active">San pham mau</li>
-    </ol>
-  </nav>
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title | default('Chi tiet san pham') }} - Tech Store AI</title>
 
-  <div class="row">
-    <!-- Images -->
-    <div class="col-lg-6 mb-4">
-      <div class="card">
-        <img
-          src="/static/images/no-image.png"
-          class="card-img-top"
-          alt="San pham mau"
-          id="main-image"
-          onerror="this.src = '/static/images/no-image.png'"
-        />
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        background: #f0f2f5;
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation (inline to avoid base.html dependency) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-robot"></i> Tech Store AI
+        </a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home"></i> Trang chu</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Products/"><i class="fas fa-store"></i> San pham</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Chat/"><i class="fas fa-robot"></i> AI Tu van</a></li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="/Cart/"><i class="fas fa-shopping-cart"></i> Gio hang</a></li>
+            {% if current_user %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% if current_user.role_name == 'Admin' %}
+                <li><a class="dropdown-item" href="/Admin/Dashboard"><i class="fas fa-cog"></i> Quan ly</a></li>
+                {% endif %}
+                <li><a class="dropdown-item" href="/Auth/Profile"><i class="fas fa-user-circle"></i> Tai khoan</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="/Auth/Logout"><i class="fas fa-sign-out-alt"></i> Dang xuat</a></li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user"></i> Tai khoan</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/Auth/Login"><i class="fas fa-sign-in-alt"></i> Dang nhap</a></li>
+                <li><a class="dropdown-item" href="/Auth/Register"><i class="fas fa-user-plus"></i> Dang ky</a></li>
+              </ul>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
       </div>
-    </div>
+    </nav>
 
-    <!-- Info -->
-    <div class="col-lg-6">
-      <h1 class="mb-3">San pham mau</h1>
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/Products/">Sản phẩm</a></li>
+            <li class="breadcrumb-item active">{{ product.name | default('San pham mau') }}</li>
+          </ol>
+        </nav>
 
-      <div class="mb-3">
-        <span class="badge bg-primary">Danh muc mau</span>
-        <span class="badge bg-success">Moi</span>
-        <span class="badge bg-danger">Hot</span>
-      </div>
-
-      <div class="rating mb-3">
-        <i class="fas fa-star text-warning"></i>
-        <i class="fas fa-star text-warning"></i>
-        <i class="fas fa-star text-warning"></i>
-        <i class="fas fa-star text-secondary"></i>
-        <i class="fas fa-star text-secondary"></i>
-        <span class="text-muted">(4.5 sao)</span>
-      </div>
-
-      <div class="price-section mb-4">
-        <span class="current-price text-danger fs-2 fw-bold">12,000,000 đ</span>
-        <br />
-        <span
-          class="original-price text-muted text-decoration-line-through fs-5"
-          >14,000,000 đ</span
-        >
-        <span class="badge bg-warning text-dark ms-2">-15%</span>
-      </div>
-
-      <div class="mb-3">
-        <p class="text-muted"><i class="fas fa-box"></i> Con 10 san pham</p>
-      </div>
-      <div class="mb-4">
-        <h5>Mô tả:</h5>
-        <p>Mo ta san pham mau.</p>
-      </div>
-
-      <!-- Add to Cart -->
-      <form action="/Products/1/add-to-cart" method="POST" class="mb-4">
-        <div class="row g-3 align-items-center mb-3">
-          <div class="col-auto">
-            <label class="col-form-label">Số lượng:</label>
-          </div>
-          <div class="col-auto">
-            <div class="input-group" style="width: 130px">
-              <button
-                type="button"
-                class="btn btn-outline-secondary"
-                onclick="decreaseQty()"
-              >
-                -
-              </button>
-              <input
-                type="number"
-                name="quantity"
-                id="quantity"
-                class="form-control text-center"
-                value="1"
-                min="1"
+        <div class="row">
+          <!-- Images -->
+          <div class="col-lg-6 mb-4">
+            <div class="card">
+              {% if product.images and product.images | length > 0 %}
+              <img
+                src="{{ product.images[0].image_url }}"
+                class="card-img-top"
+                alt="{{ product.name }}"
+                id="main-image"
               />
-              <button
-                type="button"
-                class="btn btn-outline-secondary"
-                onclick="increaseQty()"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
-            <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
-          </button>
-          <a
-            href="/Chat/?q=Toi+muon+hoi+ve+san+pham+mau"
-            class="btn btn-outline-primary btn-lg"
-          >
-            <i class="fas fa-robot"></i> Hỏi AI
-          </a>
-        </div>
-      </form>
-
-      <!-- AI Suggestion -->
-      <div class="card bg-light">
-        <div class="card-body">
-          <h6>
-            <i class="fas fa-robot text-primary"></i> Bạn có câu hỏi về sản phẩm
-            này?
-          </h6>
-          <a
-            href="/Chat/?q=So+sanh+san+pham+mau"
-            class="btn btn-sm btn-outline-primary"
-            >So sanh san pham</a
-          >
-          <a
-            href="/Chat/?q=Tu+van+mua+san+pham+mau"
-            class="btn btn-sm btn-outline-info"
-            >Tu van mua hang</a
-          >
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Related Products -->
-  <div class="row mt-5">
-    <div class="col-12">
-      <h3><i class="fas fa-th-large"></i> Sản phẩm liên quan</h3>
-      <div class="row">
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card h-100">
-            <a href="/Products/2">
+              {% else %}
               <img
                 src="/static/images/no-image.png"
-                class="card-img-top product-image"
-                alt="San pham lien quan"
-                onerror="this.src = '/static/images/no-image.png'"
+                class="card-img-top"
+                alt="{{ product.name }}"
+                id="main-image"
+                onerror="this.src='/static/images/no-image.png'"
               />
-            </a>
-            <div class="card-body text-center">
-              <h6>
-                <a href="/Products/2" class="text-decoration-none text-dark"
-                  >San pham lien quan</a
-                >
-              </h6>
-              <p class="text-danger fw-bold">8,500,000 đ</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="col-lg-6">
+            <h1 class="mb-3">{{ product.name | default('San pham mau') }}</h1>
+
+            <div class="rating mb-3">
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-secondary"></i>
+              <span class="text-muted">({{ "%.1f" | format(product.rating | default(4.5)) }} sao)</span>
+            </div>
+
+            <div class="price-section mb-4">
+              <span class="current-price text-danger fs-2 fw-bold">{{ "{:,}".format(product.price | default(0) | int) }} đ</span>
+              {% if product.original_price and product.original_price > product.price %}
+              <br />
+              <span class="original-price text-muted text-decoration-line-through fs-5">{{ "{:,}".format(product.original_price | int) }} đ</span>
+              {% set discount = ((product.original_price - product.price) / product.original_price * 100) | int %}
+              <span class="badge bg-warning text-dark ms-2">-{{ discount }}%</span>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <p class="text-muted"><i class="fas fa-box"></i> {% if product.stock and product.stock > 0 %}Con {{ product.stock }} san pham{% else %}Het hang{% endif %}</p>
+            </div>
+            <div class="mb-4">
+              <h5>Mo ta:</h5>
+              <p>{{ product.description | default('Khong co mo ta.') }}</p>
+            </div>
+
+            <!-- Add to Cart -->
+            <form action="/Products/{{ product.product_id | default(1) }}/add-to-cart" method="POST" class="mb-4">
+              <div class="row g-3 align-items-center mb-3">
+                <div class="col-auto">
+                  <label class="col-form-label">So luong:</label>
+                </div>
+                <div class="col-auto">
+                  <div class="input-group" style="width: 130px">
+                    <button type="button" class="btn btn-outline-secondary" onclick="decreaseQty()">-</button>
+                    <input type="number" name="quantity" id="quantity" class="form-control text-center" value="1" min="1" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="increaseQty()">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                  <i class="fas fa-cart-plus"></i> Them vao gio hang
+                </button>
+                <a href="/Chat/?q=Toi+muon+hoi+ve+{{ product.name | urlencode | default('san pham') }}" class="btn btn-outline-primary btn-lg">
+                  <i class="fas fa-robot"></i> Hoi AI
+                </a>
+              </div>
+            </form>
+
+            <!-- AI Suggestion -->
+            <div class="card bg-light">
+              <div class="card-body">
+                <h6><i class="fas fa-robot text-primary"></i> Ban co cau hoi ve san pham nay?</h6>
+                <a href="/Chat/?q=So+sanh+san+pham" class="btn btn-sm btn-outline-primary">So sanh san pham</a>
+                <a href="/Chat/?q=Tu+van+mua+san+pham" class="btn btn-sm btn-outline-info">Tu van mua hang</a>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Related Products -->
+        {% if related_products and related_products | length > 0 %}
+        <div class="row mt-5">
+          <div class="col-12">
+            <h3><i class="fas fa-th-large"></i> San pham lien quan</h3>
+            <div class="row">
+              {% for rp in related_products %}
+              <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 product-card">
+                  <a href="/Products/{{ rp.product_id }}">
+                    <img src="{{ rp.images[0].image_url if rp.images else '/static/images/no-image.png' }}" class="card-img-top product-image" alt="{{ rp.name }}" onerror="this.src='/static/images/no-image.png'" />
+                  </a>
+                  <div class="card-body text-center">
+                    <h6><a href="/Products/{{ rp.product_id }}" class="text-decoration-none text-dark">{{ rp.name }}</a></h6>
+                    <p class="text-danger fw-bold">{{ "{:,}".format(rp.price | int) }} đ</p>
+                    <button class="btn btn-sm btn-primary" onclick="addToCart({{ rp.product_id }})"><i class="fas fa-cart-plus"></i></button>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div>
-    </div>
-  </div>
-</div>
-<script>
-  function decreaseQty() {
-    const qty = document.getElementById("quantity");
-    if (parseInt(qty.value) > 1) qty.value = parseInt(qty.value) - 1;
-  }
-  function increaseQty() {
-    const qty = document.getElementById("quantity");
-    qty.value = parseInt(qty.value) + 1;
-  }
-</script>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+    <script>
+      function decreaseQty() {
+        const qty = document.getElementById("quantity");
+        if (parseInt(qty.value) > 1) qty.value = parseInt(qty.value) - 1;
+      }
+      function increaseQty() {
+        const qty = document.getElementById("quantity");
+        qty.value = parseInt(qty.value) + 1;
+      }
+    </script>
+  </body>
+</html>

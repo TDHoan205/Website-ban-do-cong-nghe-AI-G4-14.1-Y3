@@ -1,6 +1,6 @@
 """
-Products Controller - Quản lý sản phẩm
-Tương đương Controllers/ProductsController.cs trong ASP.NET Core
+Products Controller - Quan ly san pham
+Tuong duong Controllers/ProductsController.cs trong ASP.NET Core
 """
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Query
@@ -10,11 +10,22 @@ from sqlalchemy.orm import Session
 from Data.database import get_db
 from Services.ProductService import ProductService
 from Services.CartService import CartService
+from Services.AuthService import AuthService
 from Utilities.auth import require_account
 
 router = APIRouter(prefix="/Products")
 
 
+def _get_cart_count(request: Request, db: Session) -> int:
+    token = request.cookies.get("access_token")
+    if not token:
+        return 0
+    auth_service = AuthService(db)
+    account = auth_service.get_current_account_from_token(token)
+    if not account:
+        return 0
+    cart_service = CartService(db)
+    return cart_service.get_cart_item_count(account.account_id)
 
 
 class ProductCreate(BaseModel):
@@ -56,12 +67,22 @@ async def index(
     search: str = Query(None),
     sort_by: str = Query("created_at"),
     sort_order: str = Query("desc"),
+    min_price: float = Query(None),
+    max_price: float = Query(None),
+    discount: int = Query(None),
+    sort: str = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(12, ge=1, le=50),
     db: Session = Depends(get_db)
 ):
-    """Danh sách sản phẩm có phân trang, lọc, tìm kiếm"""
     product_service = ProductService(db)
+
+    is_new = False
+    is_hot = False
+    if sort == "new":
+        is_new = True
+    elif sort == "hot":
+        is_hot = True
 
     products, total = product_service.get_all_products(
         category_id=category_id,
@@ -69,37 +90,53 @@ async def index(
         sort_by=sort_by,
         sort_order=sort_order,
         page=page,
-        page_size=page_size
+        page_size=page_size,
+        min_price=min_price,
+        max_price=max_price,
+        discount=(discount == 1),
+        is_new=is_new,
+        is_hot=is_hot,
     )
     categories = product_service.get_all_categories()
+
+    category_name = None
+    if category_id:
+        cat = product_service.get_category_by_id(category_id)
+        if cat:
+            category_name = cat.name
+
+    cart_count = _get_cart_count(request, db)
 
     return templates.TemplateResponse(
         "Products/index.html",
         {
             "request": request,
-            "page_title": "Sản phẩm",
+            "page_title": category_name or "Tat ca san pham",
+            "category_name": category_name,
             "products": products,
             "categories": categories,
             "total_products": total,
             "page": page,
             "page_size": page_size,
-            "total_pages": (total + page_size - 1) // page_size,
+            "total_pages": (total + page_size - 1) // page_size if total > 0 else 1,
             "category_id": category_id,
             "search": search,
             "sort_by": sort_by,
             "sort_order": sort_order,
+            "min_price": min_price,
+            "max_price": max_price,
+            "cart_count": cart_count,
         }
     )
 
 
 @router.get("/{product_id}", response_class=HTMLResponse)
 async def detail(request: Request, product_id: int, db: Session = Depends(get_db)):
-    """Chi tiết sản phẩm"""
     product_service = ProductService(db)
     product = product_service.get_product_by_id(product_id)
 
     if not product:
-        raise HTTPException(status_code=404, detail="Sản phẩm không tìm thấy")
+        raise HTTPException(status_code=404, detail="San pham khong tim thay")
 
     related = product_service.get_related_products(
         product_id, product.category_id if product.category_id else 0
@@ -123,12 +160,9 @@ async def add_to_cart(
     quantity: int = Query(1, ge=1),
     db: Session = Depends(get_db)
 ):
-    """Thêm sản phẩm vào giỏ hàng"""
     account = require_account(request, db)
-
     cart_service = CartService(db)
     cart_service.add_item(account.account_id, product_id, quantity)
-
     return RedirectResponse(url="/Cart/", status_code=303)
 
 

@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import os
+from sqlalchemy import text
 
 from Data.database import init_db, get_connection_info, engine
 from Controllers import (
@@ -27,6 +28,7 @@ from Controllers import (
     CartItemsController,
     ShopController,
     StatisticsController,
+    AdminController,
 )
 
 # =====================================================================
@@ -38,6 +40,36 @@ app = FastAPI(
     version="1.0.0",
     debug=True,
 )
+
+# =====================================================================
+# Middleware to inject current_user into all templates
+# =====================================================================
+@app.middleware("http")
+async def inject_current_user(request: Request, call_next):
+    from Data.database import SessionLocal
+    from Services.AuthService import AuthService
+
+    current_user = None
+    token = request.cookies.get("access_token")
+
+    if token:
+        try:
+            db = SessionLocal()
+            auth_service = AuthService(db)
+            current_user = auth_service.get_current_account_from_token(token)
+            db.close()
+        except Exception:
+            pass
+
+    request.state.current_user = current_user
+
+    response = await call_next(request)
+    return response
+
+
+# =====================================================================
+# Override TemplateResponse to inject current_user
+# =====================================================================
 
 # =====================================================================
 # Static Files
@@ -52,21 +84,28 @@ app.mount("/static", StaticFiles(directory=wwwroot_path), name="static")
 views_path = os.path.join(os.path.dirname(__file__), "Views")
 templates = Jinja2Templates(directory=views_path)
 
-# Global variables cho tất cả templates
+# Global variables cho tat ca templates
 templates.env.globals.update({
     "app_name": "Tech Store",
     "app_version": "1.0.0",
     "current_year": 2024,
 })
 
+
+def get_user_from_request(request):
+    return getattr(request.state, "current_user", None)
+
+templates.env.globals["get_current_user"] = get_user_from_request
+
 # =====================================================================
-# Register Controllers với templates
+# Register Controllers voi templates
 # =====================================================================
 HomeController.set_templates(templates)
 ProductsController.set_templates(templates)
 CartController.set_templates(templates)
 AuthController.set_templates(templates)
 ChatController.set_templates(templates)
+AdminController.set_templates(templates)
 
 # =====================================================================
 # Include Routers
@@ -76,6 +115,7 @@ app.include_router(ProductsController.router)
 app.include_router(CartController.router)
 app.include_router(AuthController.router)
 app.include_router(ChatController.router)
+app.include_router(AdminController.router)
 app.include_router(AccountsController.router)
 app.include_router(CategoriesController.router)
 app.include_router(SuppliersController.router)
@@ -101,21 +141,36 @@ async def startup():
     db_error = None
     try:
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            connection.execute(text("SELECT 1"))
         db_status = "OK"
     except Exception as exc:
         db_error = str(exc)
+
+    # Seed 2 roles mac dinh (Admin va Customer)
+    roles_status = "SKIPPED"
+    try:
+        from Data.database import SessionLocal
+        from Services.AuthService import AuthService
+        db = SessionLocal()
+        auth_service = AuthService(db)
+        auth_service.seed_roles()
+        db.close()
+        roles_status = "OK"
+    except Exception as exc:
+        roles_status = f"FAIL: {exc}"
+
     print(f"""
-╔══════════════════════════════════════════════════════════════╗
-║              🚀 TECH STORE APPLICATION STARTED              ║
-╠══════════════════════════════════════════════════════════════╣
-║  📦 Database : {db_info['database']:<40} ║
-║  🖥️  Server  : {db_info['server']:<40} ║
-║  🔐 Auth     : {db_info['auth_mode']:<40} ║
-║  ✅ SQL Test : {db_status:<40} ║
-║  🌐 URL      : http://localhost:8000                        ║
-║  📖 Docs     : http://localhost:8000/docs                   ║
-╚══════════════════════════════════════════════════════════════╝
++==============================================================+
+|              TECH STORE APPLICATION STARTED                   |
++==============================================================+
+|  Database : {db_info['database']:<46} |
+|  Server   : {db_info['server']:<46} |
+|  Auth     : {db_info['auth_mode']:<46} |
+|  SQL Test : {db_status:<46} |
+|  Roles    : {roles_status:<46} |
+|  URL      : http://localhost:8000                         |
+|  Docs     : http://localhost:8000/docs                    |
++==============================================================+
     """)
     if db_error:
         print(f"SQL Test Error: {db_error}")
@@ -124,7 +179,7 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     """Tắt ứng dụng"""
-    print("\n👋 Tech Store Application Shutdown")
+    print("\nTech Store Application Shutdown")
 
 
 # =====================================================================

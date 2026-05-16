@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiet don hang #{{ order.order_id }} - Tech Store Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Be Vietnam Pro', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+      .admin-topbar { background: #1e293b; border-bottom: 1px solid #334155; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+      .topbar-left { display: flex; align-items: center; gap: 24px; }
+      .admin-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+      .admin-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #ffd700, #ffb700); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #0f172a; }
+      .admin-logo-name { font-size: 1.05rem; font-weight: 700; }
+      .topbar-nav { display: flex; gap: 4px; }
+      .topbar-nav a { padding: 6px 12px; border-radius: 6px; color: rgba(255,255,255,0.55); font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+      .topbar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+      .topbar-nav a.active { background: rgba(255,255,255,0.1); color: white; }
+      .topbar-right { display: flex; align-items: center; gap: 12px; }
+      .topbar-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; transition: all 0.2s; font-family: 'Be Vietnam Pro', sans-serif; }
+      .btn-gold { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; }
+      .btn-gold:hover { background: rgba(255,215,0,0.2); color: #ffd700; }
+      .btn-red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+      .btn-red:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+      .topbar-user { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: rgba(255,255,255,0.06); border-radius: 8px; }
+      .user-avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #1a2a3a, #0f1923); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffd700; font-size: 0.85rem; }
+      .user-name { font-size: 0.85rem; font-weight: 600; color: white; line-height: 1.2; }
+      .user-role { font-size: 0.68rem; color: #ffd700; font-weight: 600; }
+      .admin-body { display: flex; flex: 1; }
+      .admin-sidebar { width: 230px; background: #1e293b; border-right: 1px solid #334155; flex-shrink: 0; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; padding: 16px 0; }
+      .sidebar-section { margin-bottom: 4px; }
+      .sidebar-section-title { font-size: 0.65rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1.2px; padding: 10px 20px 4px; }
+      .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 20px; color: #94a3b8; font-size: 0.86rem; font-weight: 500; text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
+      .sidebar-link:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; border-left-color: #ffd700; }
+      .sidebar-link.active { background: rgba(255,215,0,0.06); color: #ffd700; border-left-color: #ffd700; }
+      .sidebar-link i { width: 18px; text-align: center; font-size: 0.82rem; flex-shrink: 0; }
+      .admin-main { flex: 1; padding: 28px 32px; }
+      .page-title { font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 20px; }
+      .page-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+      .page-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #334155; flex-wrap: wrap; gap: 12px; }
+      .page-card-title { font-size: 0.9rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+      .page-card-title i { color: #ffd700; }
+      .page-btn { padding: 6px 14px; background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.25); border-radius: 7px; color: #ffd700; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+      .page-btn:hover { background: rgba(255,215,0,0.15); color: #ffd700; }
+      .page-btn-back { background: rgba(255,255,255,0.06); border-color: #334155; color: #94a3b8; }
+      .page-btn-back:hover { background: rgba(255,255,255,0.1); color: white; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; }
+      .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; }
+      .badge-processing { background: rgba(59,130,246,0.12); color: #60a5fa; }
+      .badge-shipped { background: rgba(139,92,246,0.12); color: #a78bfa; }
+      .badge-delivered { background: rgba(16,185,129,0.12); color: #34d399; }
+      .badge-cancelled { background: rgba(239,68,68,0.12); color: #f87171; }
+      .order-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+      .meta-item { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
+      .meta-label { font-size: 0.72rem; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+      .meta-value { font-size: 0.9rem; font-weight: 600; color: white; }
+      .admin-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+      .admin-table thead th { background: rgba(255,255,255,0.02); padding: 11px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #334155; }
+      .admin-table tbody td { padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
+      .admin-table tbody tr:last-child td { border-bottom: none; }
+      .order-total-row td { font-weight: 700; color: white; font-size: 1rem; border-top: 2px solid #ffd700 !important; }
+      .price-val { font-weight: 700; color: #4ade80; }
+      .table-responsive { overflow-x: auto; }
+      .status-select { background: #0f172a; border: 1px solid #334155; border-radius: 7px; padding: 6px 12px; color: white; font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.84rem; cursor: pointer; }
+      .status-select:focus { outline: none; border-color: #ffd700; }
+      @media (max-width: 900px) { .admin-sidebar { width: 190px; } .order-meta { grid-template-columns: 1fr 1fr; } }
+      @media (max-width: 640px) { .admin-sidebar { display: none; } .admin-main { padding: 16px; } .order-meta { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div class="topbar-left">
+        <a href="/Admin/Dashboard" class="admin-logo">
+          <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
+          <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
+        </a>
+        <nav class="topbar-nav">
+          <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
+          <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
+          <a href="/Admin/Categories"><i class="fas fa-tags me-1"></i> Danh mục</a>
+          <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
+          <a href="/Admin/Orders" class="active"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Xem website</a>
+        <div class="topbar-user">
+          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+          <div>
+            <div class="user-name">{{ admin.username }}</div>
+            <div class="user-role">Quản trị viên</div>
+          </div>
+        </div>
+        <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="admin-body">
+      <aside class="admin-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Quản lý</div>
+          <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
+          <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
+          <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
+          <a href="/Admin/Orders" class="sidebar-link active"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
+          <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Hệ thống</div>
+          <a href="/Auth/Profile" class="sidebar-link"><i class="fas fa-user-circle"></i> Tài khoản của tôi</a>
+          <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <h1 class="page-title">
+          <a href="/Admin/Orders" class="page-btn page-btn-back me-3" style="text-decoration:none;"><i class="fas fa-arrow-left"></i></a>
+          <i class="fas fa-shopping-bag me-2" style="color:#ffd700;"></i>Chi tiet don hang #{{ order.order_id }}
+        </h1>
+
+        <!-- Order meta -->
+        <div class="order-meta">
+          <div class="meta-item">
+            <div class="meta-label">Khách hàng</div>
+            <div class="meta-value">{{ order.account.username if order.account else (order.customer_name or 'Khach vang lai') }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Ngày đặt</div>
+            <div class="meta-value">{{ order.created_at.strftime('%d/%m/%Y %H:%M') if order.created_at else '-' }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Tổng tiền</div>
+            <div class="meta-value" style="color:#ffd700; font-size:1.1rem;">{{ "{:,.0f}".format(order.total_amount) }} đ</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Số điện thoại</div>
+            <div class="meta-value">{{ order.customer_phone or '—' }}</div>
+          </div>
+          <div class="meta-item" style="grid-column: span 2;">
+            <div class="meta-label">Địa chỉ giao hàng</div>
+            <div class="meta-value">{{ order.customer_address or '—' }}</div>
+          </div>
+        </div>
+
+        <!-- Order status -->
+        <div class="page-card">
+          <div class="page-card-header">
+            <div class="page-card-title"><i class="fas fa-cog"></i> Trạng thái đơn hàng</div>
+            <div class="d-flex gap-2 align-items-center">
+              <select id="order-status" class="status-select" onchange="updateOrderStatus({{ order.order_id }})">
+                {% for status_key, status_display in order_statuses %}
+                  <option value="{{ status_key }}" {% if order.status == status_key %}selected{% endif %}>{{ status_display }}</option>
+                {% endfor %}
+              </select>
+              <span id="status-msg" style="font-size:0.8rem;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order items -->
+        <div class="page-card">
+          <div class="page-card-header">
+            <div class="page-card-title"><i class="fas fa-list"></i> Chi tiet san pham</div>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>San pham</th>
+                  <th>Bien the</th>
+                  <th>Don gia</th>
+                  <th>So luong</th>
+                  <th>Thanh tien</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr>
+                  <td><strong>{{ item.product_name }}</strong></td>
+                  <td>{{ item.variant_name or '—' }}</td>
+                  <td><span class="price-val">{{ "{:,.0f}".format(item.unit_price) }} đ</span></td>
+                  <td>x{{ item.quantity }}</td>
+                  <td><span class="price-val">{{ "{:,.0f}".format(item.subtotal) }} đ</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align:center;color:#475569;padding:32px;">Khong co san pham nao.</td></tr>
+                {% endfor %}
+                <tr class="order-total-row">
+                  <td colspan="4" style="text-align:right;">Tong cong:</td>
+                  <td><span style="color:#ffd700;">{{ "{:,.0f}".format(order.total_amount) }} đ</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        {% if order.notes %}
+        <div class="page-card">
+          <div class="page-card-header">
+            <div class="page-card-title"><i class="fas fa-sticky-note"></i> Ghi chu</div>
+          </div>
+          <div style="padding: 16px 20px; color: #94a3b8; font-size: 0.88rem;">
+            {{ order.notes }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Danger zone -->
+        <div class="page-card" style="border-color: rgba(239,68,68,0.3);">
+          <div class="page-card-header">
+            <div class="page-card-title" style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Can than</div>
+          </div>
+          <div style="padding: 16px 20px;">
+            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Xoa don hang se xoa vinh vien tat ca chi tiet don hang. Han dong nay khong the hoan tac.</p>
+            <button class="btn btn-danger" onclick="deleteOrder({{ order.order_id }})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:7px 16px;border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;">
+              <i class="fas fa-trash-alt"></i> Xoa don hang nay
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      async function updateOrderStatus(orderId) {
+        const status = document.getElementById('order-status').value;
+        const msg = document.getElementById('status-msg');
+        try {
+          const fd = new FormData();
+          fd.append('status', status);
+          const res = await fetch('/Admin/API/Orders/' + orderId + '/status', { method: 'PUT', body: fd });
+          const data = await res.json();
+          if (data.success) {
+            msg.style.color = '#34d399';
+            msg.textContent = 'Da cap nhat!';
+          } else {
+            msg.style.color = '#ef4444';
+            msg.textContent = 'Loi: ' + data.error;
+          }
+          setTimeout(() => { msg.textContent = ''; }, 3000);
+        } catch(e) {
+          msg.style.color = '#ef4444';
+          msg.textContent = 'Loi ket noi!';
+        }
+      }
+
+      async function deleteOrder(orderId) {
+        if (!confirm('Ban co chan chan muon xoa don hang #' + orderId + '?')) return;
+        if (!confirm('THAO TAC NAY KHONG THE HOAN TAC!\nXac nhan xoa don hang #' + orderId + '?')) return;
+        try {
+          const res = await fetch('/Admin/API/Orders/' + orderId, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            alert('Da xoa don hang!');
+            window.location.href = '/Admin/Orders';
+          } else {
+            alert('Loi: ' + data.error);
+          }
+        } catch(e) {
+          alert('Loi ket noi!');
+        }
+      }
+    </script>
+  </body>
+</html>

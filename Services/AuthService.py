@@ -1,8 +1,8 @@
 """
-Auth Service - Xác thực người dùng
-Tương đương Services/AuthService.cs trong ASP.NET Core
+Auth Service - Xac thuc nguoi dung
+Tuong duong Services/AuthService.cs trong ASP.NET Core
 """
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from passlib.context import CryptContext
 from typing import Optional
 from datetime import datetime, timedelta
@@ -10,7 +10,7 @@ from jose import jwt
 from Models.Account import Account, Role
 import uuid
 
-# Cấu hình JWT
+# Cau hinh JWT
 SECRET_KEY = "your-super-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
@@ -18,20 +18,34 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+def _safe_password(password: str) -> str:
+    """Cat password thanh 72 bytes de tranh loi bcrypt"""
+    encoded = password.encode("utf-8")
+    if len(encoded) <= 72:
+        return password
+    return encoded[:72].decode("utf-8", errors="ignore")
+
+
 class AuthService:
     def __init__(self, db: Session):
         self.db = db
 
     def hash_password(self, password: str) -> str:
-        """Mã hóa password"""
-        return pwd_context.hash(password)
+        """Ma hoa password"""
+        safe = _safe_password(password)
+        return pwd_context.hash(safe)
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Xác minh password"""
-        return pwd_context.verify(plain_password, hashed_password)
+        """Xac minh password"""
+        if not hashed_password:
+            return False
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            return plain_password == hashed_password
 
     def create_access_token(self, account_id: int, username: str, role: str) -> str:
-        """Tạo JWT token"""
+        """Tao JWT token"""
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode = {
             "sub": str(account_id),
@@ -42,7 +56,7 @@ class AuthService:
         return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
     def decode_token(self, token: str) -> Optional[dict]:
-        """Giải mã JWT token"""
+        """Giai ma JWT token"""
         try:
             return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         except:
@@ -60,27 +74,32 @@ class AuthService:
         return self.get_account_by_id(account_id)
 
     def get_account_by_username(self, username: str) -> Optional[Account]:
-        """Lấy account theo username"""
-        return self.db.query(Account).filter(Account.username == username).first()
+        """Lay account theo username"""
+        return self.db.query(Account).options(joinedload(Account.role)).filter(Account.username == username).first()
 
     def get_account_by_email(self, email: str) -> Optional[Account]:
-        """Lấy account theo email"""
-        return self.db.query(Account).filter(Account.email == email).first()
+        """Lay account theo email"""
+        return self.db.query(Account).options(joinedload(Account.role)).filter(Account.email == email).first()
 
     def get_account_by_id(self, account_id: int) -> Optional[Account]:
-        """Lấy account theo ID"""
-        return self.db.query(Account).filter(Account.account_id == account_id).first()
+        """Lay account theo ID"""
+        return self.db.query(Account).options(joinedload(Account.role)).filter(Account.account_id == account_id).first()
 
     def authenticate_user(self, username: str, password: str) -> Optional[Account]:
-        """Xác thực đăng nhập"""
+        """Xac thuc dang nhap"""
         account = self.get_account_by_username(username)
         if not account:
             return None
-        if not self.verify_password(password, account.password_hash):
-            return None
+
+        pwd_hash = account.password_hash or ""
+
         if not account.is_active:
             return None
-        return account
+
+        if self.verify_password(password, pwd_hash):
+            return account
+
+        return None
 
     def register_user(
         self,
@@ -88,21 +107,24 @@ class AuthService:
         email: str,
         password: str,
         full_name: str = None,
-        phone: str = None
+        phone: str = None,
+        address: str = None,
+        role_name: str = "Customer"
     ) -> Account:
-        """Đăng ký account mới"""
-        # Kiểm tra trùng lặp
+        """Dang ky account moi voi role tuy chon"""
         if self.get_account_by_username(username):
-            raise ValueError("Username đã tồn tại")
+            raise ValueError("Username da ton tai")
         if self.get_account_by_email(email):
-            raise ValueError("Email đã tồn tại")
+            raise ValueError("Email da ton tai")
 
-        customer_role = self.db.query(Role).filter(Role.role_name == "Customer").first()
-        if not customer_role:
-            customer_role = Role(role_name="Customer", description="Default customer role")
-            self.db.add(customer_role)
+        # Tim role theo ten, chi cho phep Customer hoac Admin
+        safe_role = "Customer" if role_name not in ("Customer", "Admin") else role_name
+        role = self.db.query(Role).filter(Role.role_name == safe_role).first()
+        if not role:
+            role = Role(role_name=safe_role)
+            self.db.add(role)
             self.db.commit()
-            self.db.refresh(customer_role)
+            self.db.refresh(role)
 
         account = Account(
             username=username,
@@ -110,7 +132,8 @@ class AuthService:
             password_hash=self.hash_password(password),
             full_name=full_name,
             phone=phone,
-            role_id=customer_role.role_id,
+            address=address,
+            role_id=role.role_id,
             is_active=True
         )
         self.db.add(account)
@@ -143,3 +166,15 @@ class AuthService:
         account.reset_token_expiry = None
         self.db.commit()
         return True
+
+    def seed_roles(self):
+        """Tao 2 role mac dinh neu chua ton tai"""
+        existing = self.db.query(Role).all()
+        if existing:
+            return
+
+        role_admin = Role(role_name="Admin")
+        role_customer = Role(role_name="Customer")
+        self.db.add(role_admin)
+        self.db.add(role_customer)
+        self.db.commit()

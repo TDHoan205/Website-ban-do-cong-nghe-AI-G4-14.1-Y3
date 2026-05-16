@@ -1,14 +1,122 @@
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 text-center">
-      <div class="error-page">
-        <h1 class="display-1 text-danger">500</h1>
-        <h2>Da co loi xay ra</h2>
-        <p class="lead">Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại sau.</p>
-        <a href="/" class="btn btn-primary btn-lg">
-          <i class="fas fa-home"></i> Quay về trang chủ
-        </a>
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lỗi {{ error_code | default(500) }} - Tech Store AI</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .error-page {
+        text-align: center;
+        padding: 40px 20px;
+      }
+      .error-icon {
+        width: 120px;
+        height: 120px;
+        background: rgba(220, 38, 38, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        border: 2px solid rgba(220, 38, 38, 0.3);
+      }
+      .error-icon i {
+        font-size: 3rem;
+        color: #ef4444;
+      }
+      .error-code {
+        font-size: 5rem;
+        font-weight: 800;
+        color: #ef4444;
+        line-height: 1;
+        margin-bottom: 8px;
+        text-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+      }
+      .error-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 12px;
+      }
+      .error-message {
+        font-size: 1rem;
+        color: rgba(255,255,255,0.6);
+        margin-bottom: 32px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .btn-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.2s;
+        box-shadow: 0 4px 20px rgba(13, 110, 253, 0.4);
+      }
+      .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(13, 110, 253, 0.5);
+        color: white;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-page">
+      <div class="error-icon">
+        <i class="fas fa-exclamation-triangle"></i>
       </div>
+      <div class="error-code">{{ error_code | default(500) }}</div>
+      <h1 class="error-title">
+        {% if error_code == 404 %}
+        Trang không tìm thấy
+        {% else %}
+        Đã có lỗi xảy ra
+        {% endif %}
+      </h1>
+      <p class="error-message">
+        {% if error_code == 404 %}
+        Xin lỗi, trang bạn đang tìm kiếm không tồn tại. Vui lòng kiểm tra lại đường dẫn.
+        {% else %}
+        Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại sau.
+        {% endif %}
+      </p>
+      <a href="/" class="btn-home">
+        <i class="fas fa-home"></i> Quay về trang chủ
+      </a>
     </div>
-  </div>
-</div>
+  </body>
+</html>

@@ -20,4 +20,5 @@ __all__ = [
     "SeedController",
     "ShopController",
     "StatisticsController",
+    "AdminController",
 ]

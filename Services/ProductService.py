@@ -3,7 +3,7 @@ Product Service - Xử lý logic sản phẩm
 Tương đương Services/ProductService.cs trong C#
 """
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, desc, func
+from sqlalchemy import or_, desc, func, and_
 from typing import Optional, List, Tuple
 from decimal import Decimal
 
@@ -67,6 +67,60 @@ class ProductService:
             query = query.order_by(Product.name)
 
         return PagedList.create(query, page_number, page_size)
+
+    def get_all_products(
+        self,
+        search: Optional[str] = None,
+        category_id: Optional[int] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
+        page: int = 1,
+        page_size: int = 12,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        discount: bool = False,
+        is_new: bool = False,
+        is_hot: bool = False,
+    ) -> Tuple[List[Product], int]:
+        """Lay tat ca san pham co loc nang cao - tra ve list va total"""
+        query = self.db.query(Product).filter(Product.is_available == True)
+
+        if category_id:
+            query = query.filter(Product.category_id == category_id)
+
+        if search:
+            term = f"%{search}%"
+            query = query.filter(
+                or_(Product.name.ilike(term), Product.description.ilike(term))
+            )
+
+        if min_price is not None:
+            query = query.filter(Product.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Product.price <= max_price)
+        if discount:
+            query = query.filter(Product.discount_percent > 0)
+        if is_new:
+            query = query.filter(Product.is_new == True)
+        if is_hot:
+            query = query.filter(Product.is_hot == True)
+
+        total = query.count()
+
+        if sort_by == "name":
+            query = query.order_by(Product.name if sort_order == "asc" else desc(Product.name))
+        elif sort_by == "price":
+            query = query.order_by(Product.price if sort_order == "asc" else desc(Product.price))
+        elif sort_by == "rating":
+            query = query.order_by(desc(Product.rating))
+        elif sort_by == "created_at":
+            query = query.order_by(desc(Product.created_at))
+        else:
+            query = query.order_by(desc(Product.created_at))
+
+        offset = (page - 1) * page_size
+        products = query.offset(offset).limit(page_size).all()
+        return products, total
 
     def get_all_products_admin(
         self,

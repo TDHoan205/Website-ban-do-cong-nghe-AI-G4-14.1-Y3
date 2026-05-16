@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*
 Tech Store - Main Stylesheet
 */
@@ -21,7 +22,7 @@ Tech Store - Main Stylesheet
 }
 
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Be Vietnam Pro', 'Roboto', sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;

@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }} - Tech Store Admin</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        min-height: 100vh;
+      }
+
+      /* ===== TOPBAR ===== */
+      .admin-topbar {
+        background: #1e293b;
+        border-bottom: 1px solid #334155;
+        padding: 0 24px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .topbar-left { display: flex; align-items: center; gap: 24px; }
+      .admin-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: white;
+      }
+      .admin-logo-icon {
+        width: 38px;
+        height: 38px;
+        background: linear-gradient(135deg, #ffd700, #ffb700);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #0f172a;
+      }
+      .admin-logo-text { line-height: 1.2; }
+      .admin-logo-name { font-size: 1.05rem; font-weight: 700; color: white; }
+      .admin-logo-badge {
+        font-size: 0.6rem;
+        background: #ffd700;
+        color: #0f172a;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+      }
+      .topbar-nav { display: flex; gap: 4px; align-items: center; }
+      .topbar-nav a {
+        padding: 6px 12px;
+        border-radius: 6px;
+        color: rgba(255,255,255,0.55);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .topbar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+      .topbar-nav a.active { background: rgba(255,255,255,0.1); color: white; }
+      .topbar-right { display: flex; align-items: center; gap: 12px; }
+      .topbar-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .btn-gold {
+        background: rgba(255,215,0,0.1);
+        border: 1px solid rgba(255,215,0,0.3);
+        color: #ffd700;
+      }
+      .btn-gold:hover { background: rgba(255,215,0,0.2); color: #ffd700; }
+      .btn-red {
+        background: rgba(239,68,68,0.1);
+        border: 1px solid rgba(239,68,68,0.3);
+        color: #ef4444;
+      }
+      .btn-red:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+      .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 8px;
+      }
+      .user-avatar {
+        width: 34px;
+        height: 34px;
+        background: linear-gradient(135deg, #1a2a3a, #0f1923);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffd700;
+        font-size: 0.85rem;
+      }
+      .user-info { line-height: 1.2; }
+      .user-name { font-size: 0.85rem; font-weight: 600; color: white; }
+      .user-role { font-size: 0.68rem; color: #ffd700; font-weight: 600; }
+
+      /* ===== BODY ===== */
+      .admin-body { display: flex; flex: 1; }
+
+      /* ===== SIDEBAR ===== */
+      .admin-sidebar {
+        width: 230px;
+        background: #1e293b;
+        border-right: 1px solid #334155;
+        flex-shrink: 0;
+        position: sticky;
+        top: 64px;
+        height: calc(100vh - 64px);
+        overflow-y: auto;
+        padding: 16px 0;
+      }
+      .sidebar-section { margin-bottom: 4px; }
+      .sidebar-section-title {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        padding: 10px 20px 4px;
+      }
+      .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 20px;
+        color: #94a3b8;
+        font-size: 0.86rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s;
+        border-left: 3px solid transparent;
+        position: relative;
+      }
+      .sidebar-link:hover {
+        background: rgba(255,255,255,0.04);
+        color: #e2e8f0;
+        border-left-color: #ffd700;
+      }
+      .sidebar-link.active {
+        background: rgba(255,215,0,0.06);
+        color: #ffd700;
+        border-left-color: #ffd700;
+      }
+      .sidebar-link i { width: 18px; text-align: center; font-size: 0.82rem; flex-shrink: 0; }
+      .sidebar-link .count {
+        margin-left: auto;
+        background: rgba(239,68,68,0.15);
+        color: #ef4444;
+        font-size: 0.68rem;
+        padding: 2px 7px;
+        border-radius: 10px;
+        font-weight: 700;
+      }
+
+      /* ===== MAIN ===== */
+      .admin-main {
+        flex: 1;
+        padding: 28px 32px;
+        min-width: 0;
+        overflow-x: hidden;
+      }
+
+      /* Welcome */
+      .welcome-bar {
+        background: linear-gradient(135deg, #1e293b 0%, #0f2847 100%);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .welcome-left { display: flex; align-items: center; gap: 20px; }
+      .welcome-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,183,0,0.1));
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: #ffd700;
+      }
+      .welcome-text h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 3px;
+      }
+      .welcome-text p { font-size: 0.82rem; color: #64748b; margin: 0; }
+      .welcome-date {
+        text-align: right;
+        font-size: 0.82rem;
+        color: #64748b;
+      }
+      .welcome-date .day { font-size: 1.4rem; font-weight: 800; color: #ffd700; line-height: 1; }
+
+      /* Stats grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.2s;
+        cursor: default;
+      }
+      .stat-card:hover { border-color: #ffd700; transform: translateY(-2px); }
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+      .stat-icon-blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
+      .stat-icon-green { background: rgba(16,185,129,0.15); color: #10b981; }
+      .stat-icon-orange { background: rgba(249,115,22,0.15); color: #f97316; }
+      .stat-icon-purple { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+      .stat-icon-yellow { background: rgba(234,179,8,0.15); color: #eab308; }
+      .stat-value { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 3px; }
+      .stat-label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+
+      /* Quick actions */
+      .section-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-title i { color: #ffd700; }
+      .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+      .quick-action-btn {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: inherit;
+      }
+      .quick-action-btn:hover {
+        border-color: #ffd700;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(255,215,0,0.1);
+        color: inherit;
+      }
+      .qa-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+      .qa-text h4 { font-size: 0.88rem; font-weight: 700; color: white; margin-bottom: 2px; }
+      .qa-text p { font-size: 0.75rem; color: #64748b; margin: 0; }
+
+      /* Tables */
+      .admin-table-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 24px;
+      }
+      .table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid #334155;
+      }
+      .table-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .table-title i { color: #ffd700; }
+      .table-btn {
+        padding: 6px 14px;
+        background: rgba(255,215,0,0.08);
+        border: 1px solid rgba(255,215,0,0.25);
+        border-radius: 7px;
+        color: #ffd700;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .table-btn:hover { background: rgba(255,215,0,0.15); color: #ffd700; }
+      .admin-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+      .admin-table thead th {
+        background: rgba(255,255,255,0.02);
+        padding: 11px 16px;
+        text-align: left;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #334155;
+      }
+      .admin-table tbody td {
+        padding: 11px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        color: #cbd5e1;
+      }
+      .admin-table tbody tr:last-child td { border-bottom: none; }
+      .admin-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+      .order-id { font-weight: 700; color: #ffd700; font-size: 0.88rem; }
+      .price-val { font-weight: 700; color: #4ade80; }
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 600;
+      }
+      .status-pending { background: rgba(251,191,36,0.12); color: #fbbf24; }
+      .status-confirmed { background: rgba(59,130,246,0.12); color: #60a5fa; }
+      .status-shipped { background: rgba(139,92,246,0.12); color: #a78bfa; }
+      .status-delivered { background: rgba(16,185,129,0.12); color: #34d399; }
+      .status-cancelled { background: rgba(239,68,68,0.12); color: #f87171; }
+      .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: none;
+        border: none;
+        color: #475569;
+        cursor: pointer;
+        font-size: 0.82rem;
+        transition: all 0.15s;
+        text-decoration: none;
+      }
+      .action-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+      .action-btn.danger:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+      /* Products mini grid */
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+        padding: 20px;
+      }
+      .mini-product-card {
+        background: rgba(255,255,255,0.025);
+        border: 1px solid #334155;
+        border-radius: 10px;
+        padding: 14px;
+        text-align: center;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: inherit;
+      }
+      .mini-product-card:hover {
+        border-color: #ffd700;
+        transform: translateY(-2px);
+        color: inherit;
+      }
+      .mini-product-img {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 10px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mini-product-img img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+      .mini-product-img i { font-size: 1.3rem; color: #475569; }
+      .mini-product-name {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #cbd5e1;
+        margin-bottom: 5px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .mini-product-price {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #ffd700;
+      }
+
+      /* Two column layout */
+      .content-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        .products-grid { grid-template-columns: repeat(4, 1fr); }
+      }
+      @media (max-width: 900px) {
+        .admin-sidebar { width: 190px; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
+        .content-row { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 640px) {
+        .admin-sidebar { display: none; }
+        .admin-main { padding: 16px; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .quick-actions-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== TOPBAR ===== -->
+    <div class="admin-topbar">
+      <div class="topbar-left">
+        <a href="/Admin/Dashboard" class="admin-logo">
+          <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
+          <div class="admin-logo-text">
+            <div class="admin-logo-name">Tech Store <span class="admin-logo-badge">Admin</span></div>
+          </div>
+        </a>
+        <nav class="topbar-nav">
+          <a href="/Admin/Dashboard" class="active"><i class="fas fa-home me-1"></i> Trang chủ</a>
+          <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
+          <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+          <a href="/"><i class="fas fa-external-link-alt me-1"></i> Website</a>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <a href="/" target="_blank" class="topbar-btn btn-gold">
+          <i class="fas fa-external-link-alt"></i> Xem website
+        </a>
+        <div class="topbar-user">
+          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+          <div class="user-info">
+            <div class="user-name">{{ admin.username }}</div>
+            <div class="user-role">Quản trị viên</div>
+          </div>
+        </div>
+        <a href="/Auth/Profile" class="topbar-btn btn-gold" title="Tài khoản">
+          <i class="fas fa-user-circle"></i>
+        </a>
+        <a href="/Auth/Logout" class="topbar-btn btn-red">
+          <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </a>
+      </div>
+    </div>
+
+    <!-- ===== BODY ===== -->
+    <div class="admin-body">
+      <!-- ===== SIDEBAR ===== -->
+      <aside class="admin-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Quản lý</div>
+          <a href="/Admin/Dashboard" class="sidebar-link active">
+            <i class="fas fa-chart-pie"></i> Trang chủ
+          </a>
+          <a href="/Admin/Products" class="sidebar-link">
+            <i class="fas fa-box"></i> Sản phẩm
+            <span class="count">{{ stats.total_products }}</span>
+          </a>
+          <a href="/Admin/Categories" class="sidebar-link">
+            <i class="fas fa-tags"></i> Danh mục
+          </a>
+          <a href="/Admin/Suppliers" class="sidebar-link">
+            <i class="fas fa-truck"></i> Nhà cung cấp
+          </a>
+          <a href="/Admin/Orders" class="sidebar-link">
+            <i class="fas fa-shopping-bag"></i> Đơn hàng
+            {% if stats.pending_orders > 0 %}
+            <span class="count">{{ stats.pending_orders }}</span>
+            {% endif %}
+          </a>
+          <a href="/Admin/Accounts" class="sidebar-link">
+            <i class="fas fa-users"></i> Tài khoản
+          </a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Phân tích</div>
+          <a href="/Statistics" class="sidebar-link">
+            <i class="fas fa-chart-line"></i> Thống kê
+          </a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Hệ thống</div>
+          <a href="/Auth/Profile" class="sidebar-link">
+            <i class="fas fa-user-circle"></i> Tài khoản của tôi
+          </a>
+          <a href="/Chat/" target="_blank" class="sidebar-link">
+            <i class="fas fa-robot"></i> AI Chatbot
+          </a>
+          <a href="/" class="sidebar-link">
+            <i class="fas fa-globe"></i> Xem website
+          </a>
+        </div>
+      </aside>
+
+      <!-- ===== MAIN CONTENT ===== -->
+      <main class="admin-main">
+
+        <!-- Welcome bar -->
+        <div class="welcome-bar">
+          <div class="welcome-left">
+            <div class="welcome-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="welcome-text">
+              <h2>Chào mừng trở lại, {{ admin.username }}!</h2>
+              <p>Đây là trang quản trị của Tech Store. Theo dõi hoạt động và quản lý cửa hàng của bạn.</p>
+            </div>
+          </div>
+          <div class="welcome-date">
+            <div class="day">{{ stats.total_orders }}</div>
+            <div>Đơn hàng</div>
+          </div>
+        </div>
+
+        <!-- Stats cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue"><i class="fas fa-box"></i></div>
+            <div>
+              <div class="stat-value">{{ stats.total_products }}</div>
+              <div class="stat-label">Sản phẩm</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-green"><i class="fas fa-shopping-bag"></i></div>
+            <div>
+              <div class="stat-value">{{ stats.total_orders }}</div>
+              <div class="stat-label">Đơn hàng</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-orange"><i class="fas fa-users"></i></div>
+            <div>
+              <div class="stat-value">{{ stats.total_customers }}</div>
+              <div class="stat-label">Khách hàng</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-purple"><i class="fas fa-user-shield"></i></div>
+            <div>
+              <div class="stat-value">{{ stats.total_admins }}</div>
+              <div class="stat-label">Quản trị viên</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-yellow"><i class="fas fa-coins"></i></div>
+            <div>
+              <div class="stat-value">{{ "{:,.0f}".format(stats.total_revenue | float) }}</div>
+              <div class="stat-label">Doanh thu (VND)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <h3 class="section-title"><i class="fas fa-bolt"></i> Thao tác nhanh</h3>
+        <div class="quick-actions-grid">
+          <a href="/Admin/Products" class="quick-action-btn">
+            <div class="qa-icon qa-blue" style="background:rgba(59,130,246,0.15);color:#3b82f6;">
+              <i class="fas fa-plus"></i>
+            </div>
+            <div class="qa-text">
+              <h4>Thêm sản phẩm</h4>
+              <p>Tạo sản phẩm mới</p>
+            </div>
+          </a>
+          <a href="/Admin/Orders" class="quick-action-btn">
+            <div class="qa-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="qa-text">
+              <h4>Tạo đơn hàng</h4>
+              <p>Đơn hàng mới cho khách</p>
+            </div>
+          </a>
+          <a href="/Admin/Categories" class="quick-action-btn">
+            <div class="qa-icon" style="background:rgba(249,115,22,0.15);color:#f97316;">
+              <i class="fas fa-tag"></i>
+            </div>
+            <div class="qa-text">
+              <h4>Thêm danh mục</h4>
+              <p>Quản lý danh mục sản phẩm</p>
+            </div>
+          </a>
+          <a href="/Admin/Accounts" class="quick-action-btn">
+            <div class="qa-icon" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="qa-text">
+              <h4>Thêm tài khoản</h4>
+              <p>Tạo tài khoản mới</p>
+            </div>
+          </a>
+          <a href="/Admin/Products" class="quick-action-btn">
+            <div class="qa-icon" style="background:rgba(234,179,8,0.15);color:#eab308;">
+              <i class="fas fa-warehouse"></i>
+            </div>
+            <div class="qa-text">
+              <h4>Nhập hàng</h4>
+              <p>Nhập sản phẩm mới</p>
+            </div>
+          </a>
+          <a href="/Statistics" class="quick-action-btn">
+            <div class="qa-icon" style="background:rgba(236,72,153,0.15);color:#ec4899;">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="qa-text">
+              <h4>Xem thống kê</h4>
+              <p>Báo cáo chi tiết</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Recent orders -->
+        <h3 class="section-title"><i class="fas fa-shopping-bag"></i> Đơn hàng gần đây</h3>
+        <div class="admin-table-card">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-list"></i> Đơn hàng mới nhất</div>
+            <a href="/Admin/Orders" class="table-btn"><i class="fas fa-arrow-right"></i> Xem tất cả</a>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_orders %}
+                {% for order in recent_orders %}
+                <tr>
+                  <td><span class="order-id">#{{ order.order_id }}</span></td>
+                  <td>{{ order.account.username if order.account else 'Khách vãng lai' }}</td>
+                  <td>{{ order.created_at.strftime('%d/%m/%Y') if order.created_at else '-' }}</td>
+                  <td><span class="price-val">{{ "{:,.0f}".format(order.total_amount | float) }} đ</span></td>
+                  <td>
+                    {% set s = (order.status or '') | lower %}
+                    {% if 'pending' in s or 'cho' in s %}<span class="status-badge status-pending"><i class="fas fa-clock"></i> Chờ xử lý</span>
+                    {% elif 'confirmed' in s or 'xac nhan' in s %}<span class="status-badge status-confirmed"><i class="fas fa-check"></i> Đã xác nhận</span>
+                    {% elif 'processing' in s or 'dang' in s %}<span class="status-badge status-shipped"><i class="fas fa-cog"></i> Đang xử lý</span>
+                    {% elif 'shipped' in s or 'giao' in s %}<span class="status-badge status-shipped"><i class="fas fa-truck"></i> Đang giao</span>
+                    {% elif 'delivered' in s or 'da giao' in s %}<span class="status-badge status-delivered"><i class="fas fa-check-circle"></i> Đã giao</span>
+                    {% elif 'cancelled' in s or 'huy' in s %}<span class="status-badge status-cancelled"><i class="fas fa-times"></i> Đã hủy</span>
+                    {% else %}<span class="status-badge status-pending">{{ order.status or 'N/A' }}</span>{% endif %}
+                  </td>
+                  <td>
+                    <a href="#" class="action-btn" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                    <a href="#" class="action-btn danger" title="Hủy đơn"><i class="fas fa-ban"></i></a>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" style="text-align:center; color:#475569; padding: 32px;">
+                    <i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+                    Chưa có đơn hàng nào
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Top products -->
+        <h3 class="section-title"><i class="fas fa-fire"></i> Sản phẩm nổi bật</h3>
+        <div class="admin-table-card">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-star"></i> Sản phẩm được đánh giá cao</div>
+            <a href="/Admin/Products" class="table-btn"><i class="fas fa-arrow-right"></i> Quản lý sản phẩm</a>
+          </div>
+          <div class="products-grid">
+            {% if top_products %}
+              {% for product in top_products %}
+              <a href="/Products/{{ product.product_id }}" class="mini-product-card" target="_blank">
+                <div class="mini-product-img">
+                  {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                  {% endif %}
+                  <i class="fas fa-box" {% if product.image_url %}style="display:none;"{% endif %}></i>
+                </div>
+                <div class="mini-product-name">{{ product.name }}</div>
+                <div class="mini-product-price">{{ "{:,.0f}".format(product.price | float) }} đ</div>
+              </a>
+              {% endfor %}
+            {% else %}
+              <p style="grid-column:1/-1; text-align:center; color:#475569; padding:32px;">Chưa có sản phẩm nào</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quan ly nha cung cap - Tech Store Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Be Vietnam Pro', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+      .admin-topbar { background: #1e293b; border-bottom: 1px solid #334155; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+      .topbar-left { display: flex; align-items: center; gap: 24px; }
+      .admin-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+      .admin-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #ffd700, #ffb700); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #0f172a; }
+      .admin-logo-name { font-size: 1.05rem; font-weight: 700; }
+      .topbar-nav { display: flex; gap: 4px; }
+      .topbar-nav a { padding: 6px 12px; border-radius: 6px; color: rgba(255,255,255,0.55); font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+      .topbar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+      .topbar-nav a.active { background: rgba(255,255,255,0.1); color: white; }
+      .topbar-right { display: flex; align-items: center; gap: 12px; }
+      .topbar-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; transition: all 0.2s; font-family: 'Be Vietnam Pro', sans-serif; }
+      .btn-gold { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; }
+      .btn-gold:hover { background: rgba(255,215,0,0.2); color: #ffd700; }
+      .btn-red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+      .btn-red:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+      .topbar-user { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: rgba(255,255,255,0.06); border-radius: 8px; }
+      .user-avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #1a2a3a, #0f1923); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffd700; font-size: 0.85rem; }
+      .user-name { font-size: 0.85rem; font-weight: 600; color: white; line-height: 1.2; }
+      .user-role { font-size: 0.68rem; color: #ffd700; font-weight: 600; }
+      .admin-body { display: flex; flex: 1; }
+      .admin-sidebar { width: 230px; background: #1e293b; border-right: 1px solid #334155; flex-shrink: 0; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; padding: 16px 0; }
+      .sidebar-section { margin-bottom: 4px; }
+      .sidebar-section-title { font-size: 0.65rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1.2px; padding: 10px 20px 4px; }
+      .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 20px; color: #94a3b8; font-size: 0.86rem; font-weight: 500; text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
+      .sidebar-link:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; border-left-color: #ffd700; }
+      .sidebar-link.active { background: rgba(255,215,0,0.06); color: #ffd700; border-left-color: #ffd700; }
+      .sidebar-link i { width: 18px; text-align: center; font-size: 0.82rem; flex-shrink: 0; }
+      .admin-main { flex: 1; padding: 28px 32px; }
+      .page-title { font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 20px; }
+      .page-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+      .page-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #334155; }
+      .page-card-title { font-size: 0.9rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+      .page-card-title i { color: #ffd700; }
+      .page-btn { padding: 6px 14px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 7px; color: #10b981; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+      .page-btn:hover { background: rgba(16,185,129,0.2); color: #10b981; }
+      .admin-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+      .admin-table thead th { background: rgba(255,255,255,0.02); padding: 11px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #334155; }
+      .admin-table tbody td { padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
+      .admin-table tbody tr:last-child td { border-bottom: none; }
+      .admin-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+      .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+      .badge-active { background: rgba(16,185,129,0.12); color: #34d399; }
+      .badge-inactive { background: rgba(100,116,139,0.2); color: #94a3b8; }
+      .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: none; border: none; color: #475569; cursor: pointer; font-size: 0.82rem; transition: all 0.15s; text-decoration: none; }
+      .action-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+      .action-btn.danger:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+      .action-btn.edit:hover { background: rgba(59,130,246,0.12); color: #3b82f6; }
+      .search-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 14px; color: white; font-size: 0.88rem; font-family: 'Be Vietnam Pro', sans-serif; width: 250px; }
+      .search-box::placeholder { color: #64748b; }
+      .search-box:focus { outline: none; border-color: #ffd700; }
+      .table-responsive { overflow-x: auto; }
+      /* Modal */
+      .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+      .modal-overlay.show { display: flex; }
+      .modal-box { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+      .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+      .modal-title { font-size: 1rem; font-weight: 700; color: white; }
+      .modal-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 1.2rem; transition: color 0.2s; }
+      .modal-close:hover { color: white; }
+      .form-group { margin-bottom: 14px; }
+      .form-label { display: block; font-size: 0.82rem; font-weight: 600; color: #94a3b8; margin-bottom: 5px; }
+      .form-control { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: white; font-size: 0.88rem; font-family: 'Be Vietnam Pro', sans-serif; }
+      .form-control:focus { outline: none; border-color: #ffd700; }
+      .form-control::placeholder { color: #475569; }
+      .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+      .btn-modal-cancel { padding: 8px 18px; background: rgba(255,255,255,0.06); border: 1px solid #334155; border-radius: 8px; color: #94a3b8; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif; }
+      .btn-modal-cancel:hover { background: rgba(255,255,255,0.1); color: white; }
+      .btn-modal-save { padding: 8px 18px; background: linear-gradient(135deg, #16a34a, #15803d); border: none; border-radius: 8px; color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif; }
+      .btn-modal-save:hover { background: linear-gradient(135deg, #15803d, #166534); }
+      .alert-msg { padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 12px; display: none; }
+      .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+      .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #34d399; }
+      @media (max-width: 900px) { .admin-sidebar { width: 190px; } }
+      @media (max-width: 640px) { .admin-sidebar { display: none; } .admin-main { padding: 16px; } }
+    </style>
+  </head>
+  <body>
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div class="topbar-left">
+        <a href="/Admin/Dashboard" class="admin-logo">
+          <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
+          <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
+        </a>
+        <nav class="topbar-nav">
+          <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
+          <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
+          <a href="/Admin/Categories"><i class="fas fa-tags me-1"></i> Danh mục</a>
+          <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
+          <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Xem website</a>
+        <div class="topbar-user">
+          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+          <div>
+            <div class="user-name">{{ admin.username }}</div>
+            <div class="user-role">Quản trị viên</div>
+          </div>
+        </div>
+        <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="admin-body">
+      <aside class="admin-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Quản lý</div>
+          <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
+          <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
+          <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
+          <a href="/Admin/Suppliers" class="sidebar-link active"><i class="fas fa-truck"></i> Nhà cung cấp</a>
+          <a href="/Admin/Orders" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
+          <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Hệ thống</div>
+          <a href="/Auth/Profile" class="sidebar-link"><i class="fas fa-user-circle"></i> Tài khoản của tôi</a>
+          <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <h1 class="page-title"><i class="fas fa-truck me-2" style="color:#ffd700;"></i>Quan ly nha cung cap</h1>
+
+        <div class="page-card">
+          <div class="page-card-header">
+            <div class="page-card-title"><i class="fas fa-list"></i> Danh sach nha cung cap</div>
+            <div class="d-flex gap-2">
+              <input type="text" id="search-supplier" class="search-box" placeholder="Tim kiem nha cung cap..." oninput="filterTable()" />
+              <button class="page-btn" onclick="openModal()"><i class="fas fa-plus"></i> Them nha cung cap</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table" id="supplier-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Ten nha cung cap</th>
+                  <th>Người liên hệ</th>
+                  <th>Email</th>
+                  <th>So dien thoai</th>
+                  <th>Trang thai</th>
+                  <th>Thao tac</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sup in suppliers %}
+                <tr data-name="{{ sup.name | lower }}" data-contact="{{ (sup.contact_person or '') | lower }}" data-email="{{ (sup.email or '') | lower }}">
+                  <td style="color:#ffd700;font-weight:700;">#{{ sup.supplier_id }}</td>
+                  <td><strong>{{ sup.name }}</strong></td>
+                  <td>{{ sup.contact_person or '—' }}</td>
+                  <td>{{ sup.email or '—' }}</td>
+                  <td>{{ sup.phone or '—' }}</td>
+                  <td>
+                    {% if sup.is_active %}
+                      <span class="badge badge-active"><i class="fas fa-check-circle"></i> Hoat dong</span>
+                    {% else %}
+                      <span class="badge badge-inactive"><i class="fas fa-ban"></i> Khong hoat dong</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <button class="action-btn edit" title="Sua" onclick="openEditModal({{ sup.supplier_id }})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn danger" title="Xoa" onclick="deleteSupplier({{ sup.supplier_id }}, '{{ sup.name | e }}')"><i class="fas fa-trash-alt"></i></button>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" style="text-align:center;color:#475569;padding:32px;"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Chua co nha cung cap nao.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal-overlay" id="supplierModal" onclick="if(event.target===this)closeModal()">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title" id="modalTitle"><i class="fas fa-truck me-2"></i>Them nha cung cap</div>
+          <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="modalAlert" class="alert-msg"></div>
+        <form id="supplierForm" onsubmit="return saveSupplier(event)">
+          <input type="hidden" id="supplier_id" value="" />
+          <div class="form-group">
+            <label class="form-label">Ten nha cung cap <span style="color:#ef4444;">*</span></label>
+            <input type="text" id="sup_name" class="form-control" placeholder="VD: Cong ty ABC" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nguoi lien he</label>
+            <input type="text" id="sup_contact" class="form-control" placeholder="Ten nguoi phu trach" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="sup_email" class="form-control" placeholder="email@example.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">So dien thoai</label>
+            <input type="text" id="sup_phone" class="form-control" placeholder="0901234567" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dia chi</label>
+            <input type="text" id="sup_address" class="form-control" placeholder="Dia chi day du" />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-modal-cancel" onclick="closeModal()">Huy</button>
+            <button type="submit" class="btn-modal-save"><i class="fas fa-save"></i> Luu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const API = '/Admin/API/Suppliers';
+
+      function filterTable() {
+        const q = document.getElementById('search-supplier').value.toLowerCase();
+        document.querySelectorAll('#supplier-table tbody tr[data-name]').forEach(row => {
+          const match = row.dataset.name.includes(q) || row.dataset.contact.includes(q) || row.dataset.email.includes(q);
+          row.style.display = match ? '' : 'none';
+        });
+      }
+
+      function openModal() {
+        document.getElementById('supplier_id').value = '';
+        document.getElementById('sup_name').value = '';
+        document.getElementById('sup_contact').value = '';
+        document.getElementById('sup_email').value = '';
+        document.getElementById('sup_phone').value = '';
+        document.getElementById('sup_address').value = '';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-truck me-2"></i>Them nha cung cap';
+        document.getElementById('modalAlert').style.display = 'none';
+        document.getElementById('supplierModal').classList.add('show');
+      }
+
+      async function openEditModal(id) {
+        document.getElementById('modalAlert').style.display = 'none';
+        try {
+          const res = await fetch(API + '/' + id);
+          const data = await res.json();
+          if (!data.success) { showAlert(data.error, 'error'); return; }
+          const s = data.supplier;
+          document.getElementById('supplier_id').value = s.supplier_id;
+          document.getElementById('sup_name').value = s.name;
+          document.getElementById('sup_contact').value = s.contact_person || '';
+          document.getElementById('sup_email').value = s.email || '';
+          document.getElementById('sup_phone').value = s.phone || '';
+          document.getElementById('sup_address').value = s.address || '';
+          document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Sua nha cung cap';
+          document.getElementById('supplierModal').classList.add('show');
+        } catch(e) { showAlert('Loi tai du lieu!', 'error'); }
+      }
+
+      function closeModal() {
+        document.getElementById('supplierModal').classList.remove('show');
+      }
+
+      function showAlert(msg, type) {
+        const el = document.getElementById('modalAlert');
+        el.textContent = msg;
+        el.className = 'alert-msg ' + (type === 'error' ? 'alert-error' : 'alert-success');
+        el.style.display = 'block';
+      }
+
+      async function saveSupplier(e) {
+        e.preventDefault();
+        const id = document.getElementById('supplier_id').value;
+        const isEdit = !!id;
+        const url = isEdit ? API + '/' + id : API;
+        const method = isEdit ? 'PUT' : 'POST';
+        const fd = new FormData();
+        fd.append('name', document.getElementById('sup_name').value.trim());
+        fd.append('contact_person', document.getElementById('sup_contact').value.trim());
+        fd.append('email', document.getElementById('sup_email').value.trim());
+        fd.append('phone', document.getElementById('sup_phone').value.trim());
+        fd.append('address', document.getElementById('sup_address').value.trim());
+        if (isEdit) fd.append('is_active', 'true');
+
+        try {
+          const res = await fetch(url, { method, body: fd });
+          const data = await res.json();
+          if (data.success) {
+            closeModal();
+            location.reload();
+          } else {
+            showAlert(data.error || 'Da xay ra loi!', 'error');
+          }
+        } catch(e) { showAlert('Loi ket noi!', 'error'); }
+        return false;
+      }
+
+      async function deleteSupplier(id, name) {
+        if (!confirm('Ban co muon xoa nha cung cap "' + name + '"?\n\nNeu nha cung cap co san pham lien quan, ban khong the xoa.')) return;
+        try {
+          const res = await fetch(API + '/' + id, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Loi: ' + data.error);
+          }
+        } catch(e) { alert('Loi ket noi!'); }
+      }
+    </script>
+  </body>
+</html>
