@@ -9,6 +9,7 @@ from Data.database import get_db
 from Services.AuthService import AuthService
 from Utilities.auth import require_account, get_current_user
 import urllib.parse
+from typing import Optional
 
 router = APIRouter(prefix="/Auth")
 
@@ -32,10 +33,12 @@ async def login(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
+    remember_me: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     """Xu ly dang nhap"""
     auth_service = AuthService(db)
+    username = username.strip()
     user = auth_service.authenticate_user(username, password)
 
     if not user:
@@ -51,17 +54,20 @@ async def login(
 
     # Redirect theo role
     if user.role_name == "Admin":
-        redirect_url = "/Admin"
+        redirect_url = "/Admin/Dashboard"
     else:
         redirect_url = "/"
 
     response = RedirectResponse(url=redirect_url, status_code=303)
+    
+    max_age = 60 * 60 * 24 * 7 if remember_me == "true" else None
+    
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=60 * 60 * 24 * 7,
+        max_age=max_age,
     )
     return response
 
@@ -88,10 +94,12 @@ async def admin_login(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
+    remember_me: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     """Xu ly dang nhap Admin"""
     auth_service = AuthService(db)
+    username = username.strip()
     user = auth_service.authenticate_user(username, password)
 
     if not user:
@@ -111,12 +119,15 @@ async def admin_login(
     )
 
     response = RedirectResponse(url="/Admin/Dashboard", status_code=303)
+    
+    max_age = 60 * 60 * 24 * 7 if remember_me == "true" else None
+    
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=60 * 60 * 24 * 7,
+        max_age=max_age,
     )
     return response
 
@@ -149,11 +160,28 @@ async def register(
 ):
     """Xu ly dang ky - khach hang hoac admin"""
     auth_service = AuthService(db)
+    
+    username = username.strip()
+    email = email.strip()
+    phone = phone.strip()
+    
+    # Server-side validation
+    if len(username) < 3:
+        error = urllib.parse.quote("Tên đăng nhập phải có tối thiểu 3 ký tự.")
+        return RedirectResponse(url=f"/Auth/Register?error={error}", status_code=303)
+        
+    if len(password) < 6:
+        error = urllib.parse.quote("Mật khẩu phải có tối thiểu 6 ký tự.")
+        return RedirectResponse(url=f"/Auth/Register?error={error}", status_code=303)
+        
+    if "@" not in email or "." not in email:
+        error = urllib.parse.quote("Email không hợp lệ.")
+        return RedirectResponse(url=f"/Auth/Register?error={error}", status_code=303)
 
     try:
         user = auth_service.register_user(
             username, email, password,
-            full_name, phone, address, role
+            full_name, phone, address, "Customer"
         )
     except ValueError as e:
         error = urllib.parse.quote(str(e))

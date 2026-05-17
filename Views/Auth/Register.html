@@ -521,21 +521,6 @@
           </div>
         </div>
 
-        <!-- Role Selection -->
-        <div class="auth-form-group">
-          <label class="auth-form-label">Đăng ký với vai trò</label>
-          <div class="auth-input-wrapper">
-            <select
-              name="role"
-              class="auth-form-input"
-              style="padding-left: 42px; appearance: none; cursor: pointer;"
-            >
-              <option value="Customer" selected>&#9989; Khách hàng - Mua sắm trực tuyến</option>
-              <option value="Admin">&#128737;&#127998; Quản trị viên - Quản lý cửa hàng</option>
-            </select>
-            <i class="fas fa-user-shield auth-input-icon" style="pointer-events: none;"></i>
-          </div>
-        </div>
 
         <!-- Agreement -->
         <div class="auth-agreement">
@@ -582,8 +567,28 @@
       }
 
       function validateForm() {
+        var username = document.getElementsByName('username')[0].value.trim();
+        var email = document.getElementsByName('email')[0].value.trim();
+        var phone = document.getElementsByName('phone')[0].value.trim();
         var password = document.getElementById('passwordInput').value;
         var confirmPassword = document.getElementById('confirmPasswordInput').value;
+        
+        if (username.length < 3) {
+          alert('Tên đăng nhập phải có tối thiểu 3 ký tự.');
+          return false;
+        }
+        
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+          alert('Vui lòng nhập địa chỉ email hợp lệ.');
+          return false;
+        }
+        
+        if (phone && !/^(0|\+84)\d{9,10}$/.test(phone)) {
+          alert('Số điện thoại không hợp lệ. Vui lòng nhập 10-11 số hợp lệ.');
+          return false;
+        }
+
         if (password.length < 6) {
           alert('Mật khẩu phải có tối thiểu 6 ký tự.');
           return false;

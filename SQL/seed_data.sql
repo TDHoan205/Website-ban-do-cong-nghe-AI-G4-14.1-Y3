@@ -5,193 +5,136 @@
 USE TechShopWebsite2;
 GO
 
--- Roles (10)
+-- Xóa dữ liệu cũ nếu có (Tuỳ chọn, nhưng để đảm bảo sạch)
+DELETE FROM OrderItems;
+DELETE FROM Orders;
+DELETE FROM CartItems;
+DELETE FROM Carts;
+DELETE FROM Inventory;
+DELETE FROM ProductImages;
+DELETE FROM ProductVariants;
+DELETE FROM Products;
+DELETE FROM Suppliers;
+DELETE FROM Categories;
+DELETE FROM Users;
+DELETE FROM Employees;
+DELETE FROM Accounts;
+DELETE FROM Roles;
+
+-- Đặt lại Identity
+DBCC CHECKIDENT ('Roles', RESEED, 0);
+DBCC CHECKIDENT ('Accounts', RESEED, 0);
+DBCC CHECKIDENT ('Employees', RESEED, 0);
+DBCC CHECKIDENT ('Users', RESEED, 0);
+DBCC CHECKIDENT ('Categories', RESEED, 0);
+DBCC CHECKIDENT ('Suppliers', RESEED, 0);
+DBCC CHECKIDENT ('Products', RESEED, 0);
+DBCC CHECKIDENT ('ProductVariants', RESEED, 0);
+DBCC CHECKIDENT ('ProductImages', RESEED, 0);
+DBCC CHECKIDENT ('Inventory', RESEED, 0);
+DBCC CHECKIDENT ('Carts', RESEED, 0);
+DBCC CHECKIDENT ('CartItems', RESEED, 0);
+DBCC CHECKIDENT ('Orders', RESEED, 0);
+DBCC CHECKIDENT ('OrderItems', RESEED, 0);
+
+-- Roles
 INSERT INTO Roles (role_name, description) VALUES
-('Customer', 'Default customer role'),
-('Staff', 'Staff role'),
-('Admin', 'Admin role'),
-('Role 04', 'Role 04'),
-('Role 05', 'Role 05'),
-('Role 06', 'Role 06'),
-('Role 07', 'Role 07'),
-('Role 08', 'Role 08'),
-('Role 09', 'Role 09'),
-('Role 10', 'Role 10');
+('Admin', 'Quản trị viên hệ thống cao nhất'),
+('Customer', 'Khách hàng mua sắm'),
+('Staff', 'Nhân viên cửa hàng');
 
--- Accounts (10)
-INSERT INTO Accounts (username, password_hash, email, full_name, phone, address, is_active, role_id, reset_token, reset_token_expiry)
+-- Accounts (Chỉ 1 tài khoản Admin duy nhất theo yêu cầu)
+-- Password '123456' has bcrypt hash: $2b$12$V2Z3K3ERgRxP4ZeqmYq7fef4xDpDGV8L/jfbJ7MSGVP1qpWUEdC3m
+INSERT INTO Accounts (username, password_hash, email, full_name, phone, address, is_active, role_id)
 VALUES
-('user01', 'hash01', 'user01@example.com', 'User 01', '0910000001', 'Addr 01', 1, 1, NULL, NULL),
-('user02', 'hash02', 'user02@example.com', 'User 02', '0910000002', 'Addr 02', 1, 1, NULL, NULL),
-('user03', 'hash03', 'user03@example.com', 'User 03', '0910000003', 'Addr 03', 1, 1, NULL, NULL),
-('user04', 'hash04', 'user04@example.com', 'User 04', '0910000004', 'Addr 04', 1, 2, NULL, NULL),
-('user05', 'hash05', 'user05@example.com', 'User 05', '0910000005', 'Addr 05', 1, 2, NULL, NULL),
-('user06', 'hash06', 'user06@example.com', 'User 06', '0910000006', 'Addr 06', 1, 2, NULL, NULL),
-('user07', 'hash07', 'user07@example.com', 'User 07', '0910000007', 'Addr 07', 1, 3, NULL, NULL),
-('user08', 'hash08', 'user08@example.com', 'User 08', '0910000008', 'Addr 08', 1, 3, NULL, NULL),
-('user09', 'hash09', 'user09@example.com', 'User 09', '0910000009', 'Addr 09', 1, 3, NULL, NULL),
-('user10', 'hash10', 'user10@example.com', 'User 10', '0910000010', 'Addr 10', 1, 1, NULL, NULL);
+('admin', '$2b$12$V2Z3K3ERgRxP4ZeqmYq7fef4xDpDGV8L/jfbJ7MSGVP1qpWUEdC3m', 'admin@techstore.vn', 'Quản Trị Viên', '0999999999', 'Trụ sở Tech Store', 1, 1);
 
--- Employees (10)
+-- Employees
 INSERT INTO Employees (account_id, department, position, hire_date, salary, is_active)
 VALUES
-(1, 'Dept A', 'Staff', SYSUTCDATETIME(), 500, 1),
-(2, 'Dept B', 'Staff', SYSUTCDATETIME(), 510, 1),
-(3, 'Dept C', 'Staff', SYSUTCDATETIME(), 520, 1),
-(4, 'Dept D', 'Staff', SYSUTCDATETIME(), 530, 1),
-(5, 'Dept E', 'Staff', SYSUTCDATETIME(), 540, 1),
-(6, 'Dept F', 'Manager', SYSUTCDATETIME(), 600, 1),
-(7, 'Dept G', 'Manager', SYSUTCDATETIME(), 620, 1),
-(8, 'Dept H', 'Manager', SYSUTCDATETIME(), 640, 1),
-(9, 'Dept I', 'Admin', SYSUTCDATETIME(), 700, 1),
-(10, 'Dept J', 'Admin', SYSUTCDATETIME(), 720, 1);
+(1, 'Ban Giám Đốc', 'Giám đốc', SYSUTCDATETIME(), 50000000, 1);
 
--- Users (10)
-INSERT INTO Users (username, email, password_hash, full_name, phone, address, is_active, role, avatar_url, reset_token, reset_token_expiry)
+-- Users (Dự phòng cho bảng Users nếu có sử dụng)
+INSERT INTO Users (username, email, password_hash, full_name, phone, address, is_active, role, avatar_url)
 VALUES
-('u01', 'u01@example.com', 'hashu01', 'User A01', '0920000001', 'Addr U01', 1, 'Customer', '/avatars/u01.png', NULL, NULL),
-('u02', 'u02@example.com', 'hashu02', 'User A02', '0920000002', 'Addr U02', 1, 'Customer', '/avatars/u02.png', NULL, NULL),
-('u03', 'u03@example.com', 'hashu03', 'User A03', '0920000003', 'Addr U03', 1, 'Customer', '/avatars/u03.png', NULL, NULL),
-('u04', 'u04@example.com', 'hashu04', 'User A04', '0920000004', 'Addr U04', 1, 'Employee', '/avatars/u04.png', NULL, NULL),
-('u05', 'u05@example.com', 'hashu05', 'User A05', '0920000005', 'Addr U05', 1, 'Employee', '/avatars/u05.png', NULL, NULL),
-('u06', 'u06@example.com', 'hashu06', 'User A06', '0920000006', 'Addr U06', 1, 'Employee', '/avatars/u06.png', NULL, NULL),
-('u07', 'u07@example.com', 'hashu07', 'User A07', '0920000007', 'Addr U07', 1, 'Admin', '/avatars/u07.png', NULL, NULL),
-('u08', 'u08@example.com', 'hashu08', 'User A08', '0920000008', 'Addr U08', 1, 'Admin', '/avatars/u08.png', NULL, NULL),
-('u09', 'u09@example.com', 'hashu09', 'User A09', '0920000009', 'Addr U09', 1, 'Admin', '/avatars/u09.png', NULL, NULL),
-('u10', 'u10@example.com', 'hashu10', 'User A10', '0920000010', 'Addr U10', 1, 'Customer', '/avatars/u10.png', NULL, NULL);
+('admin', 'admin@techstore.vn', '$2b$12$V2Z3K3ERgRxP4ZeqmYq7fef4xDpDGV8L/jfbJ7MSGVP1qpWUEdC3m', 'Quản Trị Viên', '0999999999', 'Trụ sở Tech Store', 1, 'Admin', '/avatars/admin.png');
 
--- Categories (10)
+-- Categories
 INSERT INTO Categories (name, description, image_url, display_order, is_active)
 VALUES
-('Category 01', 'Desc 01', '/images/c01.png', 1, 1),
-('Category 02', 'Desc 02', '/images/c02.png', 2, 1),
-('Category 03', 'Desc 03', '/images/c03.png', 3, 1),
-('Category 04', 'Desc 04', '/images/c04.png', 4, 1),
-('Category 05', 'Desc 05', '/images/c05.png', 5, 1),
-('Category 06', 'Desc 06', '/images/c06.png', 6, 1),
-('Category 07', 'Desc 07', '/images/c07.png', 7, 1),
-('Category 08', 'Desc 08', '/images/c08.png', 8, 1),
-('Category 09', 'Desc 09', '/images/c09.png', 9, 1),
-('Category 10', 'Desc 10', '/images/c10.png', 10, 1);
+('Điện thoại di động', 'Smartphone các hãng Apple, Samsung...', '/images/cat_phone.png', 1, 1),
+('Laptop & Macbook', 'Máy tính xách tay phục vụ làm việc, gaming', '/images/cat_laptop.png', 2, 1),
+('Máy tính bảng', 'Tablet iPad, Galaxy Tab...', '/images/cat_tablet.png', 3, 1),
+('Phụ kiện', 'Tai nghe, củ sạc, ốp lưng, bàn phím...', '/images/cat_accessories.png', 4, 1);
 
--- Suppliers (10)
+-- Suppliers
 INSERT INTO Suppliers (name, contact_person, phone, email, address, is_active)
 VALUES
-('Supplier 01', 'Contact 01', '0900000001', 'supplier01@example.com', 'Address 01', 1),
-('Supplier 02', 'Contact 02', '0900000002', 'supplier02@example.com', 'Address 02', 1),
-('Supplier 03', 'Contact 03', '0900000003', 'supplier03@example.com', 'Address 03', 1),
-('Supplier 04', 'Contact 04', '0900000004', 'supplier04@example.com', 'Address 04', 1),
-('Supplier 05', 'Contact 05', '0900000005', 'supplier05@example.com', 'Address 05', 1),
-('Supplier 06', 'Contact 06', '0900000006', 'supplier06@example.com', 'Address 06', 1),
-('Supplier 07', 'Contact 07', '0900000007', 'supplier07@example.com', 'Address 07', 1),
-('Supplier 08', 'Contact 08', '0900000008', 'supplier08@example.com', 'Address 08', 1),
-('Supplier 09', 'Contact 09', '0900000009', 'supplier09@example.com', 'Address 09', 1),
-('Supplier 10', 'Contact 10', '0900000010', 'supplier10@example.com', 'Address 10', 1);
+('Apple Vietnam', 'Nguyễn Văn A', '0901234567', 'contact@apple.vn', 'Q1, TP.HCM', 1),
+('Samsung Electronics', 'Trần Thị B', '0901234568', 'b2b@samsung.vn', 'Q9, TP.HCM', 1),
+('Dell Technologies', 'Lê Văn C', '0901234569', 'sales@dell.vn', 'Cầu Giấy, Hà Nội', 1),
+('ASUS Vietnam', 'Phạm Thị D', '0901234570', 'support@asus.vn', 'Q3, TP.HCM', 1);
 
--- Products (10)
+-- Products
 INSERT INTO Products (
     name, description, image_url, price, original_price, stock_quantity, is_available,
     rating, is_new, is_hot, discount_percent, specifications, category_id, supplier_id
 )
 VALUES
-('Product 01', 'Description 01', '/images/p01.png', 100.00, 120.00, 50, 1, 4.5, 1, 1, 10, '{}', 1, 1),
-('Product 02', 'Description 02', '/images/p02.png', 110.00, 130.00, 40, 1, 4.2, 1, 0, 5, '{}', 2, 2),
-('Product 03', 'Description 03', '/images/p03.png', 120.00, 140.00, 30, 1, 4.6, 0, 1, 0, '{}', 3, 3),
-('Product 04', 'Description 04', '/images/p04.png', 130.00, 150.00, 20, 1, 4.1, 0, 0, 0, '{}', 4, 4),
-('Product 05', 'Description 05', '/images/p05.png', 140.00, 160.00, 25, 1, 4.7, 1, 1, 8, '{}', 5, 5),
-('Product 06', 'Description 06', '/images/p06.png', 150.00, 170.00, 35, 1, 4.3, 0, 1, 6, '{}', 6, 6),
-('Product 07', 'Description 07', '/images/p07.png', 160.00, 180.00, 45, 1, 4.0, 1, 0, 3, '{}', 7, 7),
-('Product 08', 'Description 08', '/images/p08.png', 170.00, 190.00, 55, 1, 4.4, 0, 0, 0, '{}', 8, 8),
-('Product 09', 'Description 09', '/images/p09.png', 180.00, 200.00, 65, 1, 4.8, 1, 1, 12, '{}', 9, 9),
-('Product 10', 'Description 10', '/images/p10.png', 190.00, 210.00, 75, 1, 4.9, 1, 0, 4, '{}', 10, 10);
+('iPhone 15 Pro Max 256GB', 'Điện thoại flagship cao cấp nhất của Apple.', '/images/iphone15promax.png', 29990000, 34990000, 50, 1, 4.9, 1, 1, 14, '{}', 1, 1),
+('Samsung Galaxy S24 Ultra', 'Smartphone tích hợp Galaxy AI mạnh mẽ.', '/images/s24ultra.png', 31990000, 33990000, 30, 1, 4.8, 1, 1, 5, '{}', 1, 2),
+('MacBook Pro 14 M3', 'Laptop chuyên nghiệp dành cho dân đồ họa, lập trình.', '/images/macbookpro14.png', 39990000, 42990000, 20, 1, 4.9, 1, 0, 6, '{}', 2, 1),
+('Dell XPS 15 9530', 'Laptop Windows cao cấp viền màn hình siêu mỏng.', '/images/dellxps15.png', 45990000, 49990000, 15, 1, 4.7, 0, 0, 8, '{}', 2, 3),
+('iPad Pro 11 inch M2', 'Máy tính bảng hiệu năng ngang ngửa laptop.', '/images/ipadpro11.png', 20990000, 22990000, 25, 1, 4.8, 0, 1, 8, '{}', 3, 1),
+('Tai nghe AirPods Pro 2', 'Tai nghe true wireless chống ồn chủ động tốt nhất.', '/images/airpodspro2.png', 5990000, 6990000, 100, 1, 4.9, 0, 1, 14, '{}', 4, 1);
 
--- ProductVariants (10)
+-- ProductVariants
 INSERT INTO ProductVariants (product_id, color, storage, ram, variant_name, sku, price, original_price, stock_quantity, display_order, is_active)
 VALUES
-(1, 'Color 01', '128GB', '8GB', 'Variant 01', 'SKU-01', 100.00, 120.00, 10, 1, 1),
-(2, 'Color 02', '256GB', '8GB', 'Variant 02', 'SKU-02', 110.00, 130.00, 10, 1, 1),
-(3, 'Color 03', '128GB', '16GB', 'Variant 03', 'SKU-03', 120.00, 140.00, 10, 1, 1),
-(4, 'Color 04', '256GB', '16GB', 'Variant 04', 'SKU-04', 130.00, 150.00, 10, 1, 1),
-(5, 'Color 05', '128GB', '8GB', 'Variant 05', 'SKU-05', 140.00, 160.00, 10, 1, 1),
-(6, 'Color 06', '256GB', '8GB', 'Variant 06', 'SKU-06', 150.00, 170.00, 10, 1, 1),
-(7, 'Color 07', '128GB', '16GB', 'Variant 07', 'SKU-07', 160.00, 180.00, 10, 1, 1),
-(8, 'Color 08', '256GB', '16GB', 'Variant 08', 'SKU-08', 170.00, 190.00, 10, 1, 1),
-(9, 'Color 09', '128GB', '8GB', 'Variant 09', 'SKU-09', 180.00, 200.00, 10, 1, 1),
-(10, 'Color 10', '256GB', '8GB', 'Variant 10', 'SKU-10', 190.00, 210.00, 10, 1, 1);
+(1, 'Titan Tự nhiên', '256GB', '8GB', 'iPhone 15 Pro Max Titan Tự nhiên 256GB', 'IP15PM-NT-256', 29990000, 34990000, 20, 1, 1),
+(1, 'Titan Đen', '256GB', '8GB', 'iPhone 15 Pro Max Titan Đen 256GB', 'IP15PM-BK-256', 29990000, 34990000, 30, 2, 1),
+(2, 'Xám Titan', '256GB', '12GB', 'Galaxy S24 Ultra Xám 256GB', 'S24U-GY-256', 31990000, 33990000, 15, 1, 1),
+(3, 'Silver', '512GB', '18GB', 'MacBook Pro 14 M3 Silver', 'MBP14-SL-512', 39990000, 42990000, 10, 1, 1),
+(4, 'Platinum Silver', '1TB', '32GB', 'Dell XPS 15 9530 1TB', 'XPS15-SL-1TB', 45990000, 49990000, 15, 1, 1),
+(5, 'Space Grey', '256GB', '8GB', 'iPad Pro 11 M2 Space Grey', 'IPP11-SG-256', 20990000, 22990000, 25, 1, 1),
+(6, 'Trắng', 'N/A', 'N/A', 'AirPods Pro 2', 'AP-PRO2-WH', 5990000, 6990000, 100, 1, 1);
 
--- ProductImages (10)
+-- ProductImages
 INSERT INTO ProductImages (product_id, image_url, display_order, is_primary)
 VALUES
-(1, '/images/p01_1.png', 1, 1),
-(2, '/images/p02_1.png', 1, 1),
-(3, '/images/p03_1.png', 1, 1),
-(4, '/images/p04_1.png', 1, 1),
-(5, '/images/p05_1.png', 1, 1),
-(6, '/images/p06_1.png', 1, 1),
-(7, '/images/p07_1.png', 1, 1),
-(8, '/images/p08_1.png', 1, 1),
-(9, '/images/p09_1.png', 1, 1),
-(10, '/images/p10_1.png', 1, 1);
+(1, '/images/iphone15promax_1.png', 1, 1),
+(2, '/images/s24ultra_1.png', 1, 1),
+(3, '/images/macbookpro14_1.png', 1, 1),
+(4, '/images/dellxps15_1.png', 1, 1),
+(5, '/images/ipadpro11_1.png', 1, 1),
+(6, '/images/airpodspro2_1.png', 1, 1);
 
--- Inventory (10)
+-- Inventory
 INSERT INTO Inventory (product_id, quantity_in_stock, min_stock_level, max_stock_level, last_restock_date)
 VALUES
-(1, 100, 5, 100, SYSUTCDATETIME()),
-(2, 90, 5, 100, SYSUTCDATETIME()),
-(3, 80, 5, 100, SYSUTCDATETIME()),
-(4, 70, 5, 100, SYSUTCDATETIME()),
-(5, 60, 5, 100, SYSUTCDATETIME()),
-(6, 50, 5, 100, SYSUTCDATETIME()),
-(7, 40, 5, 100, SYSUTCDATETIME()),
-(8, 30, 5, 100, SYSUTCDATETIME()),
-(9, 20, 5, 100, SYSUTCDATETIME()),
-(10, 10, 5, 100, SYSUTCDATETIME());
+(1, 50, 10, 100, SYSUTCDATETIME()),
+(2, 30, 5, 50, SYSUTCDATETIME()),
+(3, 20, 3, 30, SYSUTCDATETIME()),
+(4, 15, 2, 20, SYSUTCDATETIME()),
+(5, 25, 5, 50, SYSUTCDATETIME()),
+(6, 100, 20, 200, SYSUTCDATETIME());
 
--- Carts (10)
+-- Carts
 INSERT INTO Carts (account_id)
 VALUES
-(1),(2),(3),(4),(5),(6),(7),(8),(9),(10);
+(1);
 
--- CartItems (10)
+-- CartItems
 INSERT INTO CartItems (cart_id, product_id, variant_id, quantity)
 VALUES
-(1, 1, 1, 1),
-(2, 2, 2, 1),
-(3, 3, 3, 1),
-(4, 4, 4, 1),
-(5, 5, 5, 1),
-(6, 6, 6, 1),
-(7, 7, 7, 1),
-(8, 8, 8, 1),
-(9, 9, 9, 1),
-(10, 10, 10, 1);
+(1, 1, 1, 1);
 
--- Orders (10)
+-- Orders
 INSERT INTO Orders (account_id, order_date, total_amount, status, customer_name, customer_phone, customer_address, notes)
 VALUES
-(1, SYSUTCDATETIME(), 100.00, 'Pending', 'User 01', '0910000001', 'Addr 01', 'Note 01'),
-(2, SYSUTCDATETIME(), 110.00, 'Pending', 'User 02', '0910000002', 'Addr 02', 'Note 02'),
-(3, SYSUTCDATETIME(), 120.00, 'Pending', 'User 03', '0910000003', 'Addr 03', 'Note 03'),
-(4, SYSUTCDATETIME(), 130.00, 'Pending', 'User 04', '0910000004', 'Addr 04', 'Note 04'),
-(5, SYSUTCDATETIME(), 140.00, 'Pending', 'User 05', '0910000005', 'Addr 05', 'Note 05'),
-(6, SYSUTCDATETIME(), 150.00, 'Pending', 'User 06', '0910000006', 'Addr 06', 'Note 06'),
-(7, SYSUTCDATETIME(), 160.00, 'Pending', 'User 07', '0910000007', 'Addr 07', 'Note 07'),
-(8, SYSUTCDATETIME(), 170.00, 'Pending', 'User 08', '0910000008', 'Addr 08', 'Note 08'),
-(9, SYSUTCDATETIME(), 180.00, 'Pending', 'User 09', '0910000009', 'Addr 09', 'Note 09'),
-(10, SYSUTCDATETIME(), 190.00, 'Pending', 'User 10', '0910000010', 'Addr 10', 'Note 10');
+(1, SYSUTCDATETIME(), 29990000, 'Pending', 'Quản Trị Viên', '0999999999', 'Trụ sở Tech Store', 'Đơn hàng test của admin');
 
--- OrderItems (10)
+-- OrderItems
 INSERT INTO OrderItems (order_id, product_id, variant_id, product_name, variant_name, quantity, unit_price, subtotal)
 VALUES
-(1, 1, 1, 'Product 01', 'Variant 01', 1, 100.00, 100.00),
-(2, 2, 2, 'Product 02', 'Variant 02', 1, 110.00, 110.00),
-(3, 3, 3, 'Product 03', 'Variant 03', 1, 120.00, 120.00),
-(4, 4, 4, 'Product 04', 'Variant 04', 1, 130.00, 130.00),
-(5, 5, 5, 'Product 05', 'Variant 05', 1, 140.00, 140.00),
-(6, 6, 6, 'Product 06', 'Variant 06', 1, 150.00, 150.00),
-(7, 7, 7, 'Product 07', 'Variant 07', 1, 160.00, 160.00),
-(8, 8, 8, 'Product 08', 'Variant 08', 1, 170.00, 170.00),
-(9, 9, 9, 'Product 09', 'Variant 09', 1, 180.00, 180.00),
-(10, 10, 10, 'Product 10', 'Variant 10', 1, 190.00, 190.00);
-
-
+(1, 1, 1, 'iPhone 15 Pro Max 256GB', 'iPhone 15 Pro Max Titan Tự nhiên 256GB', 1, 29990000, 29990000);

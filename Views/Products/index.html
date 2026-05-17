@@ -24,160 +24,644 @@
     <link rel="stylesheet" href="/static/css/style.css?v=2" />
 
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
       body {
-        font-family: 'Be Vietnam Pro', sans-serif;
+        font-family: "Be Vietnam Pro", sans-serif;
         background: #f0f2f5;
         display: flex;
         flex-direction: column;
         min-height: 100vh;
       }
-      a { text-decoration: none; transition: color 0.2s; }
-      a:hover { color: #0d6efd; }
-      .main-content { flex: 1; }
+      a {
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      a:hover {
+        color: #0d6efd;
+      }
+      .main-content {
+        flex: 1;
+      }
 
       /* ===== TOP BAR ===== */
-      .top-bar { background: #2D3436; color: rgba(255,255,255,0.7); font-size: 0.78rem; padding: 6px 0; }
-      .top-bar-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-      .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-      .top-bar-item { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.7); }
-      .top-bar-item i { color: #ff6b00; font-size: 0.8rem; }
-      .top-bar-item:hover { color: white; }
-      .top-bar-divider { color: rgba(255,255,255,0.2); }
+      .top-bar {
+        background: #2d3436;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.78rem;
+        padding: 6px 0;
+      }
+      .top-bar-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .top-bar-left,
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .top-bar-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .top-bar-item i {
+        color: #ff6b00;
+        font-size: 0.8rem;
+      }
+      .top-bar-item:hover {
+        color: white;
+      }
+      .top-bar-divider {
+        color: rgba(255, 255, 255, 0.2);
+      }
 
       /* ===== HEADER ===== */
-      .main-header { background: white; padding: 14px 0; border-bottom: 1px solid #e8e8e8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 999; }
-      .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; gap: 20px; }
-      .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-      .header-logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #0d6efd, #0a58ca); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; }
-      .header-logo-text { display: flex; flex-direction: column; line-height: 1.2; }
-      .header-logo-name { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
-      .header-logo-sub { font-size: 0.68rem; color: #9ca3af; }
-      .header-search { flex: 1; max-width: 520px; }
-      .header-search-form { display: flex; border: 2px solid #0d6efd; border-radius: 8px; overflow: hidden; background: white; }
-      .header-search-input { flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 0.88rem; font-family: 'Be Vietnam Pro', sans-serif; color: #374151; background: transparent; }
-      .header-search-input::placeholder { color: #9ca3af; }
-      .header-search-btn { background: #0d6efd; color: white; border: none; padding: 10px 18px; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Be Vietnam Pro', sans-serif; font-weight: 500; transition: background 0.2s; }
-      .header-search-btn:hover { background: #0a58ca; }
-      .header-actions { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
-      .header-action { display: flex; align-items: center; gap: 8px; color: #374151; font-size: 0.82rem; font-weight: 500; text-decoration: none; transition: color 0.2s; }
-      .header-action:hover { color: #0d6efd; }
-      .header-action-icon { position: relative; font-size: 1.4rem; color: #374151; }
-      .header-action-badge { position: absolute; top: -6px; right: -8px; background: #ff6b00; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-      .header-action-text { display: flex; flex-direction: column; line-height: 1.2; }
-      .header-action-label { font-size: 0.68rem; color: #9ca3af; }
+      .main-header {
+        background: white;
+        padding: 14px 0;
+        border-bottom: 1px solid #e8e8e8;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        position: sticky;
+        top: 0;
+        z-index: 999;
+      }
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+      .header-logo-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+      }
+      .header-logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .header-logo-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a1a2e;
+      }
+      .header-logo-sub {
+        font-size: 0.68rem;
+        color: #9ca3af;
+      }
+      .header-search {
+        flex: 1;
+        max-width: 520px;
+      }
+      .header-search-form {
+        display: flex;
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+      }
+      .header-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        background: transparent;
+      }
+      .header-search-input::placeholder {
+        color: #9ca3af;
+      }
+      .header-search-btn {
+        background: #0d6efd;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Be Vietnam Pro", sans-serif;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      .header-search-btn:hover {
+        background: #0a58ca;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-shrink: 0;
+      }
+      .header-action {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .header-action:hover {
+        color: #0d6efd;
+      }
+      .header-action-icon {
+        position: relative;
+        font-size: 1.4rem;
+        color: #374151;
+      }
+      .header-action-badge {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: #ff6b00;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .header-action-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .header-action-label {
+        font-size: 0.68rem;
+        color: #9ca3af;
+      }
+
+      /* User dropdown */
+      .header-user-menu {
+        position: relative;
+      }
+      .header-user-action {
+        cursor: pointer;
+      }
+      .header-user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        min-width: 180px;
+        padding: 6px 0;
+        z-index: 1000;
+        display: none;
+        margin-top: 8px;
+      }
+      .header-user-dropdown .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        color: #374151;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s;
+      }
+      .header-user-dropdown .dropdown-item:hover {
+        background: #f3f4f6;
+        color: #0d6efd;
+      }
+      .header-user-dropdown .dropdown-item i {
+        width: 16px;
+        text-align: center;
+      }
+      .header-user-dropdown .dropdown-item-red {
+        color: #dc2626;
+      }
+      .header-user-dropdown .dropdown-item-red:hover {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      .header-user-dropdown .dropdown-divider {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 4px 0;
+      }
 
       /* ===== NAV BAR ===== */
-      .nav-bar { background: #0d6efd; position: sticky; top: 72px; z-index: 998; }
-      .nav-bar-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; }
-      .nav-categories-btn { background: #ff6b00; color: white; border: none; padding: 11px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Be Vietnam Pro', sans-serif; white-space: nowrap; flex-shrink: 0; }
-      .nav-links { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; flex: 1; overflow-x: auto; }
-      .nav-links li a { display: block; padding: 11px 16px; color: rgba(255,255,255,0.85); font-size: 0.88rem; font-weight: 500; text-decoration: none; white-space: nowrap; transition: all 0.2s; border-bottom: 3px solid transparent; }
-      .nav-links li a:hover, .nav-links li a.active { color: white; background: rgba(255,255,255,0.1); border-bottom-color: #ff6b00; }
-      .nav-links li a.nav-new { color: #ffd700; }
-      .nav-links li a.nav-hot { color: #ff4757; }
-      .nav-support { display: flex; align-items: center; gap: 6px; padding: 0 16px; color: white; font-size: 0.82rem; font-weight: 500; white-space: nowrap; }
-      .nav-support i { color: #ffd700; }
+      .nav-bar {
+        background: #0d6efd;
+        position: sticky;
+        top: 72px;
+        z-index: 998;
+      }
+      .nav-bar-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+      }
+      .nav-categories-btn {
+        background: #ff6b00;
+        color: white;
+        border: none;
+        padding: 11px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Be Vietnam Pro", sans-serif;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        flex: 1;
+        overflow-x: auto;
+      }
+      .nav-links li a {
+        display: block;
+        padding: 11px 16px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.2s;
+        border-bottom: 3px solid transparent;
+      }
+      .nav-links li a:hover,
+      .nav-links li a.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom-color: #ff6b00;
+      }
+      .nav-links li a.nav-new {
+        color: #ffd700;
+      }
+      .nav-links li a.nav-hot {
+        color: #ff4757;
+      }
+      .nav-support {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+        color: white;
+        font-size: 0.82rem;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .nav-support i {
+        color: #ffd700;
+      }
 
       /* ===== PAGE TITLE ===== */
-      .page-title-bar { background: white; padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
-      .page-title-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-      .page-title-left h1 { font-size: 1.4rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-      .page-title-left p { font-size: 0.85rem; color: #9ca3af; margin: 0; }
-      .page-title-left p span { color: #ff6b00; font-weight: 600; }
-      .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #9ca3af; }
-      .breadcrumb a { color: #0d6efd; text-decoration: none; }
-      .breadcrumb a:hover { text-decoration: underline; }
-      .breadcrumb-sep { color: #d1d5db; }
+      .page-title-bar {
+        background: white;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .page-title-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .page-title-left h1 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 4px;
+      }
+      .page-title-left p {
+        font-size: 0.85rem;
+        color: #9ca3af;
+        margin: 0;
+      }
+      .page-title-left p span {
+        color: #ff6b00;
+        font-weight: 600;
+      }
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: #9ca3af;
+      }
+      .breadcrumb a {
+        color: #0d6efd;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb-sep {
+        color: #d1d5db;
+      }
 
       /* ===== PRODUCTS PAGE LAYOUT ===== */
-      .products-page { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
-      .products-layout { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+      .products-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+      .products-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
 
       /* ===== SIDEBAR FILTERS ===== */
       .filter-sidebar {
-        background: white; border-radius: 12px; border: 1px solid #f0f0f0;
-        overflow: hidden; position: sticky; top: 130px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        position: sticky;
+        top: 130px;
       }
       .filter-header {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 16px 18px; background: #fafafa; border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px;
+        background: #fafafa;
+        border-bottom: 1px solid #f0f0f0;
       }
-      .filter-title { font-size: 0.9rem; font-weight: 700; color: #1a1a2e; display: flex; align-items: center; gap: 6px; }
-      .filter-title i { color: #0d6efd; }
-      .filter-clear { font-size: 0.82rem; color: #dc2626; cursor: pointer; font-weight: 600; background: none; border: none; font-family: 'Be Vietnam Pro', sans-serif; }
-      .filter-clear:hover { text-decoration: underline; }
-      .filter-section { padding: 16px 18px; border-bottom: 1px solid #f5f5f5; }
-      .filter-section:last-child { border-bottom: none; }
-      .filter-section-title { font-size: 0.82rem; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-      .filter-search { position: relative; }
+      .filter-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .filter-title i {
+        color: #0d6efd;
+      }
+      .filter-clear {
+        font-size: 0.82rem;
+        color: #dc2626;
+        cursor: pointer;
+        font-weight: 600;
+        background: none;
+        border: none;
+        font-family: "Be Vietnam Pro", sans-serif;
+      }
+      .filter-clear:hover {
+        text-decoration: underline;
+      }
+      .filter-section {
+        padding: 16px 18px;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .filter-section:last-child {
+        border-bottom: none;
+      }
+      .filter-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .filter-search {
+        position: relative;
+      }
       .filter-search-input {
-        width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid #e5e7eb;
-        border-radius: 8px; font-size: 0.85rem; font-family: 'Be Vietnam Pro', sans-serif;
-        color: #374151; outline: none; transition: border-color 0.2s;
+        width: 100%;
+        padding: 9px 12px 9px 36px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        outline: none;
+        transition: border-color 0.2s;
         background: white;
       }
-      .filter-search-input:focus { border-color: #0d6efd; }
-      .filter-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.85rem; }
+      .filter-search-input:focus {
+        border-color: #0d6efd;
+      }
+      .filter-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 0.85rem;
+      }
       .filter-select {
-        width: 100%; padding: 9px 12px; border: 1.5px solid #e5e7eb;
-        border-radius: 8px; font-size: 0.85rem; font-family: 'Be Vietnam Pro', sans-serif;
-        color: #374151; background: white; outline: none; cursor: pointer;
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        background: white;
+        outline: none;
+        cursor: pointer;
         appearance: auto;
       }
-      .price-range { display: flex; align-items: center; gap: 8px; }
+      .price-range {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
       .price-input {
-        flex: 1; padding: 9px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
-        font-size: 0.82rem; font-family: 'Be Vietnam Pro', sans-serif;
-        color: #374151; outline: none; width: 100%;
+        flex: 1;
+        padding: 9px 12px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        outline: none;
+        width: 100%;
       }
-      .price-input:focus { border-color: #0d6efd; }
-      .price-sep { color: #9ca3af; font-size: 0.82rem; flex-shrink: 0; }
-      .filter-checkboxes { display: flex; flex-direction: column; gap: 8px; }
-      .filter-checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-      .filter-checkbox-item input[type="checkbox"] { accent-color: #0d6efd; width: 16px; height: 16px; cursor: pointer; }
-      .filter-checkbox-label { font-size: 0.85rem; color: #374151; flex: 1; }
-      .filter-checkbox-count { font-size: 0.75rem; color: #9ca3af; }
+      .price-input:focus {
+        border-color: #0d6efd;
+      }
+      .price-sep {
+        color: #9ca3af;
+        font-size: 0.82rem;
+        flex-shrink: 0;
+      }
+      .filter-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .filter-checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .filter-checkbox-item input[type="checkbox"] {
+        accent-color: #0d6efd;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+      .filter-checkbox-label {
+        font-size: 0.85rem;
+        color: #374151;
+        flex: 1;
+      }
+      .filter-checkbox-count {
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
       .filter-btn {
-        width: 100%; padding: 11px; background: #0d6efd; color: white;
-        border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700;
-        font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer; transition: background 0.2s;
-        display: flex; align-items: center; justify-content: center; gap: 6px;
+        width: 100%;
+        padding: 11px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        font-family: "Be Vietnam Pro", sans-serif;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
       }
-      .filter-btn:hover { background: #0a58ca; }
+      .filter-btn:hover {
+        background: #0a58ca;
+      }
 
       /* Quick discovery */
-      .quick-categories { display: flex; flex-direction: column; gap: 6px; }
-      .quick-cat-item {
-        display: flex; align-items: center; gap: 8px;
-        padding: 8px 10px; border-radius: 8px; border: 1.5px solid #f0f0f0;
-        color: #374151; font-size: 0.82rem; font-weight: 500;
-        transition: all 0.2s; cursor: pointer; text-decoration: none;
+      .quick-categories {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
-      .quick-cat-item:hover { border-color: #0d6efd; background: #eff6ff; color: #0d6efd; }
-      .quick-cat-item i { color: #0d6efd; font-size: 0.85rem; width: 16px; text-align: center; }
-      .quick-cat-item.active { border-color: #0d6efd; background: #eff6ff; color: #0d6efd; }
+      .quick-cat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1.5px solid #f0f0f0;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .quick-cat-item:hover {
+        border-color: #0d6efd;
+        background: #eff6ff;
+        color: #0d6efd;
+      }
+      .quick-cat-item i {
+        color: #0d6efd;
+        font-size: 0.85rem;
+        width: 16px;
+        text-align: center;
+      }
+      .quick-cat-item.active {
+        border-color: #0d6efd;
+        background: #eff6ff;
+        color: #0d6efd;
+      }
 
       /* ===== PRODUCTS AREA ===== */
-      .products-area {}
+      .products-area {
+      }
       .products-toolbar {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
       }
       .products-result-count {
-        font-size: 0.88rem; color: #6b7280;
+        font-size: 0.88rem;
+        color: #6b7280;
       }
-      .products-result-count span { color: #ff6b00; font-weight: 700; }
+      .products-result-count span {
+        color: #ff6b00;
+        font-weight: 700;
+      }
       .products-sort {
-        display: flex; align-items: center; gap: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .sort-select {
-        padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
-        font-size: 0.85rem; font-family: 'Be Vietnam Pro', sans-serif;
-        color: #374151; background: white; outline: none; cursor: pointer;
+        padding: 8px 12px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        background: white;
+        outline: none;
+        cursor: pointer;
         appearance: auto;
       }
-      .sort-label { font-size: 0.85rem; color: #6b7280; font-weight: 500; white-space: nowrap; }
+      .sort-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-weight: 500;
+        white-space: nowrap;
+      }
 
       /* Products grid */
       .products-grid {
@@ -186,107 +670,387 @@
         gap: 16px;
       }
       .product-card {
-        background: white; border: 1px solid #f0f0f0; border-radius: 12px;
-        overflow: hidden; transition: all 0.25s; display: flex; flex-direction: column;
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.25s;
+        display: flex;
+        flex-direction: column;
       }
       .product-card:hover {
-        border-color: #0d6efd; box-shadow: 0 8px 25px rgba(13,110,253,0.12);
+        border-color: #0d6efd;
+        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.12);
         transform: translateY(-4px);
       }
       .product-img-wrap {
-        position: relative; background: #f8f9fa; padding: 20px; text-align: center;
-        min-height: 180px; display: flex; align-items: center; justify-content: center;
+        position: relative;
+        background: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
       }
-      .product-img-wrap img { max-height: 140px; max-width: 100%; object-fit: contain; }
+      .product-img-wrap img {
+        max-height: 140px;
+        max-width: 100%;
+        object-fit: contain;
+      }
       .product-badge {
-        position: absolute; padding: 4px 10px; border-radius: 6px;
-        font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        position: absolute;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-      .badge-new { background: #16a34a; color: white; top: 10px; left: 10px; }
-      .badge-hot { background: #dc2626; color: white; top: 10px; left: 10px; }
-      .badge-sale { background: #ff6b00; color: white; top: 10px; right: 10px; }
+      .badge-new {
+        background: #16a34a;
+        color: white;
+        top: 10px;
+        left: 10px;
+      }
+      .badge-hot {
+        background: #dc2626;
+        color: white;
+        top: 10px;
+        left: 10px;
+      }
+      .badge-sale {
+        background: #ff6b00;
+        color: white;
+        top: 10px;
+        right: 10px;
+      }
       .product-discount {
-        position: absolute; top: 10px; right: 10px; background: #dc2626;
-        color: white; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc2626;
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
       }
-      .product-info { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+      .product-info {
+        padding: 14px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
       .product-name {
-        font-size: 0.88rem; font-weight: 600; color: #1a1a2e; margin-bottom: 6px;
-        line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical; overflow: hidden; text-decoration: none; transition: color 0.2s;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 6px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-decoration: none;
+        transition: color 0.2s;
       }
-      .product-name:hover { color: #0d6efd; }
-      .product-rating { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; font-size: 0.75rem; }
-      .product-stars { color: #f59e0b; }
-      .product-reviews { color: #9ca3af; }
-      .product-price-wrap { margin-bottom: 10px; }
-      .product-price { font-size: 1.05rem; font-weight: 700; color: #dc2626; }
-      .product-price-original { font-size: 0.8rem; color: #9ca3af; text-decoration: line-through; margin-left: 6px; }
+      .product-name:hover {
+        color: #0d6efd;
+      }
+      .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 8px;
+        font-size: 0.75rem;
+      }
+      .product-stars {
+        color: #f59e0b;
+      }
+      .product-reviews {
+        color: #9ca3af;
+      }
+      .product-price-wrap {
+        margin-bottom: 10px;
+      }
+      .product-price {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #dc2626;
+      }
+      .product-price-original {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        text-decoration: line-through;
+        margin-left: 6px;
+      }
       .product-add-btn {
-        margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px;
-        background: #0d6efd; color: white; border: none; padding: 10px;
-        border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-        font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer;
-        transition: all 0.2s; text-decoration: none;
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        font-family: "Be Vietnam Pro", sans-serif;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
       }
-      .product-add-btn:hover { background: #0a58ca; color: white; }
-      .product-empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; }
-      .product-empty i { font-size: 3rem; color: #e5e7eb; margin-bottom: 12px; }
-      .product-empty p { font-size: 1rem; color: #9ca3af; }
+      .product-add-btn:hover {
+        background: #0a58ca;
+        color: white;
+      }
+      .product-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+      }
+      .product-empty i {
+        font-size: 3rem;
+        color: #e5e7eb;
+        margin-bottom: 12px;
+      }
+      .product-empty p {
+        font-size: 1rem;
+        color: #9ca3af;
+      }
 
       /* Pagination */
-      .pagination-wrap { display: flex; justify-content: center; gap: 6px; margin-top: 32px; flex-wrap: wrap; }
-      .page-btn {
-        min-width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-        border-radius: 8px; border: 1.5px solid #e5e7eb; background: white;
-        color: #6b7280; font-size: 0.85rem; font-weight: 600; cursor: pointer;
-        transition: all 0.2s; text-decoration: none; padding: 0 10px;
+      .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 32px;
+        flex-wrap: wrap;
       }
-      .page-btn.active, .page-btn:hover { background: #0d6efd; color: white; border-color: #0d6efd; }
-      .page-btn.disabled { opacity: 0.4; pointer-events: none; }
+      .page-btn {
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1.5px solid #e5e7eb;
+        background: white;
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        padding: 0 10px;
+      }
+      .page-btn.active,
+      .page-btn:hover {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+      }
+      .page-btn.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
 
       /* ===== FOOTER ===== */
-      .main-footer { background: #1a1a2e; padding: 50px 0 0; color: rgba(255,255,255,0.6); }
-      .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
-      .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 40px; }
-      .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; text-decoration: none; }
-      .footer-brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #0d6efd, #0a58ca); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; }
-      .footer-brand-name { font-size: 1.2rem; font-weight: 700; color: white; }
-      .footer-brand-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
-      .footer-desc { font-size: 0.85rem; line-height: 1.7; margin-bottom: 18px; }
-      .footer-socials { display: flex; gap: 10px; }
-      .footer-social { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); transition: all 0.2s; text-decoration: none; font-size: 0.9rem; }
-      .footer-social:hover { background: #0d6efd; color: white; }
-      .footer-col-title { font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
-      .footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-      .footer-links li a { color: rgba(255,255,255,0.55); font-size: 0.85rem; text-decoration: none; transition: color 0.2s; display: flex; align-items: center; gap: 6px; }
-      .footer-links li a:hover { color: white; }
-      .footer-links li a i { font-size: 0.7rem; color: #ff6b00; }
-      .footer-contact-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; }
-      .footer-contact-item i { color: #ff6b00; margin-top: 3px; width: 16px; text-align: center; }
-      .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-      .footer-copyright { font-size: 0.82rem; }
-      .footer-payments { display: flex; gap: 10px; align-items: center; }
-      .footer-payment { width: 40px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 600; }
+      .main-footer {
+        background: #1a1a2e;
+        padding: 50px 0 0;
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .footer-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1fr;
+        gap: 40px;
+        padding-bottom: 40px;
+      }
+      .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        text-decoration: none;
+      }
+      .footer-brand-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+      }
+      .footer-brand-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+      }
+      .footer-brand-sub {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .footer-desc {
+        font-size: 0.85rem;
+        line-height: 1.7;
+        margin-bottom: 18px;
+      }
+      .footer-socials {
+        display: flex;
+        gap: 10px;
+      }
+      .footer-social {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.08);
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .footer-social:hover {
+        background: #0d6efd;
+        color: white;
+      }
+      .footer-col-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .footer-links li a {
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .footer-links li a:hover {
+        color: white;
+      }
+      .footer-links li a i {
+        font-size: 0.7rem;
+        color: #ff6b00;
+      }
+      .footer-contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+      }
+      .footer-contact-item i {
+        color: #ff6b00;
+        margin-top: 3px;
+        width: 16px;
+        text-align: center;
+      }
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .footer-copyright {
+        font-size: 0.82rem;
+      }
+      .footer-payments {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .footer-payment {
+        width: 40px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 600;
+      }
 
       /* ===== RESPONSIVE ===== */
       @media (max-width: 1024px) {
-        .products-grid { grid-template-columns: repeat(2, 1fr); }
-        .footer-grid { grid-template-columns: repeat(2, 1fr); }
+        .products-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .footer-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
       @media (max-width: 768px) {
-        .top-bar { display: none; }
-        .header-search { display: none; }
-        .nav-support { display: none; }
-        .products-layout { grid-template-columns: 1fr; }
-        .filter-sidebar { position: static; }
-        .products-grid { grid-template-columns: repeat(2, 1fr); }
-        .footer-grid { grid-template-columns: 1fr; gap: 28px; }
-        .footer-bottom { flex-direction: column; text-align: center; }
+        .top-bar {
+          display: none;
+        }
+        .header-search {
+          display: none;
+        }
+        .nav-support {
+          display: none;
+        }
+        .products-layout {
+          grid-template-columns: 1fr;
+        }
+        .filter-sidebar {
+          position: static;
+        }
+        .products-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .footer-grid {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+        .footer-bottom {
+          flex-direction: column;
+          text-align: center;
+        }
       }
       @media (max-width: 480px) {
-        .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .page-title-inner { flex-direction: column; align-items: flex-start; }
+        .products-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .page-title-inner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
     </style>
   </head>
@@ -295,14 +1059,22 @@
     <div class="top-bar">
       <div class="top-bar-inner">
         <div class="top-bar-left">
-          <a href="tel:18006601" class="top-bar-item"><i class="fas fa-phone"></i> 1800.6601</a>
+          <a href="tel:18006601" class="top-bar-item"
+            ><i class="fas fa-phone"></i> 1800.6601</a
+          >
           <span class="top-bar-divider">|</span>
-          <a href="mailto:hotro@techstore.com" class="top-bar-item"><i class="fas fa-envelope"></i> hotro@techstore.com</a>
+          <a href="mailto:hotro@techstore.com" class="top-bar-item"
+            ><i class="fas fa-envelope"></i> hotro@techstore.com</a
+          >
         </div>
         <div class="top-bar-right">
-          <span class="top-bar-item"><i class="fas fa-truck"></i> Miễn phí vận chuyển toàn quốc</span>
+          <span class="top-bar-item"
+            ><i class="fas fa-truck"></i> Miễn phí vận chuyển toàn quốc</span
+          >
           <span class="top-bar-divider">|</span>
-          <span class="top-bar-item"><i class="fas fa-shield-alt"></i> Bảo hành chính hãng</span>
+          <span class="top-bar-item"
+            ><i class="fas fa-shield-alt"></i> Bảo hành chính hãng</span
+          >
         </div>
       </div>
     </div>
@@ -319,26 +1091,68 @@
         </a>
         <div class="header-search">
           <form action="/Products/" method="GET" class="header-search-form">
-            <input type="text" name="search" class="header-search-input" placeholder="Tìm kiếm sản phẩm..." value="{{ search | default('') }}" />
-            <button type="submit" class="header-search-btn"><i class="fas fa-search"></i> Tìm kiếm</button>
+            <input
+              type="text"
+              name="search"
+              class="header-search-input"
+              placeholder="Tìm kiếm sản phẩm..."
+              value="{{ search | default('') }}"
+            />
+            <button type="submit" class="header-search-btn">
+              <i class="fas fa-search"></i> Tìm kiếm
+            </button>
           </form>
-              </div>
+        </div>
         <div class="header-actions">
           <a href="/Cart/" class="header-action">
             <div class="header-action-icon">
               <i class="fas fa-shopping-cart"></i>
-              <span class="header-action-badge">{{ cart_count | default(0) }}</span>
+              <span class="header-action-badge"
+                >{{ cart_count | default(0) }}</span
+              >
             </div>
             <div class="header-action-text">
               <span class="header-action-label">Giỏ hàng</span>
             </div>
           </a>
+          {% if current_user %}
+          <div class="header-user-menu">
+            <div class="header-action header-user-action">
+              <div class="header-action-icon">
+                <i class="fas fa-user-check" style="color: #16a34a"></i>
+              </div>
+              <div class="header-action-text">
+                <span class="header-action-label" style="color: #16a34a"
+                  >{{ current_user.full_name or current_user.username }}</span
+                >
+              </div>
+            </div>
+            <div class="header-user-dropdown">
+              <a href="/Auth/Profile" class="dropdown-item"
+                ><i class="fas fa-user"></i> Thong tin ca nhan</a
+              >
+              <a href="/Orders/" class="dropdown-item"
+                ><i class="fas fa-shopping-bag"></i> Don hang cua toi</a
+              >
+              {% if current_user.role_name == 'Admin' %}
+              <a href="/Admin/Dashboard" class="dropdown-item"
+                ><i class="fas fa-cog"></i> Quan ly Admin</a
+              >
+              {% endif %}
+              <div class="dropdown-divider"></div>
+              <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"
+                ><i class="fas fa-sign-out-alt"></i> Dang xuat</a
+              >
+            </div>
+          </div>
+          {% else %}
           <a href="/Auth/Login" class="header-action">
             <div class="header-action-icon"><i class="fas fa-user"></i></div>
             <div class="header-action-text">
               <span class="header-action-label">Đăng nhập</span>
             </div>
           </a>
+          {% endif %}
         </div>
       </div>
     </header>
@@ -346,16 +1160,28 @@
     <!-- ===== NAV BAR ===== -->
     <nav class="nav-bar">
       <div class="nav-bar-inner">
-        <button class="nav-categories-btn"><i class="fas fa-bars"></i> Danh mục</button>
+        <button class="nav-categories-btn">
+          <i class="fas fa-bars"></i> Danh mục
+        </button>
         <ul class="nav-links">
           <li><a href="/">Trang chủ</a></li>
           <li><a href="/Products/" class="active">Sản phẩm</a></li>
           <li><a href="/Cart/">Giỏ hàng</a></li>
           <li><a href="/Chat/">AI Tư vấn</a></li>
-          <li><a href="/Products/?sort=new" class="nav-new"><i class="fas fa-bolt"></i> Sản phẩm mới</a></li>
-          <li><a href="/Products/?sort=hot" class="nav-hot"><i class="fas fa-fire"></i> Hot</a></li>
+          <li>
+            <a href="/Products/?sort=new" class="nav-new"
+              ><i class="fas fa-bolt"></i> Sản phẩm mới</a
+            >
+          </li>
+          <li>
+            <a href="/Products/?sort=hot" class="nav-hot"
+              ><i class="fas fa-fire"></i> Hot</a
+            >
+          </li>
         </ul>
-        <div class="nav-support"><i class="fas fa-headset"></i> Hỗ trợ: 1800.6601</div>
+        <div class="nav-support">
+          <i class="fas fa-headset"></i> Hỗ trợ: 1800.6601
+        </div>
       </div>
     </nav>
 
@@ -364,7 +1190,9 @@
       <div class="page-title-inner">
         <div class="page-title-left">
           <h1>{{ page_title | default('Tất cả sản phẩm') }}</h1>
-          <p>Hien thi <span>{{ total_products | default(0) }}</span> san pham</p>
+          <p>
+            Hien thi <span>{{ total_products | default(0) }}</span> san pham
+          </p>
         </div>
         <div class="breadcrumb">
           <a href="/"><i class="fas fa-home"></i> Trang chủ</a>
@@ -381,15 +1209,21 @@
     <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content">
       <div class="products-page">
-
         <div class="products-layout">
-
           <!-- ===== SIDEBAR FILTERS ===== -->
           <aside class="filter-sidebar">
             <form method="GET" action="/Products/" id="filterForm">
               <div class="filter-header">
-                <div class="filter-title"><i class="fas fa-filter"></i> Bo loc</div>
-                <button type="button" class="filter-clear" onclick="clearFilters()">Xoa loc</button>
+                <div class="filter-title">
+                  <i class="fas fa-filter"></i> Bo loc
+                </div>
+                <button
+                  type="button"
+                  class="filter-clear"
+                  onclick="clearFilters()"
+                >
+                  Xoa loc
+                </button>
               </div>
 
               <!-- Search by name -->
@@ -397,17 +1231,30 @@
                 <div class="filter-section-title">Tim kiem</div>
                 <div class="filter-search">
                   <i class="fas fa-search filter-search-icon"></i>
-                  <input type="text" name="search" class="filter-search-input" placeholder="Ten san pham..." value="{{ search | default('') }}" />
+                  <input
+                    type="text"
+                    name="search"
+                    class="filter-search-input"
+                    placeholder="Ten san pham..."
+                    value="{{ search | default('') }}"
+                  />
                 </div>
-      </div>
+              </div>
 
               <!-- Category -->
               <div class="filter-section">
                 <div class="filter-section-title">Danh muc</div>
-                <select name="category_id" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                <select
+                  name="category_id"
+                  class="filter-select"
+                  onchange="document.getElementById('filterForm').submit()"
+                >
                   <option value="">Tat ca danh muc</option>
                   {% for cat in categories %}
-                  <option value="{{ cat.category_id }}" {% if category_id | string == cat.category_id | string %}selected{% endif %}>
+                  <option
+                    value="{{ cat.category_id }}"
+                    {% if category_id|string == cat.category_id|string %}selected{% endif %}
+                  >
                     {{ cat.name }}
                   </option>
                   {% endfor %}
@@ -418,9 +1265,21 @@
               <div class="filter-section">
                 <div class="filter-section-title">Khoang gia</div>
                 <div class="price-range">
-                  <input type="number" name="min_price" class="price-input" placeholder="Tu" value="{{ min_price | default('') }}" />
+                  <input
+                    type="number"
+                    name="min_price"
+                    class="price-input"
+                    placeholder="Tu"
+                    value="{{ min_price | default('') }}"
+                  />
                   <span class="price-sep">-</span>
-                  <input type="number" name="max_price" class="price-input" placeholder="Den" value="{{ max_price | default('') }}" />
+                  <input
+                    type="number"
+                    name="max_price"
+                    class="price-input"
+                    placeholder="Den"
+                    value="{{ max_price | default('') }}"
+                  />
                 </div>
               </div>
 
@@ -428,12 +1287,42 @@
               <div class="filter-section">
                 <div class="filter-section-title">Sap xep</div>
                 <select name="sort_by" class="filter-select">
-                  <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Ten A-Z</option>
-                  <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Ten Z-A</option>
-                  <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Gia thap-cao</option>
-                  <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Gia cao-thap</option>
-                  <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Moi nhat</option>
-                  <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Danh gia cao nhat</option>
+                  <option
+                    value="name"
+                    {% if sort_by == "name" %}selected{% endif %}
+                  >
+                    Ten A-Z
+                  </option>
+                  <option
+                    value="name_desc"
+                    {% if sort_by == "name_desc" %}selected{% endif %}
+                  >
+                    Ten Z-A
+                  </option>
+                  <option
+                    value="price"
+                    {% if sort_by == "price" %}selected{% endif %}
+                  >
+                    Gia thap-cao
+                  </option>
+                  <option
+                    value="price_desc"
+                    {% if sort_by == "price_desc" %}selected{% endif %}
+                  >
+                    Gia cao-thap
+                  </option>
+                  <option
+                    value="created_at"
+                    {% if sort_by == "created_at" %}selected{% endif %}
+                  >
+                    Moi nhat
+                  </option>
+                  <option
+                    value="rating"
+                    {% if sort_by == "rating" %}selected{% endif %}
+                  >
+                    Danh gia cao nhat
+                  </option>
                 </select>
               </div>
 
@@ -504,74 +1393,122 @@
             <!-- Toolbar -->
             <div class="products-toolbar">
               <div class="products-result-count">
-                Hien thi <span>{{ products | length if products else 0 }}</span> / {{ total_products | default(0) }} san pham
+                Hien thi
+                <span>{{ products | length if products else 0 }}</span> / {{
+                total_products | default(0) }} san pham
               </div>
               <div class="products-sort">
                 <span class="sort-label">Sap xep:</span>
                 <select class="sort-select" onchange="applySort(this.value)">
-                  <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Ten A-Z</option>
-                  <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Ten Z-A</option>
-                  <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Gia thap-cao</option>
-                  <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Gia cao-thap</option>
-                  <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Moi nhat</option>
-                  <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Danh gia</option>
+                  <option
+                    value="name"
+                    {% if sort_by == "name" %}selected{% endif %}
+                  >
+                    Tên A-Z
+                  </option>
+                  <option
+                    value="name_desc"
+                    {% if sort_by == "name_desc" %}selected{% endif %}
+                  >
+                    Tên Z-A
+                  </option>
+                  <option
+                    value="price"
+                    {% if sort_by == "price" %}selected{% endif %}
+                  >
+                    Giá thấp-cao
+                  </option>
+                  <option
+                    value="price_desc"
+                    {% if sort_by == "price_desc" %}selected{% endif %}
+                  >
+                    Giá cao-thấp
+                  </option>
+                  <option
+                    value="created_at"
+                    {% if sort_by == "created_at" %}selected{% endif %}
+                  >
+                    Mới nhất
+                  </option>
+                  <option
+                    value="rating"
+                    {% if sort_by == "rating" %}selected{% endif %}
+                  >
+                    Đánh giá
+                  </option>
                 </select>
               </div>
             </div>
 
             <!-- Grid -->
             <div class="products-grid">
-              {% if products %}
-                {% for product in products %}
-                <div class="product-card">
-                  <div class="product-img-wrap">
-                    {% if product.is_new %}
-                    <span class="product-badge badge-new">Moi</span>
-                    {% elif product.is_hot %}
-                    <span class="product-badge badge-hot">Hot</span>
-                    {% endif %}
-                    {% if product.discount_percent > 0 %}
-                    <span class="product-discount">-{{ product.discount_percent }}%</span>
-                    {% endif %}
-                    <img
-                      src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
-                      alt="{{ product.name }}"
-                      onerror="this.src='/static/images/no-image.png'"
-                    />
+              {% if products %} {% for product in products %}
+              <div class="product-card">
+                <a
+                  href="/Products/{{ product.product_id }}"
+                  class="product-img-wrap"
+                >
+                  {% if product.is_new %}
+                  <span class="product-badge badge-new">Moi</span>
+                  {% elif product.is_hot %}
+                  <span class="product-badge badge-hot">Hot</span>
+                  {% endif %} {% if product.discount_percent > 0 %}
+                  <span class="product-discount"
+                    >-{{ product.discount_percent }}%</span
+                  >
+                  {% endif %}
+                  <img
+                    src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
+                    alt="{{ product.name }}"
+                    onerror="this.src = '/static/images/no-image.png'"
+                  />
+                </a>
+                <div class="product-info">
+                  <a
+                    href="/Products/{{ product.product_id }}"
+                    class="product-name"
+                  >
+                    {{ product.name }}
+                  </a>
+                  <div class="product-rating">
+                    <span class="product-stars">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star-half-alt"></i>
+                    </span>
+                    <span class="product-reviews"
+                      >{{ product.rating | default(4.5) }}</span
+                    >
                   </div>
-                  <div class="product-info">
-                    <a href="/Products/{{ product.product_id }}" class="product-name">
-                      {{ product.name }}
-                    </a>
-                    <div class="product-rating">
-                      <span class="product-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                      </span>
-                      <span class="product-reviews">{{ product.rating | default(4.5) }}</span>
-                    </div>
-                    <div class="product-price-wrap">
-                      <span class="product-price">{{ "{:,.0f}".format(product.price | float) }} đ</span>
-                      {% if product.original_price and product.original_price > product.price %}
-                      <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
-                      {% endif %}
-                    </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST">
-                      <button type="submit" class="product-add-btn">
-                        <i class="fas fa-cart-plus"></i> Them vao gio hang
-                </button>
-              </form>
+                  <div class="product-price-wrap">
+                    <span class="product-price"
+                      >{{ "{:,.0f}".format(product.price | float) }} đ</span
+                    >
+                    {% if product.original_price and product.original_price >
+                    product.price %}
+                    <span class="product-price-original"
+                      >{{ "{:,.0f}".format(product.original_price | float) }}
+                      đ</span
+                    >
+                    {% endif %}
                   </div>
+                  <form
+                    action="/Products/{{ product.product_id }}/add-to-cart"
+                    method="POST"
+                  >
+                    <button type="submit" class="product-add-btn">
+                      <i class="fas fa-cart-plus"></i> Them vao gio hang
+                    </button>
+                  </form>
                 </div>
-                {% endfor %}
-              {% else %}
-                <div class="product-empty">
-                  <i class="fas fa-search"></i>
-                  <p>Khong tim thay san pham nao phu hop.</p>
-                </div>
+              </div>
+              {% endfor %} {% else %}
+              <div class="product-empty">
+                <i class="fas fa-search"></i>
+                <p>Khong tim thay san pham nao phu hop.</p>
+              </div>
               {% endif %}
             </div>
 
@@ -579,15 +1516,23 @@
             {% if total_pages and total_pages > 1 %}
             <div class="pagination-wrap">
               {% if page > 1 %}
-              <a href="?page={{ page - 1 }}&sort_by={{ sort_by | default('name') }}&category_id={{ category_id | default('') }}&search={{ search | default('') }}" class="page-btn">
+              <a
+                href="?page={{ page - 1 }}&sort_by={{ sort_by | default('name') }}&category_id={{ category_id | default('') }}&search={{ search | default('') }}"
+                class="page-btn"
+              >
                 <i class="fas fa-chevron-left"></i>
               </a>
-              {% endif %}
-              {% for p in range(1, total_pages + 1) %}
-              <a href="?page={{ p }}&sort_by={{ sort_by | default('name') }}&category_id={{ category_id | default('') }}&search={{ search | default('') }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
-              {% endfor %}
-              {% if page < total_pages %}
-              <a href="?page={{ page + 1 }}&sort_by={{ sort_by | default('name') }}&category_id={{ category_id | default('') }}&search={{ search | default('') }}" class="page-btn">
+              {% endif %} {% for p in range(1, total_pages + 1) %}
+              <a
+                href="?page={{ p }}&sort_by={{ sort_by | default('name') }}&category_id={{ category_id | default('') }}&search={{ search | default('') }}"
+                class="page-btn {% if p == page %}active{% endif %}"
+                >{{ p }}</a
+              >
+              {% endfor %} {% if page < total_pages %}
+              <a
+                href="?page={{ page + 1 }}&sort_by={{ sort_by | default('name') }}&category_id={{ category_id | default('') }}&search={{ search | default('') }}"
+                class="page-btn"
+              >
                 <i class="fas fa-chevron-right"></i>
               </a>
               {% endif %}
@@ -610,67 +1555,153 @@
                 <div class="footer-brand-sub">Công nghệ thông minh</div>
               </div>
             </a>
-            <p class="footer-desc">Cua hang cong nghe hang dau Viet Nam voi tro ly AI thong minh, giup ban tim kiem va chon lua san pham cong nghe phu hop nhat.</p>
+            <p class="footer-desc">
+              Cua hang cong nghe hang dau Viet Nam voi tro ly AI thong minh,
+              giup ban tim kiem va chon lua san pham cong nghe phu hop nhat.
+            </p>
             <div class="footer-socials">
-              <a href="#" class="footer-social"><i class="fab fa-facebook-f"></i></a>
-              <a href="#" class="footer-social"><i class="fab fa-youtube"></i></a>
-              <a href="#" class="footer-social"><i class="fab fa-instagram"></i></a>
-              <a href="#" class="footer-social"><i class="fab fa-tiktok"></i></a>
+              <a href="#" class="footer-social"
+                ><i class="fab fa-facebook-f"></i
+              ></a>
+              <a href="#" class="footer-social"
+                ><i class="fab fa-youtube"></i
+              ></a>
+              <a href="#" class="footer-social"
+                ><i class="fab fa-instagram"></i
+              ></a>
+              <a href="#" class="footer-social"
+                ><i class="fab fa-tiktok"></i
+              ></a>
             </div>
           </div>
           <div>
             <h4 class="footer-col-title">Mua hang</h4>
             <ul class="footer-links">
-              <li><a href="/Products/"><i class="fas fa-chevron-right"></i> San pham</a></li>
-              <li><a href="/Products/?sort=new"><i class="fas fa-chevron-right"></i> San pham moi</a></li>
-              <li><a href="/Products/?sort=hot"><i class="fas fa-chevron-right"></i> San pham hot</a></li>
-              <li><a href="/Products/?category_id=1"><i class="fas fa-chevron-right"></i> Dien thoai</a></li>
-              <li><a href="/Products/?category_id=2"><i class="fas fa-chevron-right"></i> Laptop</a></li>
+              <li>
+                <a href="/Products/"
+                  ><i class="fas fa-chevron-right"></i> San pham</a
+                >
+              </li>
+              <li>
+                <a href="/Products/?sort=new"
+                  ><i class="fas fa-chevron-right"></i> San pham moi</a
+                >
+              </li>
+              <li>
+                <a href="/Products/?sort=hot"
+                  ><i class="fas fa-chevron-right"></i> San pham hot</a
+                >
+              </li>
+              <li>
+                <a href="/Products/?category_id=1"
+                  ><i class="fas fa-chevron-right"></i> Dien thoai</a
+                >
+              </li>
+              <li>
+                <a href="/Products/?category_id=2"
+                  ><i class="fas fa-chevron-right"></i> Laptop</a
+                >
+              </li>
             </ul>
           </div>
           <div>
             <h4 class="footer-col-title">Ho tro</h4>
             <ul class="footer-links">
-              <li><a href="#"><i class="fas fa-chevron-right"></i> Trung tam tro giup</a></li>
-              <li><a href="#"><i class="fas fa-chevron-right"></i> Huong dan mua hang</a></li>
-              <li><a href="#"><i class="fas fa-chevron-right"></i> Chinh sach doi tra</a></li>
-              <li><a href="#"><i class="fas fa-chevron-right"></i> Chinh sach bao hanh</a></li>
-              <li><a href="#"><i class="fas fa-chevron-right"></i> Lien he</a></li>
+              <li>
+                <a href="#"
+                  ><i class="fas fa-chevron-right"></i> Trung tam tro giup</a
+                >
+              </li>
+              <li>
+                <a href="#"
+                  ><i class="fas fa-chevron-right"></i> Huong dan mua hang</a
+                >
+              </li>
+              <li>
+                <a href="#"
+                  ><i class="fas fa-chevron-right"></i> Chinh sach doi tra</a
+                >
+              </li>
+              <li>
+                <a href="#"
+                  ><i class="fas fa-chevron-right"></i> Chinh sach bao hanh</a
+                >
+              </li>
+              <li>
+                <a href="#"><i class="fas fa-chevron-right"></i> Lien he</a>
+              </li>
             </ul>
           </div>
           <div>
             <h4 class="footer-col-title">Lien he</h4>
-            <div class="footer-contact-item"><i class="fas fa-map-marker-alt"></i><span>Tang 5, Toa nha ABC Tower,<br />123 Nguyen Hue, Q.1, TP.HCM</span></div>
-            <div class="footer-contact-item"><i class="fas fa-phone"></i><span>1800.6601</span></div>
-            <div class="footer-contact-item"><i class="fas fa-envelope"></i><span>hotro@techstore.com</span></div>
-            <div class="footer-contact-item"><i class="fas fa-clock"></i><span>Thu 2 - CN: 8:00 - 22:00</span></div>
+            <div class="footer-contact-item">
+              <i class="fas fa-map-marker-alt"></i
+              ><span
+                >Tang 5, Toa nha ABC Tower,<br />123 Nguyen Hue, Q.1,
+                TP.HCM</span
+              >
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-phone"></i><span>1800.6601</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-envelope"></i><span>hotro@techstore.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-clock"></i><span>Thu 2 - CN: 8:00 - 22:00</span>
+            </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <div class="footer-copyright">&copy; 2026 Tech Store AI. Tat ca quyen duoc bao luu.</div>
+          <div class="footer-copyright">
+            &copy; 2026 Tech Store AI. Tat ca quyen duoc bao luu.
+          </div>
           <div class="footer-payments">
             <div class="footer-payment">VISA</div>
             <div class="footer-payment">MC</div>
             <div class="footer-payment">JCB</div>
             <div class="footer-payment">COD</div>
           </div>
-  </div>
-</div>
+        </div>
+      </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/main.js"></script>
+    <script src="/static/js/main.js?v=3"></script>
     <script>
       function applySort(value) {
         var url = new URL(window.location.href);
-        url.searchParams.set('sort_by', value);
-        url.searchParams.delete('page');
+        url.searchParams.set("sort_by", value);
+        url.searchParams.delete("page");
         window.location.href = url.toString();
       }
 
       function clearFilters() {
-        window.location.href = '/Products/';
+        window.location.href = "/Products/";
       }
+    </script>
+    <script>
+      (function () {
+        var menu = document.querySelector(".header-user-menu");
+        var dropdown = document.querySelector(".header-user-dropdown");
+        if (!menu || !dropdown) return;
+
+        var isOpen = false;
+        var action = menu.querySelector(".header-user-action");
+        if (action) {
+          action.addEventListener("click", function (e) {
+            e.preventDefault();
+            isOpen = !isOpen;
+            dropdown.style.display = isOpen ? "block" : "none";
+          });
+        }
+        document.addEventListener("click", function (e) {
+          if (!menu.contains(e.target)) {
+            isOpen = false;
+            dropdown.style.display = "none";
+          }
+        });
+      })();
     </script>
   </body>
 </html>

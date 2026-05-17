@@ -3,7 +3,7 @@ Auth Service - Xac thuc nguoi dung
 Tuong duong Services/AuthService.cs trong ASP.NET Core
 """
 from sqlalchemy.orm import Session, joinedload
-from passlib.context import CryptContext
+import bcrypt
 from typing import Optional
 from datetime import datetime, timedelta
 from jose import jwt
@@ -14,9 +14,6 @@ import uuid
 SECRET_KEY = "your-super-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def _safe_password(password: str) -> str:
     """Cat password thanh 72 bytes de tranh loi bcrypt"""
@@ -33,16 +30,24 @@ class AuthService:
     def hash_password(self, password: str) -> str:
         """Ma hoa password"""
         safe = _safe_password(password)
-        return pwd_context.hash(safe)
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(safe.encode("utf-8"), salt)
+        return hashed.decode("utf-8")
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Xac minh password"""
         if not hashed_password:
             return False
-        try:
-            return pwd_context.verify(plain_password, hashed_password)
-        except Exception:
+            
+        # Fallback cho data seed
+        if not hashed_password.startswith("$2"):
             return plain_password == hashed_password
+            
+        try:
+            safe = _safe_password(plain_password)
+            return bcrypt.checkpw(safe.encode("utf-8"), hashed_password.encode("utf-8"))
+        except Exception:
+            return False
 
     def create_access_token(self, account_id: int, username: str, role: str) -> str:
         """Tao JWT token"""

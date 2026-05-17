@@ -3,7 +3,8 @@ Orders Controller - Quan ly don hang
 Tuong duong Controllers/OrdersController.cs trong C#
 """
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
+from fastapi import APIRouter, Request, Depends, HTTPException, Query, Form
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,35 @@ from Services.OrderService import OrderService
 from Utilities.auth import require_account
 
 router = APIRouter(prefix="/Orders")
+
+# Templates se duoc gan tu app.py
+templates = None
+
+def set_templates(t):
+    global templates
+    templates = t
+
+
+@router.get("/", response_class=HTMLResponse)
+async def index(request: Request, db: Session = Depends(get_db)):
+    """Trang danh sach don hang cua nguoi dung"""
+    try:
+        account = require_account(request, db)
+    except HTTPException:
+        return RedirectResponse(url="/Auth/Login", status_code=303)
+
+    service = OrderService(db)
+    orders = service.get_orders(account_id=account.account_id)
+    
+    return templates.TemplateResponse(
+        "Orders/index.html",
+        {
+            "request": request,
+            "page_title": "Don hang cua toi",
+            "orders": orders,
+            "current_user": account
+        }
+    )
 
 
 

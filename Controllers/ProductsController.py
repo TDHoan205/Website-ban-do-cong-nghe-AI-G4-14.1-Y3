@@ -3,15 +3,16 @@ Products Controller - Quan ly san pham
 Tuong duong Controllers/ProductsController.cs trong ASP.NET Core
 """
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+from fastapi import APIRouter, Request, Depends, Form, HTTPException, Query
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from Data.database import get_db
 from Services.ProductService import ProductService
 from Services.CartService import CartService
 from Services.AuthService import AuthService
 from Utilities.auth import require_account
+from Utilities.http import is_ajax_request, safe_redirect_url
 
 router = APIRouter(prefix="/Products")
 
@@ -26,6 +27,14 @@ def _get_cart_count(request: Request, db: Session) -> int:
         return 0
     cart_service = CartService(db)
     return cart_service.get_cart_item_count(account.account_id)
+
+
+def _get_current_user(request: Request, db: Session):
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+    auth_service = AuthService(db)
+    return auth_service.get_current_account_from_token(token)
 
 
 class ProductCreate(BaseModel):
@@ -106,6 +115,7 @@ async def index(
             category_name = cat.name
 
     cart_count = _get_cart_count(request, db)
+    current_user = _get_current_user(request, db)
 
     return templates.TemplateResponse(
         "Products/index.html",
@@ -126,6 +136,7 @@ async def index(
             "min_price": min_price,
             "max_price": max_price,
             "cart_count": cart_count,
+            "current_user": current_user,
         }
     )
 
@@ -142,6 +153,8 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
         product_id, product.category_id if product.category_id else 0
     )
 
+    current_user = _get_current_user(request, db)
+
     return templates.TemplateResponse(
         "Products/detail.html",
         {
@@ -149,6 +162,7 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
             "page_title": product.name,
             "product": product,
             "related_products": related,
+            "current_user": current_user,
         }
     )
 
@@ -157,13 +171,28 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
 async def add_to_cart(
     request: Request,
     product_id: int,
-    quantity: int = Query(1, ge=1),
+    quantity: int = Form(1, ge=1),
     db: Session = Depends(get_db)
 ):
-    account = require_account(request, db)
+    try:
+        account = require_account(request, db)
+    except HTTPException:
+        if is_ajax_request(request):
+            return JSONResponse(
+                {"success": False, "message": "Vui long dang nhap de them san pham vao gio hang.", "login_url": "/Auth/Login"},
+                status_code=401,
+            )
+        return RedirectResponse(url="/Auth/Login", status_code=303)
+
     cart_service = CartService(db)
     cart_service.add_item(account.account_id, product_id, quantity)
-    return RedirectResponse(url="/Cart/", status_code=303)
+    cart_count = cart_service.get_cart_item_count(account.account_id)
+
+    if is_ajax_request(request):
+        return {"success": True, "message": "Da them san pham vao gio hang.", "cart_count": cart_count}
+
+    referer = request.headers.get("referer")
+    return RedirectResponse(url=referer or f"/Products/{product_id}", status_code=303)
 
 
 @router.get("/Admin")

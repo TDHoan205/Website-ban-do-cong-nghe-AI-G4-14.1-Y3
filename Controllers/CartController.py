@@ -3,12 +3,13 @@ Cart Controller - Giỏ hàng
 Tuong duong Controllers/CartController.cs trong ASP.NET Core
 """
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, Query
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from Data.database import get_db
 from Services.CartService import CartService
 from Services.AuthService import AuthService
 from Utilities.auth import require_account
+from Utilities.http import is_ajax_request, safe_redirect_url
 
 router = APIRouter(prefix="/Cart")
 
@@ -25,6 +26,14 @@ def _get_cart_count(request: Request, db: Session) -> int:
     return cart_service.get_cart_item_count(account.account_id)
 
 
+def _get_current_user(request: Request, db: Session):
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+    auth_service = AuthService(db)
+    return auth_service.get_current_account_from_token(token)
+
+
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request, db: Session = Depends(get_db)):
     """Trang giỏ hàng"""
@@ -38,6 +47,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
     items = cart_service.get_cart_items(cart.cart_id)
     total = cart_service.get_cart_total(account.account_id)
     cart_count = _get_cart_count(request, db)
+    current_user = _get_current_user(request, db)
 
     return templates.TemplateResponse(
         "Cart/index.html",
@@ -48,8 +58,15 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "cart_total": total,
             "cart": cart,
             "cart_count": cart_count,
+            "current_user": current_user,
         }
     )
+
+
+@router.get("/Count")
+async def count(request: Request, db: Session = Depends(get_db)):
+    """Lay so luong san pham trong gio hang"""
+    return {"count": _get_cart_count(request, db)}
 
 
 @router.post("/add")
@@ -63,12 +80,22 @@ async def add(
     try:
         account = require_account(request, db)
     except HTTPException:
+        if is_ajax_request(request):
+            return JSONResponse(
+                {"success": False, "message": "Vui long dang nhap de them san pham vao gio hang.", "login_url": "/Auth/Login"},
+                status_code=401,
+            )
         return RedirectResponse(url="/Auth/Login", status_code=303)
 
     cart_service = CartService(db)
     cart_service.add_item(account.account_id, product_id, quantity)
+    cart_count = cart_service.get_cart_item_count(account.account_id)
 
-    return RedirectResponse(url="/Cart/", status_code=303)
+    if is_ajax_request(request):
+        return {"success": True, "message": "Da them san pham vao gio hang.", "cart_count": cart_count}
+
+    referer = request.headers.get("referer")
+    return RedirectResponse(url=referer or "/Cart/", status_code=303)
 
 
 @router.post("/update/{item_id}")

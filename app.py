@@ -106,6 +106,7 @@ CartController.set_templates(templates)
 AuthController.set_templates(templates)
 ChatController.set_templates(templates)
 AdminController.set_templates(templates)
+OrdersController.set_templates(templates)
 
 # =====================================================================
 # Include Routers

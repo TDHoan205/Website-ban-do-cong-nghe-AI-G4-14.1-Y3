@@ -1,7 +1,7 @@
 """
 Admin Controller - Trang quan tri he thong (Full CRUD)
 """
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
@@ -14,6 +14,9 @@ from Models.Supplier import Supplier
 from Models.Order import Order, OrderItem
 from Models.Order import OrderStatus
 import json
+import os
+import shutil
+import uuid
 
 router = APIRouter(prefix="/Admin")
 
@@ -496,6 +499,45 @@ async def api_get_category(request: Request, category_id: int, db: Session = Dep
             "display_order": cat.display_order or 0,
             "is_active": cat.is_active,
         }
+    })
+
+
+# =====================================================================
+# API: UPLOAD
+# =====================================================================
+
+@router.post("/API/Upload")
+async def api_upload_image(
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload hình ảnh lên server"""
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        return JSONResponse({"success": False, "error": "Chỉ chấp nhận file hình ảnh"}, status_code=400)
+
+    # Create directory if not exists
+    upload_dir = os.path.join("wwwroot", "uploads", "products")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # Generate unique filename
+    ext = os.path.splitext(file.filename)[1]
+    filename = f"{uuid.uuid4()}{ext}"
+    filepath = os.path.join(upload_dir, filename)
+
+    # Save file
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return JSONResponse({
+        "success": True,
+        "image_url": f"/static/uploads/products/{filename}"
     })
 
 

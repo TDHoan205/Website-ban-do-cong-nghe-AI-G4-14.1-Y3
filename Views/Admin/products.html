@@ -263,23 +263,34 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
         <textarea id="f-description" class="form-control" rows="3" placeholder="Mô tả chi tiết sản phẩm..."></textarea>
       </div>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">URL Hình ảnh</label>
-          <input type="url" id="f-image" class="form-control" placeholder="https://example.com/image.jpg"/>
+      <div class="form-group">
+        <label class="form-label">Hình ảnh sản phẩm</label>
+        <div class="d-flex gap-2 mb-2">
+          <input type="text" id="f-image" class="form-control" placeholder="Dán link ảnh hoặc chọn file..."/>
+          <input type="file" id="f-image-file" class="d-none" accept="image/*" onchange="uploadImage(this)"/>
+          <button type="button" class="page-btn" onclick="document.getElementById('f-image-file').click()" style="white-space:nowrap;">
+            <i class="fas fa-upload"></i> Chọn file
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Số lượng tồn kho</label>
-          <input type="number" id="f-stock" class="form-control" placeholder="100" min="0" value="0"/>
+        <div id="image-preview-wrap" style="display:none;margin-top:8px;text-align:center;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;">
+          <img id="image-preview" src="" style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #334155;"/>
         </div>
       </div>
 
       <div class="form-grid">
         <div class="form-group">
+          <label class="form-label">Số lượng tồn kho</label>
+          <input type="number" id="f-stock" class="form-control" placeholder="100" min="0" value="0"/>
+        </div>
+        <div class="form-group">
           <label class="form-label">Giảm giá (%)</label>
           <input type="number" id="f-discount" class="form-control" placeholder="0" min="0" max="100" value="0"/>
         </div>
-        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;gap:8px;">
+      </div>
+
+      <div class="form-group" style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;border:1px solid #334155;">
+        <label class="form-label">Tùy chọn hiển thị</label>
+        <div class="d-flex gap-4 flex-wrap">
           <div class="form-check">
             <input type="checkbox" id="f-available" checked/>
             <label for="f-available">Còn hàng</label>
@@ -306,6 +317,54 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API = '/Admin/API/Products';
+const UPLOAD_API = '/Admin/API/Upload';
+
+async function uploadImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const fd = new FormData();
+  fd.append('file', file);
+
+  const btn = input.nextElementSibling;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(UPLOAD_API, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('f-image').value = d.image_url;
+      updateImagePreview(d.image_url);
+    } else {
+      alert('Lỗi upload: ' + d.error);
+    }
+  } catch(e) {
+    alert('Lỗi kết nối khi upload!');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+
+function updateImagePreview(url) {
+  const wrap = document.getElementById('image-preview-wrap');
+  const img = document.getElementById('image-preview');
+  if (url) {
+    img.src = url;
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+// Thêm sự kiện để cập nhật preview khi dán link thủ công
+document.addEventListener('DOMContentLoaded', () => {
+  const imgInput = document.getElementById('f-image');
+  if (imgInput) {
+    imgInput.addEventListener('input', (e) => updateImagePreview(e.target.value));
+  }
+});
 
 function filterTable() {
   const q = document.getElementById('search-product').value.toLowerCase();
@@ -323,6 +382,7 @@ function openCreate() {
   document.getElementById('f-supplier').value = '';
   document.getElementById('f-description').value = '';
   document.getElementById('f-image').value = '';
+  updateImagePreview('');
   document.getElementById('f-stock').value = '0';
   document.getElementById('f-discount').value = '0';
   document.getElementById('f-available').checked = true;
@@ -347,6 +407,7 @@ async function openEdit(id) {
     document.getElementById('f-supplier').value = p.supplier_id || '';
     document.getElementById('f-description').value = p.description || '';
     document.getElementById('f-image').value = p.image_url || '';
+    updateImagePreview(p.image_url);
     document.getElementById('f-stock').value = p.stock_quantity || 0;
     document.getElementById('f-discount').value = p.discount_percent || 0;
     document.getElementById('f-available').checked = p.is_available;
