@@ -1020,19 +1020,19 @@
             </div>
             <div class="header-user-dropdown">
               <a href="/Auth/Profile" class="dropdown-item"
-                ><i class="fas fa-user"></i> Thong tin ca nhan</a
+                ><i class="fas fa-user"></i> Thông tin cá nhân</a
               >
               <a href="/Orders/" class="dropdown-item"
-                ><i class="fas fa-shopping-bag"></i> Don hang cua toi</a
+                ><i class="fas fa-shopping-bag"></i> Đơn hàng của tôi</a
               >
-              {% if current_user.role_name == 'Admin' %}
+              {% if current_user.role and current_user.role.role_name == 'Admin' %}
               <a href="/Admin/Dashboard" class="dropdown-item"
-                ><i class="fas fa-cog"></i> Quan ly Admin</a
+                ><i class="fas fa-cog"></i> Quản lý Admin</a
               >
               {% endif %}
               <div class="dropdown-divider"></div>
               <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"
-                ><i class="fas fa-sign-out-alt"></i> Dang xuat</a
+                ><i class="fas fa-sign-out-alt"></i> Đăng xuất</a
               >
             </div>
           </div>
@@ -1051,9 +1051,6 @@
     <!-- ===== NAV BAR ===== -->
     <nav class="nav-bar">
       <div class="nav-bar-inner">
-        <button class="nav-categories-btn">
-          <i class="fas fa-bars"></i> Danh mục
-        </button>
         <ul class="nav-links">
           <li><a href="/">Trang chủ</a></li>
           <li><a href="/Products/">Sản phẩm</a></li>
@@ -1126,7 +1123,7 @@
                     type="checkbox"
                     class="item-checkbox"
                     value="{{ item.cart_item_id }}"
-                    data-subtotal="{{ item.subtotal | float }}"
+                    data-item-total="{{ item.subtotal | int }}"
                     data-quantity="{{ item.quantity }}"
                   />
                 </div>
@@ -1134,7 +1131,7 @@
                 <div class="cart-item-img">
                   <img
                     src="{{ item.product.image_url if item.product and item.product.image_url else '/static/images/no-image.png' }}"
-                    alt="{{ item.product.name if item.product else 'San pham' }}"
+                    alt="{{ item.product.name if item.product else 'Sản phẩm' }}"
                     onerror="this.src = '/static/images/no-image.png'"
                   />
                 </div>
@@ -1144,7 +1141,7 @@
                     href="/Products/{{ item.product_id }}"
                     class="cart-item-name"
                   >
-                    {{ item.product.name if item.product else 'San pham' }}
+                    {{ item.product.name if item.product else 'Sản phẩm' }}
                   </a>
                   {% if item.variant %}
                   <p class="cart-item-desc">
@@ -1160,21 +1157,19 @@
                 </div>
 
                 <div class="cart-item-qty">
-                  <a
-                    href="/Cart/update/{{ item.cart_item_id }}?qty={{ item.quantity - 1 }}"
+                  <button
+                    type="button"
                     class="qty-btn"
-                    onclick="updateQty(event, {{ item.cart_item_id }}, {{ item.quantity - 1 }})"
-                    >-</a
-                  >
+                    onclick="updateQty({{ item.cart_item_id }}, {{ item.quantity - 1 }})"
+                  >-</button>
                   <span class="qty-value" id="qty-{{ item.cart_item_id }}"
                     >{{ item.quantity }}</span
                   >
-                  <a
-                    href="/Cart/update/{{ item.cart_item_id }}?qty={{ item.quantity + 1 }}"
+                  <button
+                    type="button"
                     class="qty-btn"
-                    onclick="updateQty(event, {{ item.cart_item_id }}, {{ item.quantity + 1 }})"
-                    >+</a
-                  >
+                    onclick="updateQty({{ item.cart_item_id }}, {{ item.quantity + 1 }})"
+                  >+</button>
                 </div>
 
                 <div class="cart-item-total">
@@ -1184,7 +1179,7 @@
                   <button
                     class="cart-item-delete-btn"
                     onclick="removeItem({{ item.cart_item_id }})"
-                    title="Xoa san pham"
+                    title="Xóa sản phẩm"
                   >
                     <i class="fas fa-trash-alt"></i>
                   </button>
@@ -1221,7 +1216,7 @@
 
             <div class="summary-row">
               <span class="summary-row-label">Tạm tính</span>
-              <span class="summary-row-value" id="summarySubTotal">0 đ</span>
+              <span class="summary-row-value" id="summarySubTotal">{{ "{:,.0f}".format(cart_total | default(0) | int) }} đ</span>
             </div>
             <div class="summary-row">
               <span class="summary-row-label">Giảm giá</span>
@@ -1241,7 +1236,7 @@
             <div class="summary-total-row">
               <span class="summary-total-label">Tổng cộng</span>
               <span class="summary-total-value" id="summaryGrandTotal"
-                >0 đ</span
+                >{{ "{:,.0f}".format(cart_total | default(0) | int) }} đ</span
               >
             </div>
 
@@ -1293,8 +1288,8 @@
               </div>
             </a>
             <p class="footer-desc">
-              Cua hang cong nghe hang dau Viet Nam voi tro ly AI thong minh,
-              giup ban tim kiem va chon lua san pham cong nghe phu hop nhat.
+              Cửa hàng công nghệ hàng đầu Việt Nam với trợ lý AI thông minh,
+              giúp bạn tìm kiếm và chọn lựa sản phẩm công nghệ phù hợp nhất.
             </p>
             <div class="footer-socials">
               <a href="#" class="footer-social"
@@ -1391,7 +1386,7 @@
         </div>
         <div class="footer-bottom">
           <div class="footer-copyright">
-            &copy; 2026 Tech Store AI. Tat ca quyen duoc bao luu.
+            &copy; 2026 Tech Store AI. Tất cả quyền được bảo lưu.
           </div>
           <div class="footer-payments">
             <div class="footer-payment">VISA</div>
@@ -1425,6 +1420,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/main.js?v=3"></script>
     <script>
+      function formatCurrency(amount) {
+        if (amount === null || amount === undefined || isNaN(amount)) amount = 0;
+        return amount.toLocaleString("vi-VN", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }) + " đ";
+      }
+
       function toggleAll(checkbox) {
         document.querySelectorAll(".item-checkbox").forEach((cb) => {
           cb.checked = checkbox.checked;
@@ -1433,7 +1436,7 @@
       }
 
       function removeItem(itemId) {
-        if (confirm("Ban co muon xoa san pham nay?")) {
+        if (confirm("Bạn có muốn xóa sản phẩm này?")) {
           document.getElementById("removeItemId").value = itemId;
           document.getElementById("removeForm").action =
             "/Cart/remove/" + itemId;
@@ -1441,13 +1444,22 @@
         }
       }
 
-      function updateQty(event, itemId, qty) {
+      function updateQty(itemId, qty) {
         if (qty < 1) {
-          event.preventDefault();
-          removeItem(itemId);
+          if (confirm("Bạn có muốn xóa sản phẩm này?")) {
+            fetch("/Cart/remove/" + itemId, { method: "POST" }).then(() => {
+              location.reload();
+            });
+          }
           return;
         }
-        // Let the link proceed normally
+        fetch("/Cart/update/" + itemId, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "quantity=" + qty,
+        }).then(() => {
+          location.reload();
+        });
       }
 
       function deleteSelected() {
@@ -1475,10 +1487,11 @@
         let selectedTotal = 0;
 
         checked.forEach((cb) => {
-          const subtotal = parseFloat(cb.dataset.subtotal || "0");
-          const quantity = parseInt(cb.dataset.quantity || "0", 10);
-          selectedTotal += subtotal;
-          selectedQty += quantity;
+          const qty = parseInt(cb.dataset.quantity || "0", 10);
+          const priceText = cb.dataset.itemTotal || "0";
+          const price = parseFloat(priceText.replace(/[.,\s]/g, "")) || 0;
+          selectedTotal += price;  // item-total is already subtotal = price * qty
+          selectedQty += qty;
         });
 
         const countEl = document.getElementById("summarySelectedCount");
@@ -1504,6 +1517,7 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".item-checkbox").forEach((cb) => {
+          cb.checked = true;
           cb.addEventListener("change", updateSummaryFromSelection);
         });
         updateSummaryFromSelection();

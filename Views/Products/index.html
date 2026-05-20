@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ page_title | default('San pham') }} - Tech Store AI</title>
+    <title>{{ page_title | default('Sản phẩm') }} - Tech Store AI</title>
 
     <!-- Bootstrap 5 -->
     <link
@@ -1129,19 +1129,19 @@
             </div>
             <div class="header-user-dropdown">
               <a href="/Auth/Profile" class="dropdown-item"
-                ><i class="fas fa-user"></i> Thong tin ca nhan</a
+                ><i class="fas fa-user"></i> Thông tin cá nhân</a
               >
               <a href="/Orders/" class="dropdown-item"
-                ><i class="fas fa-shopping-bag"></i> Don hang cua toi</a
+                ><i class="fas fa-shopping-bag"></i> Đơn hàng của tôi</a
               >
-              {% if current_user.role_name == 'Admin' %}
+              {% if current_user.role and current_user.role.role_name == 'Admin' %}
               <a href="/Admin/Dashboard" class="dropdown-item"
-                ><i class="fas fa-cog"></i> Quan ly Admin</a
+                ><i class="fas fa-cog"></i> Quản lý Admin</a
               >
               {% endif %}
               <div class="dropdown-divider"></div>
               <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"
-                ><i class="fas fa-sign-out-alt"></i> Dang xuat</a
+                ><i class="fas fa-sign-out-alt"></i> Đăng xuất</a
               >
             </div>
           </div>
@@ -1160,9 +1160,6 @@
     <!-- ===== NAV BAR ===== -->
     <nav class="nav-bar">
       <div class="nav-bar-inner">
-        <button class="nav-categories-btn">
-          <i class="fas fa-bars"></i> Danh mục
-        </button>
         <ul class="nav-links">
           <li><a href="/">Trang chủ</a></li>
           <li><a href="/Products/" class="active">Sản phẩm</a></li>
@@ -1191,7 +1188,7 @@
         <div class="page-title-left">
           <h1>{{ page_title | default('Tất cả sản phẩm') }}</h1>
           <p>
-            Hien thi <span>{{ total_products | default(0) }}</span> san pham
+            Hiển thị <span>{{ products | length if products else 0 }}</span> / {{ total_products | default(0) }} sản phẩm
           </p>
         </div>
         <div class="breadcrumb">
@@ -1215,20 +1212,20 @@
             <form method="GET" action="/Products/" id="filterForm">
               <div class="filter-header">
                 <div class="filter-title">
-                  <i class="fas fa-filter"></i> Bo loc
+                  <i class="fas fa-filter"></i> Bộ lọc
                 </div>
                 <button
                   type="button"
                   class="filter-clear"
                   onclick="clearFilters()"
                 >
-                  Xoa loc
+                  Xóa lọc
                 </button>
               </div>
 
               <!-- Search by name -->
               <div class="filter-section">
-                <div class="filter-section-title">Tim kiem</div>
+                <div class="filter-section-title">Tìm kiếm</div>
                 <div class="filter-search">
                   <i class="fas fa-search filter-search-icon"></i>
                   <input
@@ -1243,13 +1240,13 @@
 
               <!-- Category -->
               <div class="filter-section">
-                <div class="filter-section-title">Danh muc</div>
+                <div class="filter-section-title">Danh mục</div>
                 <select
                   name="category_id"
                   class="filter-select"
                   onchange="document.getElementById('filterForm').submit()"
                 >
-                  <option value="">Tat ca danh muc</option>
+                  <option value="">Tất cả danh mục</option>
                   {% for cat in categories %}
                   <option
                     value="{{ cat.category_id }}"
@@ -1315,7 +1312,7 @@
                     value="created_at"
                     {% if sort_by == "created_at" %}selected{% endif %}
                   >
-                    Moi nhat
+                    Mới nhất
                   </option>
                   <option
                     value="rating"
@@ -1363,16 +1360,16 @@
                 <div class="filter-section-title">Khám phá nhanh</div>
                 <div class="quick-categories">
                   <a href="/Products/?sort=new" class="quick-cat-item">
-                    <i class="fas fa-bolt"></i> San pham moi
+                    <i class="fas fa-bolt"></i> Sản phẩm mới
                   </a>
                   <a href="/Products/?sort=hot" class="quick-cat-item">
-                    <i class="fas fa-fire"></i> San pham hot
+                    <i class="fas fa-fire"></i> Sản phẩm hot
                   </a>
                   <a href="/Products/?discount=1" class="quick-cat-item">
                     <i class="fas fa-tag"></i> Giam gia
                   </a>
                   <a href="/Products/?category_id=1" class="quick-cat-item">
-                    <i class="fas fa-mobile-alt"></i> Dien thoai
+                    <i class="fas fa-mobile-alt"></i> Điện thoại
                   </a>
                   <a href="/Products/?category_id=2" class="quick-cat-item">
                     <i class="fas fa-laptop"></i> Laptop
@@ -1393,12 +1390,12 @@
             <!-- Toolbar -->
             <div class="products-toolbar">
               <div class="products-result-count">
-                Hien thi
+                Hiển thị
                 <span>{{ products | length if products else 0 }}</span> / {{
-                total_products | default(0) }} san pham
+                total_products | default(0) }} sản phẩm
               </div>
               <div class="products-sort">
-                <span class="sort-label">Sap xep:</span>
+                <span class="sort-label">Sắp xếp:</span>
                 <select class="sort-select" onchange="applySort(this.value)">
                   <option
                     value="name"
@@ -1499,7 +1496,7 @@
                     method="POST"
                   >
                     <button type="submit" class="product-add-btn">
-                      <i class="fas fa-cart-plus"></i> Them vao gio hang
+                      <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                     </button>
                   </form>
                 </div>
@@ -1507,7 +1504,7 @@
               {% endfor %} {% else %}
               <div class="product-empty">
                 <i class="fas fa-search"></i>
-                <p>Khong tim thay san pham nao phu hop.</p>
+                <p>Không tìm thấy sản phẩm nào phù hợp.</p>
               </div>
               {% endif %}
             </div>
@@ -1556,8 +1553,8 @@
               </div>
             </a>
             <p class="footer-desc">
-              Cua hang cong nghe hang dau Viet Nam voi tro ly AI thong minh,
-              giup ban tim kiem va chon lua san pham cong nghe phu hop nhat.
+              Cửa hàng công nghệ hàng đầu Việt Nam với trợ lý AI thông minh,
+              giúp bạn tìm kiếm và chọn lựa sản phẩm công nghệ phù hợp nhất.
             </p>
             <div class="footer-socials">
               <a href="#" class="footer-social"
@@ -1575,26 +1572,26 @@
             </div>
           </div>
           <div>
-            <h4 class="footer-col-title">Mua hang</h4>
+            <h4 class="footer-col-title">Mua hàng</h4>
             <ul class="footer-links">
               <li>
                 <a href="/Products/"
-                  ><i class="fas fa-chevron-right"></i> San pham</a
+                  ><i class="fas fa-chevron-right"></i> Sản phẩm</a
                 >
               </li>
               <li>
                 <a href="/Products/?sort=new"
-                  ><i class="fas fa-chevron-right"></i> San pham moi</a
+                  ><i class="fas fa-chevron-right"></i> Sản phẩm mới</a
                 >
               </li>
               <li>
                 <a href="/Products/?sort=hot"
-                  ><i class="fas fa-chevron-right"></i> San pham hot</a
+                  ><i class="fas fa-chevron-right"></i> Sản phẩm hot</a
                 >
               </li>
               <li>
                 <a href="/Products/?category_id=1"
-                  ><i class="fas fa-chevron-right"></i> Dien thoai</a
+                  ><i class="fas fa-chevron-right"></i> Điện thoại</a
                 >
               </li>
               <li>
@@ -1605,39 +1602,39 @@
             </ul>
           </div>
           <div>
-            <h4 class="footer-col-title">Ho tro</h4>
+            <h4 class="footer-col-title">Hỗ trợ</h4>
             <ul class="footer-links">
               <li>
                 <a href="#"
-                  ><i class="fas fa-chevron-right"></i> Trung tam tro giup</a
+                  ><i class="fas fa-chevron-right"></i> Trung tâm trợ giúp</a
                 >
               </li>
               <li>
                 <a href="#"
-                  ><i class="fas fa-chevron-right"></i> Huong dan mua hang</a
+                  ><i class="fas fa-chevron-right"></i> Hướng dẫn mua hàng</a
                 >
               </li>
               <li>
                 <a href="#"
-                  ><i class="fas fa-chevron-right"></i> Chinh sach doi tra</a
+                  ><i class="fas fa-chevron-right"></i> Chính sách đổi trả</a
                 >
               </li>
               <li>
                 <a href="#"
-                  ><i class="fas fa-chevron-right"></i> Chinh sach bao hanh</a
+                  ><i class="fas fa-chevron-right"></i> Chính sách bảo hành</a
                 >
               </li>
               <li>
-                <a href="#"><i class="fas fa-chevron-right"></i> Lien he</a>
+                ><i class="fas fa-chevron-right"></i> Liên hệ</a>
               </li>
             </ul>
           </div>
           <div>
-            <h4 class="footer-col-title">Lien he</h4>
+            <h4 class="footer-col-title">Liên hệ</h4>
             <div class="footer-contact-item">
               <i class="fas fa-map-marker-alt"></i
               ><span
-                >Tang 5, Toa nha ABC Tower,<br />123 Nguyen Hue, Q.1,
+                >Tầng 5, Tòa nhà ABC Tower,<br />123 Nguyễn Huệ, Q.1,
                 TP.HCM</span
               >
             </div>
@@ -1654,7 +1651,7 @@
         </div>
         <div class="footer-bottom">
           <div class="footer-copyright">
-            &copy; 2026 Tech Store AI. Tat ca quyen duoc bao luu.
+            &copy; 2026 Tech Store AI. Tất cả quyền được bảo lưu.
           </div>
           <div class="footer-payments">
             <div class="footer-payment">VISA</div>

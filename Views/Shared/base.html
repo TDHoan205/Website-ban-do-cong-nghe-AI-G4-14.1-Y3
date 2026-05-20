@@ -42,34 +42,34 @@
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <a class="nav-link" href="/"
-                ><i class="fas fa-home"></i> Trang chu</a
+                ><i class="fas fa-home"></i> Trang chủ</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/Products/"
-                ><i class="fas fa-store"></i> San pham</a
+                ><i class="fas fa-store"></i> Sản phẩm</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/Chat/"
-                ><i class="fas fa-robot"></i> AI Tu van</a
+                ><i class="fas fa-robot"></i> AI Tư vấn</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/About"
-                ><i class="fas fa-info-circle"></i> Gioi thieu</a
+                ><i class="fas fa-info-circle"></i> Giới thiệu</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/Contact"
-                ><i class="fas fa-phone"></i> Lien he</a
+                ><i class="fas fa-phone"></i> Liên hệ</a
               >
             </li>
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
               <a class="nav-link" href="/Cart/">
-                <i class="fas fa-shopping-cart"></i> Gio hang
+                <i class="fas fa-shopping-cart"></i> Giỏ hàng
                 <span class="badge bg-warning text-dark">0</span>
               </a>
             </li>
@@ -86,22 +86,22 @@
                 <i class="fas fa-user"></i> {{ current_user.username }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                {% if current_user.role_name == 'Admin' %}
+                {% if current_user.role and current_user.role.role_name == 'Admin' %}
                 <li>
                   <a class="dropdown-item" href="/Admin/Dashboard">
-                    <i class="fas fa-cog"></i> Quan ly
+                    <i class="fas fa-cog"></i> Quản lý
                   </a>
                 </li>
                 {% endif %}
                 <li>
                   <a class="dropdown-item" href="/Auth/Profile">
-                    <i class="fas fa-user-circle"></i> Tai khoan
+                    <i class="fas fa-user-circle"></i> Tài khoản
                   </a>
                 </li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
                   <a class="dropdown-item" href="/Auth/Logout">
-                    <i class="fas fa-sign-out-alt"></i> Dang xuat
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
                   </a>
                 </li>
               </ul>
@@ -116,17 +116,17 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <i class="fas fa-user"></i> Tai khoan
+                <i class="fas fa-user"></i> Tài khoản
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="guestDropdown">
                 <li>
                   <a class="dropdown-item" href="/Auth/Login">
-                    <i class="fas fa-sign-in-alt"></i> Dang nhap
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
                   </a>
                 </li>
                 <li>
                   <a class="dropdown-item" href="/Auth/Register">
-                    <i class="fas fa-user-plus"></i> Dang ky
+                    <i class="fas fa-user-plus"></i> Đăng ký
                   </a>
                 </li>
               </ul>
@@ -145,7 +145,7 @@
       <a
         href="/Chat/"
         class="btn btn-primary btn-lg rounded-circle"
-        title="Chat voi AI"
+        title="Chat với AI"
       >
         <i class="fas fa-comments"></i>
       </a>
@@ -157,18 +157,18 @@
         <div class="row">
           <div class="col-md-4">
             <h5><i class="fas fa-robot"></i> Tech Store AI</h5>
-            <p>Cua hang cong nghe voi AI tu van thong minh 24/7</p>
+            <p>Cửa hàng công nghệ với AI tư vấn thông minh 24/7</p>
           </div>
           <div class="col-md-4">
-            <h5>Lien ket nhanh</h5>
+            <h5>Liên kết nhanh</h5>
             <ul class="list-unstyled">
-              <li><a href="/" class="text-white-50">Trang chu</a></li>
-              <li><a href="/Products/" class="text-white-50">San pham</a></li>
-              <li><a href="/Chat/" class="text-white-50">AI Tu van</a></li>
+              <li><a href="/" class="text-white-50">Trang chủ</a></li>
+              <li><a href="/Products/" class="text-white-50">Sản phẩm</a></li>
+              <li><a href="/Chat/" class="text-white-50">AI Tư vấn</a></li>
             </ul>
           </div>
           <div class="col-md-4">
-            <h5>Lien he</h5>
+            <h5>Liên hệ</h5>
             <p class="text-white-50 mb-1">
               <i class="fas fa-envelope"></i> support@techstore.com
             </p>
@@ -176,7 +176,7 @@
               <i class="fas fa-phone"></i> 0123-456-789
             </p>
             <p class="text-white-50">
-              <i class="fas fa-map-marker-alt"></i> Ha Noi, Viet Nam
+              <i class="fas fa-map-marker-alt"></i> Hà Nội, Việt Nam
             </p>
           </div>
         </div>

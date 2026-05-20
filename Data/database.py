@@ -9,7 +9,7 @@ import urllib
 
 # Cấu hình SQL Server - Sửa theo server của bạn
 SQL_SERVER_CONFIG = {
-    "server": "QUANTRAN161204\SQLEXPRESS",
+    "server": "DESKTOP-1TM8FSO",
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication
@@ -55,6 +55,9 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_recycle=3600,
     echo=False,  # Bật True để xem SQL logs
+    connect_args={
+        "charset": "utf-8",
+    },
 )
 
 # Session Factory
