@@ -22,6 +22,12 @@ passlib[bcrypt]==1.7.4
 pydantic==2.6.1
 pydantic-settings==2.1.0
 
+# AI - Groq LLM
+groq==0.12.0
+
+# AI - Gemini Embeddings
+google-genai>=1.0.0
+
 # Utilities
 python-dotenv==1.0.1
 httpx==0.26.0

@@ -4,6 +4,7 @@ AI Chat Service - RAG Pipeline cho Chatbot
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from Models.Chat import ChatSession, ChatMessage
+from Services.AI.RAGEngine import RAGEngine
 import uuid
 from datetime import datetime
 
@@ -11,6 +12,7 @@ from datetime import datetime
 class ChatService:
     def __init__(self, db: Session):
         self.db = db
+        self.rag_engine = RAGEngine(db)
 
     def create_session(self, account_id: Optional[int] = None) -> ChatSession:
         """Tạo phiên chat mới"""
@@ -77,8 +79,7 @@ class ChatService:
 
     def process_user_message(self, session_uuid: str, user_message: str, account_id: int = None) -> str:
         """
-        Xử lý tin nhắn từ user và trả lời
-        Đây là placeholder - sẽ tích hợp RAG pipeline thực tế
+        Xử lý tin nhắn từ user qua RAG Pipeline thực tế
         """
         # Tạo hoặc lấy session
         session = self.get_or_create_session(session_uuid, account_id)
@@ -86,28 +87,28 @@ class ChatService:
         # Lưu tin nhắn user
         self.add_message(session.session_id, "user", user_message)
 
-        # TODO: Tích hợp RAG pipeline thực tế
-        # response = self.rag_pipeline.get_response(user_message)
+        # Lấy conversation history — giới hạn 6 tin (3 lượt) để tiết kiệm tokens
+        history_msgs = self.get_session_messages(session.session_id)
+        conversation_history = [
+            {"sender": msg.sender_type, "content": msg.message_content}
+            for msg in history_msgs[-6:]  # 6 tin nhắn gần nhất
+        ]
 
-        # Placeholder response
-        response = self._generate_response(user_message)
+        # Gọi RAG Engine
+        try:
+            result = self.rag_engine.get_response(
+                user_message=user_message,
+                conversation_history=conversation_history,
+                account_id=account_id,
+            )
+            response = result["response"]
+            intent = result.get("intent", "general")
+        except Exception as e:
+            print(f"[ChatService] RAG Error: {e}")
+            response = "Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau! 🙏"
+            intent = "error"
 
         # Lưu tin nhắn bot
-        self.add_message(session.session_id, "bot", response)
+        self.add_message(session.session_id, "bot", response, intent=intent)
 
         return response
-
-    def _generate_response(self, user_message: str) -> str:
-        """Placeholder - Tạo phản hồi mẫu"""
-        user_message_lower = user_message.lower()
-
-        if any(word in user_message_lower for word in ["iphone", "samsung", "laptop", "macbook"]):
-            return "Cảm ơn bạn đã quan tâm! Tôi có thể giúp bạn tìm sản phẩm phù hợp. Bạn muốn tìm sản phẩm nào cụ thể không?"
-        elif any(word in user_message_lower for word in ["giá", "price", "bao nhiêu", "cost"]):
-            return "Bạn có thể xem giá chi tiết từng sản phẩm tại trang sản phẩm của chúng tôi. Giá được cập nhật liên tục!"
-        elif any(word in user_message_lower for word in ["mua", "đặt", "order", "đặt hàng"]):
-            return "Để đặt hàng, bạn có thể thêm sản phẩm vào giỏ hàng và tiến hành checkout. Tôi có thể hướng dẫn bạn từng bước!"
-        elif any(word in user_message_lower for word in ["xin chào", "hello", "hi", "chào"]):
-            return "Xin chào! Tôi là trợ lý AI của Tech Store. Tôi có thể giúp bạn tìm sản phẩm công nghệ, so sánh giá, và tư vấn mua hàng. Bạn cần hỗ trợ gì hôm nay?"
-        else:
-            return "Cảm ơn tin nhắn của bạn! Tôi có thể giúp bạn về sản phẩm công nghệ, giá cả, và đơn hàng. Bạn cứ hỏi nhé!"

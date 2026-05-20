@@ -4,15 +4,23 @@ Chat Controller - AI Chatbot
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
 from Data.database import get_db
 from Services.ChatService import ChatService
 
 router = APIRouter(prefix="/Chat")
 
 
+class ChatMessageRequest(BaseModel):
+    """JSON request body cho chat API"""
+    session_uuid: Optional[str] = None
+    message: str
+
+
 @router.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request, session_id: str = None, db: Session = Depends(get_db)):
-    """Trang chatbot"""
+    """Trang chatbot toàn màn hình"""
     chat_service = ChatService(db)
     session = chat_service.get_or_create_session(session_id)
 
@@ -32,7 +40,7 @@ async def send_message(
     message: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    """Gửi tin nhắn và nhận phản hồi"""
+    """Gửi tin nhắn (Form data - trang chat chính)"""
     chat_service = ChatService(db)
 
     try:
@@ -47,6 +55,60 @@ async def send_message(
             "success": False,
             "error": str(e)
         }, status_code=500)
+
+
+@router.post("/Widget/Send")
+async def widget_send_message(
+    request: Request,
+    body: ChatMessageRequest,
+    db: Session = Depends(get_db),
+):
+    """Gửi tin nhắn từ chatbox popup (JSON API)"""
+    chat_service = ChatService(db)
+
+    # Lấy account_id từ user đang login (nếu có)
+    account_id = None
+    current_user = getattr(request.state, "current_user", None)
+    if current_user:
+        account_id = current_user.account_id
+
+    # Tạo session nếu chưa có
+    session_uuid = body.session_uuid
+    if not session_uuid:
+        session = chat_service.create_session(account_id)
+        session_uuid = session.session_uuid
+
+    try:
+        response = chat_service.process_user_message(
+            session_uuid, body.message, account_id
+        )
+        return JSONResponse({
+            "success": True,
+            "response": response,
+            "session_uuid": session_uuid,
+        })
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "error": str(e),
+        }, status_code=500)
+
+
+@router.post("/Widget/Init")
+async def widget_init(request: Request, db: Session = Depends(get_db)):
+    """Khởi tạo session cho chatbox popup"""
+    chat_service = ChatService(db)
+
+    account_id = None
+    current_user = getattr(request.state, "current_user", None)
+    if current_user:
+        account_id = current_user.account_id
+
+    session = chat_service.create_session(account_id)
+    return JSONResponse({
+        "success": True,
+        "session_uuid": session.session_uuid,
+    })
 
 
 @router.get("/History/{session_uuid}")

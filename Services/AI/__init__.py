@@ -1,11 +1,16 @@
 """
 AI Services Package - RAG Pipeline cho Chatbot
-Tương đương Services/AI/ trong C#
 """
+from Services.AI.GroqService import GroqService
+from Services.AI.KnowledgeService import KnowledgeService
+from Services.AI.EmbeddingService import EmbeddingService
+from Services.AI.VectorStore import VectorStore
+from Services.AI.RAGEngine import RAGEngine
+
 __all__ = [
-    "GeminiService",
+    "GroqService",
+    "KnowledgeService",
     "EmbeddingService",
-    "RAGEngineService",
-    "IntentDetectionService",
-    "AIAgentService",
+    "VectorStore",
+    "RAGEngine",
 ]
