@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat với AI - Tech Store AI</title>
+    <meta name="description" content="Trò chuyện với trợ lý AI thông minh của Tech Store - tư vấn sản phẩm, so sánh giá, tra cứu đơn hàng" />
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        min-height: 100vh;
+        display: flex; flex-direction: column;
+      }
+      /* Top bar */
+      .chat-topbar {
+        background: rgba(255,255,255,0.06);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding: 12px 24px;
+        display: flex; align-items: center; gap: 16px;
+      }
+      .chat-topbar a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+      .chat-topbar a:hover { color: #fff; }
+      .chat-topbar .brand {
+        font-weight: 700; font-size: 1.1rem; color: #fff;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .chat-topbar .brand i { color: #667eea; }
+      /* Main container */
+      .chat-container {
+        flex: 1; display: flex; flex-direction: column;
+        max-width: 960px; width: 100%; margin: 0 auto;
+        padding: 20px 16px;
+      }
+      /* Header */
+      .chat-hero {
+        text-align: center; padding: 24px 0 16px; color: #fff;
+      }
+      .chat-hero-icon {
+        width: 72px; height: 72px; margin: 0 auto 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; box-shadow: 0 8px 32px rgba(102,126,234,0.4);
+        animation: float 3s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+      .chat-hero h2 { font-weight: 800; margin-bottom: 4px; font-size: 1.5rem; }
+      .chat-hero p { opacity: 0.7; font-size: 0.9rem; }
+      /* Chat card */
+      .chat-card {
+        flex: 1; display: flex; flex-direction: column;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px; overflow: hidden;
+        box-shadow: 0 16px 64px rgba(0,0,0,0.3);
+      }
+      /* Messages */
+      .chat-messages {
+        flex: 1; overflow-y: auto; padding: 24px;
+        min-height: 350px; max-height: 55vh;
+        scroll-behavior: smooth;
+      }
+      .message { display: flex; margin-bottom: 16px; animation: msgFade 0.3s ease; }
+      @keyframes msgFade {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .message-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-right: 12px; flex-shrink: 0; font-size: 0.9rem;
+      }
+      .bot-message .message-avatar { background: rgba(102,126,234,0.2); color: #667eea; }
+      .user-message .message-avatar { background: #667eea; color: #fff; }
+      .message-content { max-width: 75%; }
+      .message-bubble {
+        padding: 12px 18px; border-radius: 18px;
+        display: inline-block; line-height: 1.65; font-size: 0.92rem;
+      }
+      .bot-message .message-bubble {
+        background: rgba(255,255,255,0.08); color: #e5e7eb;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-bottom-left-radius: 4px;
+      }
+      .user-message .message-bubble {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff; border-bottom-right-radius: 4px;
+      }
+      .user-message { flex-direction: row-reverse; }
+      .user-message .message-avatar { margin-right: 0; margin-left: 12px; }
+      .message-bubble p { margin: 0 0 6px; }
+      .message-bubble p:last-child { margin-bottom: 0; }
+      .message-bubble ul, .message-bubble ol { margin: 4px 0; padding-left: 18px; }
+      .message-bubble strong { font-weight: 600; }
+      .message-bubble code {
+        background: rgba(255,255,255,0.1); padding: 1px 5px;
+        border-radius: 3px; font-size: 0.85em;
+      }
+      .message-time {
+        font-size: 0.72rem; color: rgba(255,255,255,0.35);
+        margin-top: 4px; padding: 0 4px;
+      }
+      .user-message .message-time { text-align: right; }
+      /* Typing */
+      .typing-dots span {
+        display: inline-block; width: 8px; height: 8px;
+        background: rgba(255,255,255,0.4); border-radius: 50%;
+        margin: 0 2px; animation: bounce 1.4s infinite;
+      }
+      .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+      .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes bounce {
+        0%,60%,100% { transform: translateY(0); }
+        30% { transform: translateY(-6px); }
+      }
+      /* Quick actions */
+      .quick-actions {
+        padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.06);
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .quick-btn {
+        padding: 7px 16px; font-size: 0.82rem; border-radius: 20px;
+        border: 1px solid rgba(102,126,234,0.5); color: #a5b4fc;
+        background: transparent; cursor: pointer; transition: all 0.2s;
+        font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .quick-btn:hover { background: rgba(102,126,234,0.2); color: #fff; border-color: #667eea; }
+      /* Input */
+      .chat-input-area {
+        padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08);
+        display: flex; gap: 10px; align-items: center;
+      }
+      .chat-input-area input {
+        flex: 1; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.12);
+        border-radius: 24px; padding: 13px 20px; color: #fff;
+        font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.92rem;
+        outline: none; transition: all 0.2s;
+      }
+      .chat-input-area input::placeholder { color: rgba(255,255,255,0.35); }
+      .chat-input-area input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        background: rgba(255,255,255,0.12);
+      }
+      .chat-input-area .send-btn {
+        width: 48px; height: 48px; border-radius: 50%; border: none;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff; font-size: 1rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.3);
+      }
+      .chat-input-area .send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(102,126,234,0.5); }
+      .chat-input-area .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+      /* Feature cards */
+      .features-row { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+      .feature-card {
+        flex: 1; min-width: 200px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px; padding: 20px; text-align: center; color: #e5e7eb;
+        transition: all 0.2s;
+      }
+      .feature-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+      .feature-card i { font-size: 1.6rem; margin-bottom: 8px; }
+      .feature-card h6 { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px; }
+      .feature-card p { font-size: 0.78rem; opacity: 0.6; margin: 0; }
+      /* Scrollbar */
+      .chat-messages::-webkit-scrollbar { width: 5px; }
+      .chat-messages::-webkit-scrollbar-track { background: transparent; }
+      .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+    </style>
+  </head>
+  <body>
+    <!-- Top Bar -->
+    <div class="chat-topbar">
+      <a href="/" class="brand"><i class="fas fa-robot"></i> Tech Store AI</a>
+      <div style="flex:1"></div>
+      <a href="/"><i class="fas fa-home"></i> Trang chủ</a>
+      <a href="/Products/"><i class="fas fa-store"></i> Sản phẩm</a>
+    </div>
+
+    <div class="chat-container">
+      <!-- Hero -->
+      <div class="chat-hero">
+        <div class="chat-hero-icon"><i class="fas fa-robot"></i></div>
+        <h2>Trợ lý AI Tech Store</h2>
+        <p>Tư vấn sản phẩm • So sánh giá • Tra cứu đơn hàng</p>
+      </div>
+
+      <!-- Chat Card -->
+      <div class="chat-card">
+        <div id="chat-messages" class="chat-messages">
+          <div class="message bot-message">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+              <div class="message-bubble">
+                Xin chào! 👋 Tôi là trợ lý AI của <strong>Tech Store</strong>. Tôi có thể giúp bạn:
+                <ul>
+                  <li>Tìm và tư vấn sản phẩm công nghệ</li>
+                  <li>So sánh giá cả, thông số</li>
+                  <li>Tra cứu đơn hàng</li>
+                  <li>Giải đáp chính sách bảo hành, đổi trả</li>
+                </ul>
+                Bạn cần hỗ trợ gì hôm nay? 😊
+              </div>
+              <div class="message-time">Vừa xong</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" id="quick-actions">
+          <button class="quick-btn" onclick="sendSuggestion('Sản phẩm nổi bật?')">🔥 Sản phẩm HOT</button>
+          <button class="quick-btn" onclick="sendSuggestion('iPhone 15 giá bao nhiêu?')">📱 Giá iPhone</button>
+          <button class="quick-btn" onclick="sendSuggestion('Tư vấn laptop cho sinh viên')">💻 Laptop sinh viên</button>
+          <button class="quick-btn" onclick="sendSuggestion('So sánh Samsung và iPhone')">⚖️ So sánh</button>
+          <button class="quick-btn" onclick="sendSuggestion('Có khuyến mãi gì không?')">🏷️ Khuyến mãi</button>
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input-area">
+          <input type="text" id="message-input" placeholder="Nhập tin nhắn để trò chuyện với AI..." autocomplete="off" />
+          <button class="send-btn" id="send-btn" onclick="submitMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="features-row">
+        <div class="feature-card">
+          <i class="fas fa-search text-info"></i>
+          <h6>Tìm kiếm thông minh</h6>
+          <p>AI tìm sản phẩm phù hợp nhất</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-balance-scale text-success"></i>
+          <h6>So sánh chi tiết</h6>
+          <p>So sánh giá, tính năng, thông số</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-truck text-warning"></i>
+          <h6>Tra cứu đơn hàng</h6>
+          <p>Kiểm tra trạng thái đơn hàng</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store session -->
+    <input type="hidden" id="session-uuid" value="{{ session_uuid | default('') }}" />
+
+    <script>
+      const chatMessages = document.getElementById("chat-messages");
+      const messageInput = document.getElementById("message-input");
+      const sendBtnEl = document.getElementById("send-btn");
+      let sessionUuid = document.getElementById("session-uuid").value;
+      let isSending = false;
+
+      function escHtml(s){
+        const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+      }
+
+      function renderMd(text){
+        if(!text) return '';
+        let h = escHtml(text);
+        h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        h = h.replace(/`(.+?)`/g, '<code>$1</code>');
+        h = h.replace(/^[-•]\s+(.+)/gm, '<li>$1</li>');
+        h = h.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+        h = h.replace(/\n/g, '<br>');
+        h = h.replace(/(<br>){3,}/g, '<br><br>');
+        return h;
+      }
+
+      function addMessage(content, sender) {
+        const div = document.createElement("div");
+        div.className = "message " + sender + "-message";
+        const icon = sender === "bot" ? "fa-robot" : "fa-user";
+        const now = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+        const rendered = sender === "bot" ? renderMd(content) : escHtml(content);
+
+        div.innerHTML =
+          '<div class="message-avatar"><i class="fas ' + icon + '"></i></div>' +
+          '<div class="message-content">' +
+            '<div class="message-bubble">' + rendered + '</div>' +
+            '<div class="message-time">' + now + '</div>' +
+          '</div>';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function showTyping() {
+        const div = document.createElement("div");
+        div.className = "message bot-message";
+        div.id = "typing-indicator";
+        div.innerHTML =
+          '<div class="message-avatar"><i class="fas fa-robot"></i></div>' +
+          '<div class="message-content"><div class="message-bubble">' +
+            '<div class="typing-dots"><span></span><span></span><span></span></div>' +
+          '</div></div>';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function removeTyping() {
+        const el = document.getElementById("typing-indicator");
+        if (el) el.remove();
+      }
+
+      async function sendMessage(message) {
+        if (!message.trim() || isSending) return;
+        isSending = true;
+        sendBtnEl.disabled = true;
+
+        addMessage(message, "user");
+        messageInput.value = "";
+        document.getElementById("quick-actions").style.display = "none";
+        showTyping();
+
+        try {
+          const r = await fetch("/Chat/Widget/Send", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({session_uuid: sessionUuid, message: message}),
+          });
+          const data = await r.json();
+          removeTyping();
+
+          if (data.success) {
+            if (data.session_uuid) sessionUuid = data.session_uuid;
+            addMessage(data.response, "bot");
+          } else {
+            addMessage("Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại! 🙏", "bot");
+          }
+        } catch (error) {
+          removeTyping();
+          addMessage("Không thể kết nối server. Vui lòng thử lại! 🙏", "bot");
+        }
+        isSending = false;
+        sendBtnEl.disabled = false;
+        messageInput.focus();
+      }
+
+      function submitMessage() {
+        sendMessage(messageInput.value);
+      }
+
+      messageInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          submitMessage();
+        }
+      });
+
+      function sendSuggestion(message) { sendMessage(message); }
+
+      // Auto-send from query param
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get("q");
+      if (q) setTimeout(function() { sendMessage(q); }, 500);
+    </script>
+  </body>
+</html>

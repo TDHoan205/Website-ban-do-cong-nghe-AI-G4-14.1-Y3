@@ -1,5 +1,8 @@
-/* Placeholder image - Replace with actual images */
+/* This directory stores static images for the Tech Store website */
 
-/* no-image.png - Placeholder for products without images */
-/* hero.png - Hero section image */
-/* logo.png - Website logo */
+/* Placeholder images */
+no-image.png - Placeholder for products without images (300x300 gray PNG)
+
+/* TODO: Add actual images */
+hero.png - Hero section image
+logo.png - Website logo

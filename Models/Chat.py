@@ -3,7 +3,7 @@ Chat Models - AI Chatbot
 Tương đương Models/AI/Chat/Entities/ trong C#
 """
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, synonym
 from sqlalchemy.sql import func
 from Data.database import Base
 
@@ -121,7 +121,10 @@ class KnowledgeChunk(Base):
     source_id = Column(Integer)  # Reference to source entity
     source_table = Column(String(50))  # Table name
     embedding_vector = Column(Text)  # Vector embedding
-    chunk_metadata = Column(Text)  # JSON metadata
+    # Store metadata as JSON string. Use `metadata_json` attribute by default,
+    # and expose `chunk_metadata` synonym for older code compatibility.
+    metadata_json = Column(Text)  # JSON metadata
+    chunk_metadata = synonym('metadata_json')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):

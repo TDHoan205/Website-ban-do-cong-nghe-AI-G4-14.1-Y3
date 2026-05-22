@@ -1,0 +1,89 @@
+=====================================================
+TÀI LIỆU CẤU TRÚC DỰ ÁN & TIÊU CHUẨN CODE (CLEAN CODE)
+Dự án: Tech Store AI (FastAPI + MVC Pattern)
+=====================================================
+
+1. TỔNG QUAN KIẾN TRÚC
+Dự án sử dụng mô hình MVC (Model-View-Controller) kết hợp với Service Layer trên nền tảng FastAPI.
+Luồng xử lý chuẩn:
+Client Request -> Router (app.py) -> Controller -> Service -> Model (DB) -> Service -> Controller -> View/JSON -> Response.
+
+2. CẤU TRÚC VÀ TIÊU CHUẨN CODE TỪNG THƯ MỤC/FILE
+
+-----------------------------------------------------
+📁 / (Thư mục gốc)
+-----------------------------------------------------
+- app.py
+  * Vai trò: Entry point (điểm bắt đầu) của ứng dụng FastAPI.
+  * Tiêu chuẩn: 
+    + Chỉ chứa logic khởi tạo ứng dụng (FastAPI app, template engine, static files).
+    + Chứa middleware (ví dụ: inject current_user vào mọi request).
+    + Tuyệt đối KHÔNG viết logic nghiệp vụ (business logic) hay truy vấn DB trực tiếp tại đây.
+
+- requirements.txt
+  * Chứa danh sách các thư viện cần thiết. Cần giữ gọn gàng và cập nhật phiên bản cụ thể để tránh lỗi tương thích.
+
+-----------------------------------------------------
+📁 Controllers/ (Tầng giao tiếp HTTP)
+-----------------------------------------------------
+  * Vai trò: Nhận Request từ người dùng, gọi Service để xử lý, và trả về Response (HTML hoặc JSON).
+  * Tiêu chuẩn Code:
+    + KHÔNG viết câu lệnh truy vấn Database (SQLAlchemy queries) trực tiếp trong Controller.
+    + Chỉ thực hiện: Kiểm tra quyền (Auth), nhận Form/JSON data, gọi `Service`, và `return RedirectResponse` hoặc `TemplateResponse`.
+    + Phải có try/except rõ ràng để bắt lỗi từ Service và hiển thị ra UI cho người dùng.
+
+-----------------------------------------------------
+📁 Services/ (Tầng nghiệp vụ - Business Logic)
+-----------------------------------------------------
+  * Vai trò: Trái tim của ứng dụng. Nơi xử lý mọi logic tính toán, gọi Database, thao tác với AI, v.v.
+  * Tiêu chuẩn Code:
+    + Là nơi duy nhất chứa các câu lệnh truy vấn SQLAlchemy (ví dụ: `db.query(Model).filter(...)`).
+    + Các hàm phải nhỏ gọn, làm đúng một việc (Single Responsibility).
+    + Nếu có lỗi nghiệp vụ (sai mật khẩu, hết hàng...), Service sẽ ném ra Exception (ví dụ: `raise ValueError`), và Controller sẽ là nơi bắt lỗi đó để báo cho người dùng.
+
+-----------------------------------------------------
+📁 Models/ (Tầng Dữ liệu - Entities)
+-----------------------------------------------------
+  * Vai trò: Định nghĩa cấu trúc các bảng trong Database sử dụng SQLAlchemy ORM.
+  * Tiêu chuẩn Code:
+    + Tên Class viết hoa chữ cái đầu (PascalCase), ví dụ: `Account`, `Product`. Tên bảng (`__tablename__`) viết số nhiều.
+    + Chỉ định nghĩa Cấu trúc (Column), Khóa ngoại (ForeignKey), và Quan hệ (Relationship).
+    + KHÔNG chứa logic nghiệp vụ. Chỉ có thể chứa các helper property (ví dụ: `def role_name(self)`).
+
+-----------------------------------------------------
+📁 Data/
+-----------------------------------------------------
+  * Vai trò: Kết nối Database.
+  * Tiêu chuẩn Code:
+    + `database.py`: Chứa chuỗi kết nối SQL Server, thiết lập `engine` và `SessionLocal`. Không nhồi nhét code khác vào đây.
+
+-----------------------------------------------------
+📁 Views/ (Tầng Giao diện - UI)
+-----------------------------------------------------
+  * Vai trò: Chứa các file HTML kết hợp với Jinja2 templating.
+  * Tiêu chuẩn Code:
+    + Tách biệt layout dùng chung (`Shared/base.html`, `Shared/header.html`) để tái sử dụng code.
+    + Hạn chế viết quá nhiều script/CSS inline, nên đưa ra file ngoài ở `wwwroot`.
+    + Sử dụng cú pháp `{% if %}`, `{% for %}` của Jinja2 để render dữ liệu động từ Controller truyền sang.
+
+-----------------------------------------------------
+📁 wwwroot/ (Tài nguyên tĩnh)
+-----------------------------------------------------
+  * Vai trò: Chứa CSS, JS, Images, Fonts.
+  * Tiêu chuẩn Code:
+    + Tổ chức thư mục con rõ ràng: `/css`, `/js`, `/images`.
+    + Code JS nên module hóa, bắt sự kiện DOM chuẩn DOMContentLoaded.
+
+-----------------------------------------------------
+📁 Utilities/ (Công cụ hỗ trợ)
+-----------------------------------------------------
+  * Vai trò: Các hàm tiện ích dùng chung ở nhiều nơi nhưng không thuộc một nghiệp vụ cụ thể nào.
+  * Tiêu chuẩn Code:
+    + Ví dụ: Hàm format tiền tệ, hàm xác thực chuỗi, cấu hình JWT token (`auth.py`).
+
+=====================================================
+TÓM LẠI - QUY TẮC BẤT DI BẤT DỊCH:
+1. Controller KHÔNG chọc thẳng vào DB.
+2. Model KHÔNG chứa logic nghiệp vụ.
+3. Service KHÔNG trả về giao diện HTML.
+=====================================================
