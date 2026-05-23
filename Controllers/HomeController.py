@@ -46,6 +46,16 @@ async def home_index(request: Request, db: Session = Depends(get_db)):
     cart_count = _get_cart_count(request, db)
     current_user = _get_current_user(request, db)
 
+    # Lấy variants cho mỗi sản phẩm
+    def get_variants(products):
+        result = {}
+        for p in products:
+            result[p.product_id] = product_service.get_product_variants(p.product_id)
+        return result
+
+    featured_variants = get_variants(featured_products)
+    new_variants = get_variants(new_products)
+
     return templates.TemplateResponse(
         "Home/index.html",
         {
@@ -53,6 +63,8 @@ async def home_index(request: Request, db: Session = Depends(get_db)):
             "page_title": "Trang chu",
             "featured_products": featured_products,
             "new_products": new_products,
+            "featured_variants": featured_variants,
+            "new_variants": new_variants,
             "categories": categories,
             "cart_count": cart_count,
             "current_user": current_user,

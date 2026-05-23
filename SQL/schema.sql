@@ -118,6 +118,7 @@ CREATE TABLE ProductVariants (
     variant_id INT IDENTITY(1,1) PRIMARY KEY,
     product_id INT NOT NULL,
     color NVARCHAR(50) NULL,
+    color_hex NVARCHAR(7) NULL,
     storage NVARCHAR(20) NULL,
     ram NVARCHAR(20) NULL,
     variant_name NVARCHAR(100) NULL,
@@ -131,15 +132,17 @@ CREATE TABLE ProductVariants (
     CONSTRAINT FK_ProductVariants_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
 );
 
--- ProductImages
+-- ProductImages (mỗi ảnh gắn với product HOẶC variant)
 CREATE TABLE ProductImages (
     image_id INT IDENTITY(1,1) PRIMARY KEY,
     product_id INT NOT NULL,
+    variant_id INT NULL,
     image_url NVARCHAR(500) NOT NULL,
     display_order INT NOT NULL DEFAULT 0,
     is_primary BIT NOT NULL DEFAULT 0,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE,
+    CONSTRAINT FK_ProductImages_Variants FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id) ON DELETE SET NULL
 );
 
 -- Inventory

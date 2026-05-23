@@ -198,7 +198,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
           </td>
           <td>
             <a href="/Products/{{ product.product_id }}" target="_blank" class="action-btn view" title="Xem"><i class="fas fa-external-link-alt"></i></a>
-            <button class="action-btn edit" title="Sửa" onclick="openEdit({{ product.product_id }})"><i class="fas fa-edit"></i></button>
+            <a href="/Admin/Products/{{ product.product_id }}/edit" class="action-btn edit" title="Sửa chi tiết"><i class="fas fa-edit"></i></a>
             <button class="action-btn danger" title="Xóa" onclick="deleteProduct({{ product.product_id }}, '{{ product.name | e }}')"><i class="fas fa-trash-alt"></i></button>
           </td>
         </tr>

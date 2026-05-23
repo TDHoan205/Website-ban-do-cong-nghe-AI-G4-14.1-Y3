@@ -241,6 +241,40 @@ class ProductService:
             Product.is_available == True
         ).limit(limit).all()
 
+    def get_product_variants(self, product_id: int) -> List:
+        """Lấy các biến thể (màu/dung lượng) của sản phẩm"""
+        from Models.Product import ProductVariant, ProductImage
+        variants = self.db.query(ProductVariant).filter(
+            ProductVariant.product_id == product_id,
+            ProductVariant.is_active == True
+        ).order_by(ProductVariant.display_order).all()
+
+        result = []
+        for v in variants:
+            images = self.db.query(ProductImage).filter(
+                ProductImage.variant_id == v.variant_id
+            ).order_by(ProductImage.is_primary.desc(), ProductImage.display_order).all()
+            result.append({
+                "variant_id": v.variant_id,
+                "color": v.color or "",
+                "color_hex": v.color_hex or "",
+                "storage": v.storage or "",
+                "ram": v.ram or "",
+                "variant_name": v.variant_name or "",
+                "price": float(v.price) if v.price else None,
+                "original_price": float(v.original_price) if v.original_price else None,
+                "stock_quantity": v.stock_quantity or 0,
+                "is_active": v.is_active,
+                "images": [
+                    {
+                        "image_url": i.image_url,
+                        "is_primary": i.is_primary
+                    }
+                    for i in images
+                ]
+            })
+        return result
+
     # ============ Category ============
     def get_all_categories(self) -> List[Category]:
         """Lấy tất cả danh mục"""

@@ -162,3 +162,53 @@ SET IDENTITY_INSERT OrderItems OFF;
 
 PRINT N'Đã seed dữ liệu thành công';
 GO
+
+-- =====================================================
+-- MIGRATION: Cập nhật database cho chức năng phân loại sản phẩm
+-- Chạy lệnh này nếu database đã tồn tại (không cần tạo lại schema)
+-- =====================================================
+USE TechShopWebsite2;
+GO
+
+-- Thêm variant_id vào ProductImages (liên kết ảnh với từng phiên bản)
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('ProductImages') AND name = 'variant_id')
+BEGIN
+    ALTER TABLE ProductImages ADD variant_id INT NULL;
+    ALTER TABLE ProductImages
+        ADD CONSTRAINT FK_ProductImages_Variants
+        FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id) ON DELETE SET NULL;
+END
+
+-- Thêm color_hex vào ProductVariants (mã màu hex cho swatch)
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('ProductVariants') AND name = 'color_hex')
+BEGIN
+    ALTER TABLE ProductVariants ADD color_hex NVARCHAR(7) NULL;
+END
+
+PRINT N'Đã migrate database cho chức năng phân loại sản phẩm';
+GO
+
+-- =====================================================
+-- MIGRATION: Cập nhật bảng cho chức năng phân loại sản phẩm (Variant + Image per Variant)
+-- Chạy lệnh này nếu database đã tồn tại (không cần tạo lại schema)
+-- =====================================================
+USE TechShopWebsite2;
+GO
+
+-- Thêm cột variant_id vào ProductImages (cho ảnh theo variant)
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('ProductImages') AND name = 'variant_id')
+BEGIN
+    ALTER TABLE ProductImages ADD variant_id INT NULL;
+    ALTER TABLE ProductImages
+        ADD CONSTRAINT FK_ProductImages_Variants
+        FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id) ON DELETE SET NULL;
+END
+
+-- Thêm cột color_hex vào ProductVariants (cho swatch màu)
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('ProductVariants') AND name = 'color_hex')
+BEGIN
+    ALTER TABLE ProductVariants ADD color_hex NVARCHAR(7) NULL;
+END
+
+PRINT N'Đã migrate database cho chức năng phân loại sản phẩm';
+GO

@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chỉnh sửa sản phẩm - Tech Store Admin</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+.admin-topbar{background:#1e293b;border-bottom:1px solid #334155;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:24px;}
+.admin-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:white;}
+.admin-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#ffd700,#ffb700);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#0f172a;}
+.admin-logo-name{font-size:1.05rem;font-weight:700;}
+.topbar-nav{display:flex;gap:4px;}
+.topbar-nav a{padding:6px 12px;border-radius:6px;color:rgba(255,255,255,0.55);font-size:0.85rem;font-weight:500;text-decoration:none;transition:all 0.2s;}
+.topbar-nav a:hover{background:rgba(255,255,255,0.08);color:white;}
+.topbar-nav a.active{background:rgba(255,255,255,0.1);color:white;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all 0.2s;font-family:'Be Vietnam Pro',sans-serif;}
+.btn-gold{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:#ffd700;}
+.btn-gold:hover{background:rgba(255,215,0,0.2);color:#ffd700;}
+.btn-red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;}
+.btn-red:hover{background:rgba(239,68,68,0.2);color:#ef4444;}
+.topbar-user{display:flex;align-items:center;gap:10px;padding:6px 12px;background:rgba(255,255,255,0.06);border-radius:8px;}
+.user-avatar{width:34px;height:34px;background:linear-gradient(135deg,#1a2a3a,#0f1923);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#ffd700;font-size:0.85rem;}
+.user-name{font-size:0.85rem;font-weight:600;color:white;line-height:1.2;}
+.user-role{font-size:0.68rem;color:#ffd700;font-weight:600;}
+.admin-body{display:flex;flex:1;}
+.admin-sidebar{width:230px;background:#1e293b;border-right:1px solid #334155;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;padding:16px 0;}
+.sidebar-section{margin-bottom:4px;}
+.sidebar-section-title{font-size:0.65rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1.2px;padding:10px 20px 4px;}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 20px;color:#94a3b8;font-size:0.86rem;font-weight:500;text-decoration:none;transition:all 0.15s;border-left:3px solid transparent;}
+.sidebar-link:hover{background:rgba(255,255,255,0.04);color:#e2e8f0;border-left-color:#ffd700;}
+.sidebar-link.active{background:rgba(255,215,0,0.06);color:#ffd700;border-left-color:#ffd700;}
+.sidebar-link i{width:18px;text-align:center;font-size:0.82rem;flex-shrink:0;}
+.admin-main{flex:1;padding:28px 32px;}
+
+/* Breadcrumb */
+.breadcrumb-nav{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:0.82rem;color:#64748b;}
+.breadcrumb-nav a{color:#94a3b8;text-decoration:none;transition:color 0.2s;}
+.breadcrumb-nav a:hover{color:#ffd700;}
+.breadcrumb-nav i{font-size:0.65rem;}
+.breadcrumb-nav span{color:#e2e8f0;}
+
+/* Layout */
+.edit-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;align-items:start;}
+.edit-card{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;}
+.edit-card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #334155;}
+.edit-card-title{font-size:0.9rem;font-weight:700;color:white;display:flex;align-items:center;gap:8px;}
+.edit-card-title i{color:#ffd700;}
+.edit-card-body{padding:20px;}
+.card-section{margin-bottom:24px;}
+.card-section:last-child{margin-bottom:0;}
+.card-section-title{font-size:0.78rem;font-weight:700;color:#ffd700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+
+/* Form */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:0.82rem;font-weight:600;color:#94a3b8;margin-bottom:5px;}
+.form-control{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:white;font-size:0.88rem;font-family:'Be Vietnam Pro',sans-serif;}
+.form-control:focus{outline:none;border-color:#ffd700;}
+.form-control::placeholder{color:#475569;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-check{display:flex;align-items:center;gap:8px;}
+.form-check input{accent-color:#ffd700;width:16px;height:16px;cursor:pointer;}
+.form-check label{color:#94a3b8;font-size:0.82rem;cursor:pointer;}
+textarea.form-control{resize:vertical;min-height:80px;}
+
+/* Product image */
+.product-img-thumb{width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #334155;cursor:pointer;transition:all 0.2s;}
+.product-img-thumb:hover{border-color:#ffd700;transform:scale(1.05);}
+.product-img-thumb.selected{border-color:#ffd700;border-width:2px;}
+.img-gallery{display:flex;flex-wrap:wrap;gap:8px;}
+
+/* Variant cards */
+.variant-list{display:flex;flex-direction:column;gap:12px;}
+.variant-card{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:all 0.2s;}
+.variant-card:hover{border-color:#475569;}
+.variant-card.inactive{opacity:0.5;}
+.variant-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.variant-card-left{display:flex;align-items:center;gap:10px;}
+.color-swatch{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);flex-shrink:0;}
+.color-swatch-none{background:#334155;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#64748b;}
+.variant-name-text{font-size:0.88rem;font-weight:700;color:#e2e8f0;}
+.variant-specs{font-size:0.75rem;color:#64748b;margin-top:2px;}
+.variant-price{font-size:0.88rem;font-weight:700;color:#4ade80;}
+.variant-stock{font-size:0.75rem;color:#64748b;}
+.variant-actions{display:flex;align-items:center;gap:6px;}
+.variant-img-count{font-size:0.7rem;color:#475569;display:flex;align-items:center;gap:4px;}
+.action-btn-sm{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:none;border:none;color:#475569;cursor:pointer;font-size:0.78rem;transition:all 0.15s;}
+.action-btn-sm:hover{background:rgba(255,255,255,0.08);color:white;}
+.action-btn-sm.danger:hover{background:rgba(239,68,68,0.12);color:#ef4444;}
+.action-btn-sm.edit:hover{background:rgba(59,130,246,0.12);color:#3b82f6;}
+.add-variant-btn{width:100%;padding:12px;border:2px dashed #334155;border-radius:10px;background:none;color:#475569;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Be Vietnam Pro',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+.add-variant-btn:hover{border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,0.03);}
+
+/* Variant image gallery (per variant) */
+.var-img-gallery{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.var-img-item{position:relative;width:48px;height:48px;}
+.var-img-item img{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid #334155;cursor:pointer;}
+.var-img-item img.selected{border-color:#ffd700;border-width:2px;}
+.var-img-item .remove-img{position:absolute;top:-5px;right:-5px;width:16px;height:16px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:white;cursor:pointer;border:none;line-height:1;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;overflow-y:auto;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:28px;width:540px;max-width:100%;max-height:90vh;overflow-y:auto;margin:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-size:1rem;font-weight:700;color:white;}
+.modal-close{background:none;border:none;color:#475569;cursor:pointer;font-size:1.2rem;transition:color 0.2s;flex-shrink:0;}
+.modal-close:hover{color:white;}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn-modal-cancel{padding:8px 18px;background:rgba(255,255,255,0.06);border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;}
+.btn-modal-cancel:hover{background:rgba(255,255,255,0.1);color:white;}
+.btn-modal-save{padding:8px 18px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:8px;color:white;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;}
+.btn-modal-save:hover{background:linear-gradient(135deg,#15803d,#166534);}
+.btn-modal-primary{padding:8px 18px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:8px;color:white;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;}
+.btn-modal-primary:hover{background:linear-gradient(135deg,#1d4ed8,#1e40af);}
+.alert-msg{padding:10px 14px;border-radius:8px;font-size:0.82rem;margin-bottom:12px;display:none;}
+.alert-error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;}
+.alert-success{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399;}
+
+/* Save bar */
+.save-bar{position:sticky;bottom:0;background:#1e293b;border-top:1px solid #334155;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;z-index:50;}
+.save-bar-left{display:flex;align-items:center;gap:10px;}
+.save-bar-right{display:flex;align-items:center;gap:10px;}
+.save-status{font-size:0.8rem;color:#64748b;}
+.save-status.saved{color:#34d399;}
+
+/* Color input with preview */
+.color-input-wrap{display:flex;align-items:center;gap:10px;}
+.color-input-wrap input[type="color"]{width:40px;height:36px;border:none;background:none;cursor:pointer;padding:0;}
+.color-input-wrap input[type="color"]::-webkit-color-swatch-wrapper{padding:0;}
+.color-input-wrap input[type="color"]::-webkit-color-swatch{border-radius:6px;border:1px solid #334155;}
+
+/* Image upload area */
+.img-upload-area{border:2px dashed #334155;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.img-upload-area:hover{border-color:#ffd700;background:rgba(255,215,0,0.02);}
+.img-upload-area.dragover{border-color:#ffd700;background:rgba(255,215,0,0.05);}
+.img-upload-icon{font-size:1.5rem;color:#475569;margin-bottom:6px;}
+.img-upload-text{font-size:0.8rem;color:#64748b;}
+
+@media(max-width:1100px){.edit-layout{grid-template-columns:1fr;}}
+@media(max-width:640px){.admin-sidebar{display:none;}.admin-main{padding:16px;}}
+</style>
+</head>
+<body>
+<!-- Topbar -->
+<div class="admin-topbar">
+  <div class="topbar-left">
+    <a href="/Admin/Dashboard" class="admin-logo">
+      <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
+      <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
+    </a>
+    <nav class="topbar-nav">
+      <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
+      <a href="/Admin/Products" class="active"><i class="fas fa-box me-1"></i> Sản phẩm</a>
+      <a href="/Admin/Categories"><i class="fas fa-tags me-1"></i> Danh mục</a>
+      <a href="/Admin/Suppliers"><i class="fas fa-truck me-1"></i> NCC</a>
+      <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+      <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
+    </nav>
+  </div>
+  <div class="topbar-right">
+    <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Website</a>
+    <div class="topbar-user">
+      <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+      <div><div class="user-name">{{ admin.username }}</div><div class="user-role">Quản trị</div></div>
+    </div>
+    <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="admin-body">
+<aside class="admin-sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Quản lý</div>
+    <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
+    <a href="/Admin/Products" class="sidebar-link active"><i class="fas fa-box"></i> Sản phẩm</a>
+    <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
+    <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
+    <a href="/Admin/Orders" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
+    <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Hệ thống</div>
+    <a href="/Auth/Profile" class="sidebar-link"><i class="fas fa-user-circle"></i> Tài khoản của tôi</a>
+    <a href="/Chat/" target="_blank" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
+    <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
+  </div>
+</aside>
+
+<main class="admin-main">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-nav">
+    <a href="/Admin/Products"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>{{ product.name }}</span>
+  </div>
+
+  <div class="edit-layout">
+    <!-- LEFT: Thông tin cơ bản -->
+    <div>
+      <div class="edit-card">
+        <div class="edit-card-header">
+          <div class="edit-card-title"><i class="fas fa-info-circle"></i> Thông tin sản phẩm</div>
+          <a href="/Products/{{ product.product_id }}" target="_blank" class="action-btn-sm" title="Xem trên web" style="color:#10b981;"><i class="fas fa-external-link-alt"></i></a>
+        </div>
+        <div class="edit-card-body">
+          <div id="alertBasic" class="alert-msg"></div>
+          <form id="basicForm" onsubmit="return saveBasic(event)">
+            <input type="hidden" id="product_id" value="{{ product.product_id }}"/>
+
+            <div class="form-group">
+              <label class="form-label">Tên sản phẩm <span style="color:#ef4444;">*</span></label>
+              <input type="text" id="f-name" class="form-control" value="{{ product.name }}" required/>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Giá bán (VND) <span style="color:#ef4444;">*</span></label>
+                <input type="number" id="f-price" class="form-control" value="{{ product.price }}" min="0" required/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Giá gốc (VND)</label>
+                <input type="number" id="f-orig-price" class="form-control" value="{{ product.original_price or '' }}" min="0"/>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Danh mục</label>
+                <select id="f-category" class="form-control">
+                  <option value="">— Chọn —</option>
+                  {% for cat in categories %}
+                  <option value="{{ cat.category_id }}" {% if product.category_id == cat.category_id %}selected{% endif %}>{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nhà cung cấp</label>
+                <select id="f-supplier" class="form-control">
+                  <option value="">— Chọn —</option>
+                  {% for sup in suppliers %}
+                  <option value="{{ sup.supplier_id }}" {% if product.supplier_id == sup.supplier_id %}selected{% endif %}>{{ sup.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mô tả</label>
+              <textarea id="f-description" class="form-control" rows="3">{{ product.description or '' }}</textarea>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Số lượng tồn kho</label>
+                <input type="number" id="f-stock" class="form-control" value="{{ product.stock_quantity or 0 }}" min="0"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Giảm giá (%)</label>
+                <input type="number" id="f-discount" class="form-control" value="{{ product.discount_percent or 0 }}" min="0" max="100"/>
+              </div>
+            </div>
+
+            <div class="form-group" style="background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;border:1px solid #334155;">
+              <label class="form-label">Tùy chọn hiển thị</label>
+              <div class="d-flex gap-4 flex-wrap">
+                <div class="form-check">
+                  <input type="checkbox" id="f-available" {% if product.is_available %}checked{% endif %}/>
+                  <label for="f-available">Còn hàng</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="f-new" {% if product.is_new %}checked{% endif %}/>
+                  <label for="f-new">Sản phẩm mới</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="f-hot" {% if product.is_hot %}checked{% endif %}/>
+                  <label for="f-hot">Sản phẩm hot</label>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Ảnh chung sản phẩm -->
+      <div class="edit-card" style="margin-top:20px;">
+        <div class="edit-card-header">
+          <div class="edit-card-title"><i class="fas fa-images"></i> Ảnh chung sản phẩm</div>
+          <span style="font-size:0.72rem;color:#475569;">(Dùng chung khi không chọn variant)</span>
+        </div>
+        <div class="edit-card-body">
+          <div class="img-gallery" id="product-img-gallery">
+            {% for img in product_images %}
+            <div class="img-thumb-wrap" data-id="{{ img.image_id }}" style="position:relative;display:inline-block;">
+              <img src="{{ img.image_url }}" class="product-img-thumb" onclick="toggleImgSelect(this, {{ img.image_id }})"/>
+              {% if img.is_primary %}
+              <span style="position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 4px;border-radius:3px;font-weight:700;">★</span>
+              {% endif %}
+              <button onclick="removeProductImg({{ img.image_id }})" style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#ef4444;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:white;line-height:1;">✕</button>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="img-upload-area" style="margin-top:12px;" onclick="document.getElementById('prod-img-input').click()" id="prod-upload-area">
+            <div class="img-upload-icon"><i class="fas fa-plus"></i></div>
+            <div class="img-upload-text">Thêm ảnh chung sản phẩm</div>
+          </div>
+          <input type="file" id="prod-img-input" class="d-none" accept="image/*" onchange="uploadProdImg(this)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Variants -->
+    <div>
+      <div class="edit-card">
+        <div class="edit-card-header">
+          <div class="edit-card-title"><i class="fas fa-layer-group"></i> Phân loại sản phẩm <span style="font-size:0.72rem;color:#64748b;font-weight:400;">(Phiên bản / Màu sắc / Dung lượng)</span></div>
+          <button class="add-variant-btn" onclick="openVariantModal()" style="width:auto;padding:6px 14px;border-style:dashed;font-size:0.8rem;">
+            <i class="fas fa-plus"></i> Thêm phân loại
+          </button>
+        </div>
+        <div class="edit-card-body">
+          <div id="variantList" class="variant-list">
+            {% for v in variants %}
+            <div class="variant-card {% if not v.is_active %}inactive{% endif %}" data-id="{{ v.variant_id }}">
+              <div class="variant-card-header">
+                <div class="variant-card-left">
+                  <div class="color-swatch" style="{% if v.color_hex %}background:{{ v.color_hex }};{% else %}background:#334155;{% endif %}">
+                    {% if not v.color_hex %}<i class="fas fa-palette color-swatch-none"></i>{% endif %}
+                  </div>
+                  <div>
+                    <div class="variant-name-text">{{ v.variant_name or v.color or 'Không tên' }}</div>
+                    <div class="variant-specs">
+                      {% if v.color %}{{ v.color }}{% endif %}
+                      {% if v.storage %} · {{ v.storage }}{% endif %}
+                      {% if v.ram %} · {{ v.ram }} RAM{% endif %}
+                      {% if v.sku %} · SKU: {{ v.sku }}{% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-actions">
+                  <div class="variant-price">{{ "{:,.0f}".format(v.price) if v.price else "{:,.0f}".format(product.price) }} đ</div>
+                  <div class="variant-stock">{{ v.stock_quantity }} trong kho</div>
+                  <div class="variant-img-count"><i class="fas fa-image"></i> {{ v.images|length }}</div>
+                  <button class="action-btn-sm edit" onclick="openVariantModal({{ v.variant_id }})" title="Sửa"><i class="fas fa-edit"></i></button>
+                  <button class="action-btn-sm danger" onclick="deleteVariant({{ v.variant_id }})" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                </div>
+              </div>
+              <!-- Ảnh theo variant -->
+              <div class="var-img-gallery" id="var-gallery-{{ v.variant_id }}">
+                {% for img in v.images %}
+                <div class="var-img-item">
+                  <img src="{{ img.image_url }}" onclick="toggleVarImgSelect(this, {{ img.image_id }}, {{ v.variant_id }})" class="{% if img.is_primary %}selected{% endif %}"/>
+                  <button class="remove-img" onclick="removeVarImg({{ img.image_id }})">✕</button>
+                </div>
+                {% endfor %}
+                <div class="var-img-item" style="border:2px dashed #334155;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#0f172a;" onclick="document.getElementById('var-img-input-{{ v.variant_id }}').click()">
+                  <i class="fas fa-plus" style="color:#475569;font-size:0.8rem;"></i>
+                </div>
+                <input type="file" id="var-img-input-{{ v.variant_id }}" class="d-none" accept="image/*" onchange="uploadVarImg(this, {{ v.variant_id }})"/>
+              </div>
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:32px;color:#475569;">
+              <i class="fas fa-layer-group" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.5;"></i>
+              Chưa có phân loại nào.<br>
+              <span style="font-size:0.78rem;">Bấm "Thêm phân loại" để tạo phiên bản (màu sắc, dung lượng...)</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Sticky save bar -->
+<div class="save-bar">
+  <div class="save-bar-left">
+    <span class="save-status" id="saveStatus"><i class="fas fa-circle-notch fa-spin"></i> Đã thay đổi</span>
+  </div>
+  <div class="save-bar-right">
+    <button class="btn-modal-cancel" onclick="location.reload()"><i class="fas fa-undo"></i> Hủy thay đổi</button>
+    <button class="btn-modal-save" onclick="saveAll()"><i class="fas fa-save"></i> Lưu tất cả</button>
+  </div>
+</div>
+
+<!-- Variant Modal -->
+<div class="modal-overlay" id="variantModal" onclick="if(event.target===this)closeVariantModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="variantModalTitle"><i class="fas fa-plus me-2"></i>Thêm phân loại</div>
+      <button class="modal-close" onclick="closeVariantModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="alertVariant" class="alert-msg"></div>
+    <form id="variantForm" onsubmit="return saveVariant(event)">
+      <input type="hidden" id="v-product-id" value="{{ product.product_id }}"/>
+      <input type="hidden" id="v-variant-id" value=""/>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Màu sắc</label>
+          <input type="text" id="v-color" class="form-control" placeholder="VD: Đỏ, Xanh lá, Vàng"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã màu (Hex)</label>
+          <div class="color-input-wrap">
+            <input type="color" id="v-color-hex" value="#000000" oninput="document.getElementById('v-color').value=this.value"/>
+            <input type="text" id="v-color-hex-text" class="form-control" placeholder="#FF0000" style="flex:1;"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Dung lượng lưu trữ</label>
+          <input type="text" id="v-storage" class="form-control" placeholder="VD: 128GB, 256GB, 512GB"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">RAM</label>
+          <input type="text" id="v-ram" class="form-control" placeholder="VD: 8GB, 12GB, 16GB"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tên phiên bản (tự động ghép nếu để trống)</label>
+        <input type="text" id="v-name" class="form-control" placeholder="VD: iPhone 15 Pro Max Đỏ 256GB"/>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">SKU</label>
+          <input type="text" id="v-sku" class="form-control" placeholder="Mã SKU"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Thứ tự hiển thị</label>
+          <input type="number" id="v-order" class="form-control" value="0" min="0"/>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Giá phiên bản (VND)</label>
+          <input type="number" id="v-price" class="form-control" placeholder="Bỏ trống = giá sản phẩm" min="0"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Giá gốc</label>
+          <input type="number" id="v-orig-price" class="form-control" placeholder="Bỏ trống" min="0"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Số lượng tồn kho</label>
+        <input type="number" id="v-stock" class="form-control" value="0" min="0"/>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-modal-cancel" onclick="closeVariantModal()">Hủy</button>
+        <button type="submit" class="btn-modal-save"><i class="fas fa-save"></i> Lưu phân loại</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Image URL Modal -->
+<div class="modal-overlay" id="imgUrlModal" onclick="if(event.target===this)closeImgUrlModal()">
+  <div class="modal-box" style="width:400px;">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-link me-2"></i>Nhập URL ảnh</div>
+      <button class="modal-close" onclick="closeImgUrlModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">URL ảnh</label>
+      <input type="url" id="img-url-input" class="form-control" placeholder="https://example.com/image.jpg"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Đặt làm ảnh chính</label>
+      <div class="form-check">
+        <input type="checkbox" id="img-primary-check"/>
+        <label for="img-primary-check">Ảnh chính (hiển thị mặc định)</label>
+      </div>
+    </div>
+    <input type="hidden" id="img-target-variant"/>
+    <input type="hidden" id="img-target-type"/>
+    <div class="form-actions">
+      <button class="btn-modal-cancel" onclick="closeImgUrlModal()">Hủy</button>
+      <button class="btn-modal-primary" onclick="addImgFromUrl()"><i class="fas fa-plus"></i> Thêm ảnh</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API_BASE = '/Admin/API';
+const PROD_API = API_BASE + '/Products';
+const VAR_API = API_BASE + '/Variants';
+const IMG_API = API_BASE + '/ProductImages';
+const UPLOAD_API = API_BASE + '/Upload';
+const PRODUCT_ID = {{ product.product_id }};
+let pendingChanges = false;
+
+// ─── CHANGES TRACKING ───
+function markChanged() {
+  pendingChanges = true;
+  document.getElementById('saveStatus').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đã thay đổi';
+  document.getElementById('saveStatus').className = 'save-status';
+}
+['f-name','f-price','f-orig-price','f-category','f-supplier','f-description','f-stock','f-discount'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', markChanged);
+});
+
+// ─── SAVE BASIC INFO ───
+async function saveBasic(e) {
+  if (e) e.preventDefault();
+  const fd = new FormData();
+  fd.append('name', document.getElementById('f-name').value.trim());
+  fd.append('price', document.getElementById('f-price').value);
+  const op = document.getElementById('f-orig-price').value;
+  if (op) fd.append('original_price', op);
+  fd.append('description', document.getElementById('f-description').value.trim());
+  const cat = document.getElementById('f-category').value;
+  if (cat) fd.append('category_id', cat);
+  const sup = document.getElementById('f-supplier').value;
+  if (sup) fd.append('supplier_id', sup);
+  fd.append('stock_quantity', document.getElementById('f-stock').value || '0');
+  fd.append('discount_percent', document.getElementById('f-discount').value || '0');
+  fd.append('is_available', document.getElementById('f-available').checked ? 'true' : 'false');
+  fd.append('is_new', document.getElementById('f-new').checked ? 'true' : 'false');
+  fd.append('is_hot', document.getElementById('f-hot').checked ? 'true' : 'false');
+
+  try {
+    const r = await fetch(PROD_API + '/' + PRODUCT_ID, { method: 'PUT', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      showAlertBasic('Đã lưu thông tin cơ bản!', 'success');
+    } else {
+      showAlertBasic(d.error || 'Lỗi khi lưu!', 'error');
+    }
+  } catch(e) {
+    showAlertBasic('Lỗi kết nối!', 'error');
+  }
+  return false;
+}
+
+// ─── SAVE ALL ───
+async function saveAll() {
+  await saveBasic();
+  pendingChanges = false;
+  document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle"></i> Đã lưu';
+  document.getElementById('saveStatus').className = 'save-status saved';
+}
+
+// ─── VARIANT MODAL ───
+async function openVariantModal(variantId) {
+  document.getElementById('alertVariant').style.display = 'none';
+  document.getElementById('v-variant-id').value = '';
+  document.getElementById('v-color').value = '';
+  document.getElementById('v-color-hex').value = '#000000';
+  document.getElementById('v-color-hex-text').value = '';
+  document.getElementById('v-storage').value = '';
+  document.getElementById('v-ram').value = '';
+  document.getElementById('v-name').value = '';
+  document.getElementById('v-sku').value = '';
+  document.getElementById('v-order').value = '0';
+  document.getElementById('v-price').value = '';
+  document.getElementById('v-orig-price').value = '';
+  document.getElementById('v-stock').value = '0';
+
+  if (variantId) {
+    document.getElementById('variantModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Sửa phân loại';
+    try {
+      const r = await fetch(VAR_API + '/' + variantId);
+      const d = await r.json();
+      if (d.success) {
+        const v = d.variant;
+        document.getElementById('v-variant-id').value = v.variant_id;
+        document.getElementById('v-color').value = v.color || '';
+        document.getElementById('v-color-hex').value = v.color_hex || '#000000';
+        document.getElementById('v-color-hex-text').value = v.color_hex || '';
+        document.getElementById('v-storage').value = v.storage || '';
+        document.getElementById('v-ram').value = v.ram || '';
+        document.getElementById('v-name').value = v.variant_name || '';
+        document.getElementById('v-sku').value = v.sku || '';
+        document.getElementById('v-order').value = v.display_order || 0;
+        document.getElementById('v-price').value = v.price || '';
+        document.getElementById('v-orig-price').value = v.original_price || '';
+        document.getElementById('v-stock').value = v.stock_quantity || 0;
+      }
+    } catch(e) { alert('Lỗi tải dữ liệu!'); }
+  } else {
+    document.getElementById('variantModalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Thêm phân loại';
+  }
+  document.getElementById('variantModal').classList.add('show');
+}
+
+function closeVariantModal() {
+  document.getElementById('variantModal').classList.remove('show');
+}
+
+async function saveVariant(e) {
+  e.preventDefault();
+  const isEdit = !!document.getElementById('v-variant-id').value;
+  const fd = new FormData();
+  fd.append('product_id', PRODUCT_ID);
+  fd.append('color', document.getElementById('v-color').value.trim());
+  fd.append('color_hex', document.getElementById('v-color-hex-text').value.trim() || document.getElementById('v-color-hex').value.trim());
+  fd.append('storage', document.getElementById('v-storage').value.trim());
+  fd.append('ram', document.getElementById('v-ram').value.trim());
+  fd.append('variant_name', document.getElementById('v-name').value.trim());
+  fd.append('sku', document.getElementById('v-sku').value.trim());
+  fd.append('display_order', document.getElementById('v-order').value);
+  const price = document.getElementById('v-price').value;
+  if (price) fd.append('price', price);
+  const orig = document.getElementById('v-orig-price').value;
+  if (orig) fd.append('original_price', orig);
+  fd.append('stock_quantity', document.getElementById('v-stock').value || '0');
+
+  try {
+    const r = await fetch(isEdit ? VAR_API + '/' + document.getElementById('v-variant-id').value : VAR_API, {
+      method: isEdit ? 'PUT' : 'POST',
+      body: fd
+    });
+    const d = await r.json();
+    if (d.success) {
+      closeVariantModal();
+      location.reload();
+    } else {
+      showAlertVariant(d.error || 'Lỗi!', 'error');
+    }
+  } catch(e) {
+    showAlertVariant('Lỗi kết nối!', 'error');
+  }
+  return false;
+}
+
+async function deleteVariant(variantId) {
+  if (!confirm('Xóa phân loại này?\n\nHành động này không thể hoàn tác.')) return;
+  try {
+    const r = await fetch(VAR_API + '/' + variantId, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) { location.reload(); }
+    else { alert('Lỗi: ' + (d.error || '')); }
+  } catch(e) { alert('Lỗi kết nối!'); }
+}
+
+// ─── IMAGE: Product ───
+async function uploadProdImg(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('product_id', PRODUCT_ID);
+  fd.append('is_primary', 'false');
+
+  const btn = input.previousElementSibling;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+  try {
+    const r = await fetch(IMG_API, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      addProdImgToGallery(d.image);
+    } else {
+      alert('Lỗi upload: ' + (d.error || ''));
+    }
+  } catch(e) { alert('Lỗi kết nối!'); }
+  finally { btn.innerHTML = orig; input.value = ''; }
+}
+
+function addProdImgToGallery(img) {
+  const gal = document.getElementById('product-img-gallery');
+  const wrap = document.createElement('div');
+  wrap.style.position = 'relative';
+  wrap.style.display = 'inline-block';
+  wrap.innerHTML = `
+    <img src="${img.image_url}" class="product-img-thumb" onclick="toggleImgSelect(this, ${img.image_id})" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #334155;"/>
+    <button onclick="removeProductImg(${img.image_id})" style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#ef4444;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:white;line-height:1;">✕</button>
+  `;
+  gal.appendChild(wrap);
+}
+
+async function removeProductImg(imageId) {
+  if (!confirm('Xóa ảnh này?')) return;
+  try {
+    const r = await fetch(IMG_API + '/' + imageId, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) {
+      document.querySelector(`[data-id="${imageId}"]`)?.remove();
+    }
+  } catch(e) {}
+}
+
+function toggleImgSelect(el, imageId) {
+  document.querySelectorAll('#product-img-gallery .product-img-thumb').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  // Set as primary
+  fetch(IMG_API + '/' + imageId, {
+    method: 'PUT',
+    body: new FormData().append('is_primary', 'true')
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      document.querySelectorAll('#product-img-gallery .product-img-thumb').forEach(i => {
+        const wrap = i.closest('.img-thumb-wrap');
+        if (wrap) {
+          const star = wrap.querySelector('span');
+          if (star) star.remove();
+        }
+        i.classList.remove('selected');
+      });
+      el.classList.add('selected');
+      const wrap = el.closest('.img-thumb-wrap') || el.parentElement;
+      const star = document.createElement('span');
+      star.style.cssText = 'position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 4px;border-radius:3px;font-weight:700;';
+      star.textContent = '★';
+      wrap.style.position = 'relative';
+      wrap.insertBefore(star, wrap.firstChild);
+    }
+  });
+}
+
+// ─── IMAGE: Variant ───
+async function uploadVarImg(input, variantId) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('product_id', PRODUCT_ID);
+  fd.append('variant_id', variantId);
+  fd.append('is_primary', 'false');
+
+  try {
+    const r = await fetch(IMG_API, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      const gal = document.getElementById('var-gallery-' + variantId);
+      const newItem = document.createElement('div');
+      newItem.className = 'var-img-item';
+      newItem.innerHTML = `
+        <img src="${d.image.image_url}" onclick="toggleVarImgSelect(this, ${d.image.image_id}, ${variantId})"/>
+        <button class="remove-img" onclick="removeVarImg(${d.image.image_id})">✕</button>
+      `;
+      gal.insertBefore(newItem, gal.lastElementChild);
+    } else {
+      alert('Lỗi upload: ' + (d.error || ''));
+    }
+  } catch(e) { alert('Lỗi kết nối!'); }
+  finally { input.value = ''; }
+}
+
+async function removeVarImg(imageId) {
+  if (!confirm('Xóa ảnh này?')) return;
+  try {
+    const r = await fetch(IMG_API + '/' + imageId, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) {
+      document.querySelector(`.var-img-item img[onclick*="${imageId}"]`)?.closest('.var-img-item')?.remove();
+    }
+  } catch(e) {}
+}
+
+function toggleVarImgSelect(el, imageId, variantId) {
+  fetch(IMG_API + '/' + imageId, {
+    method: 'PUT',
+    body: new FormData().append('is_primary', 'true')
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      document.querySelectorAll(`#var-gallery-${variantId} img`).forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+  });
+}
+
+// ─── ALERTS ───
+function showAlertBasic(msg, type) {
+  const el = document.getElementById('alertBasic');
+  el.textContent = msg;
+  el.className = 'alert-msg ' + (type === 'error' ? 'alert-error' : 'alert-success');
+  el.style.display = msg ? 'block' : 'none';
+  if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+function showAlertVariant(msg, type) {
+  const el = document.getElementById('alertVariant');
+  el.textContent = msg;
+  el.className = 'alert-msg ' + (type === 'error' ? 'alert-error' : 'alert-success');
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// ─── COLOR HEX SYNC ───
+document.getElementById('v-color-hex').addEventListener('input', function() {
+  document.getElementById('v-color-hex-text').value = this.value;
+});
+document.getElementById('v-color-hex-text').addEventListener('input', function() {
+  if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+    document.getElementById('v-color-hex').value = this.value;
+  }
+});
+</script>
+</body>
+</html>

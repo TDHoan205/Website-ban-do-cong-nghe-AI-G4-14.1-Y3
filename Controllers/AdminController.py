@@ -8,7 +8,7 @@ from sqlalchemy import func, or_
 from Data.database import get_db
 from Services.AuthService import AuthService
 from Models.Account import Account, Role
-from Models.Product import Product
+from Models.Product import Product, ProductVariant, ProductImage
 from Models.Category import Category
 from Models.Supplier import Supplier
 from Models.Order import Order, OrderItem
@@ -734,8 +734,310 @@ async def api_get_product(request: Request, product_id: int, db: Session = Depen
             "is_new": prod.is_new,
             "is_hot": prod.is_hot,
             "discount_percent": prod.discount_percent or 0,
+            "variants": [
+                {
+                    "variant_id": v.variant_id,
+                    "color": v.color or "",
+                    "color_hex": v.color_hex or "",
+                    "storage": v.storage or "",
+                    "ram": v.ram or "",
+                    "variant_name": v.variant_name or "",
+                    "sku": v.sku or "",
+                    "price": float(v.price) if v.price else None,
+                    "stock_quantity": v.stock_quantity or 0,
+                    "is_active": v.is_active,
+                }
+                for v in prod.variants
+            ],
+            "product_images": [
+                {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary}
+                for i in prod.product_images
+            ],
         }
     })
+
+
+# =====================================================================
+# TRANG: CHỈNH SỬA SẢN PHẨM (với Variant Management)
+# =====================================================================
+
+@router.get("/Products/{product_id}/edit", response_class=HTMLResponse)
+async def edit_product_page(request: Request, product_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return RedirectResponse(url="/Admin/Login", status_code=303)
+
+    prod = db.query(Product).filter(Product.product_id == product_id).first()
+    if not prod:
+        return RedirectResponse(url="/Admin/Products", status_code=303)
+
+    categories = db.query(Category).filter(Category.is_active == True).all()
+    suppliers = db.query(Supplier).filter(Supplier.is_active == True).all()
+
+    # Load variants with images
+    variants_data = []
+    for v in prod.variants:
+        imgs = db.query(ProductImage).filter(
+            ProductImage.variant_id == v.variant_id
+        ).order_by(ProductImage.display_order).all()
+        variants_data.append({
+            "variant_id": v.variant_id,
+            "color": v.color or "",
+            "color_hex": v.color_hex or "",
+            "storage": v.storage or "",
+            "ram": v.ram or "",
+            "variant_name": v.variant_name or "",
+            "sku": v.sku or "",
+            "price": float(v.price) if v.price else None,
+            "original_price": float(v.original_price) if v.original_price else None,
+            "stock_quantity": v.stock_quantity or 0,
+            "display_order": v.display_order or 0,
+            "is_active": v.is_active,
+            "images": [
+                {"image_id": i.image_id, "image_url": i.image_url,
+                 "is_primary": i.is_primary, "display_order": i.display_order}
+                for i in imgs
+            ]
+        })
+
+    # Product-level images (no variant)
+    product_images = [
+        {"image_id": i.image_id, "image_url": i.image_url,
+         "is_primary": i.is_primary, "display_order": i.display_order}
+        for i in prod.product_images if not i.variant_id
+    ]
+
+    return templates.TemplateResponse(
+        "Admin/product_edit.html",
+        {
+            "request": request,
+            "admin": admin,
+            "product": prod,
+            "categories": categories,
+            "suppliers": suppliers,
+            "variants": variants_data,
+            "product_images": product_images,
+        }
+    )
+
+
+# =====================================================================
+# API: VARIANTS (CRUD)
+# =====================================================================
+
+@router.post("/API/Variants")
+async def api_create_variant(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    form = await request.form()
+    product_id = int(form.get("product_id", 0))
+    if not db.query(Product).filter(Product.product_id == product_id).first():
+        return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
+
+    variant = ProductVariant(
+        product_id=product_id,
+        color=form.get("color", "").strip() or None,
+        color_hex=form.get("color_hex", "").strip() or None,
+        storage=form.get("storage", "").strip() or None,
+        ram=form.get("ram", "").strip() or None,
+        variant_name=form.get("variant_name", "").strip() or None,
+        sku=form.get("sku", "").strip() or None,
+        price=float(form.get("price")) if form.get("price") else None,
+        original_price=float(form.get("original_price")) if form.get("original_price") else None,
+        stock_quantity=int(form.get("stock_quantity", 0)),
+        display_order=int(form.get("display_order", 0)),
+        is_active=True,
+    )
+    db.add(variant)
+    db.commit()
+    db.refresh(variant)
+    return JSONResponse({"success": True, "variant_id": variant.variant_id})
+
+
+@router.put("/API/Variants/{variant_id}")
+async def api_update_variant(request: Request, variant_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
+    if not variant:
+        return JSONResponse({"success": False, "error": "Khong tim thay bien the"}, status_code=404)
+
+    form = await request.form()
+    variant.color = form.get("color", "").strip() or None
+    variant.color_hex = form.get("color_hex", "").strip() or None
+    variant.storage = form.get("storage", "").strip() or None
+    variant.ram = form.get("ram", "").strip() or None
+    variant.variant_name = form.get("variant_name", "").strip() or None
+    variant.sku = form.get("sku", "").strip() or None
+    if form.get("price"):
+        variant.price = float(form.get("price"))
+    if form.get("original_price"):
+        variant.original_price = float(form.get("original_price"))
+    variant.stock_quantity = int(form.get("stock_quantity", 0))
+    variant.display_order = int(form.get("display_order", 0))
+    variant.is_active = form.get("is_active", "true") == "true"
+
+    db.commit()
+    return JSONResponse({"success": True})
+
+
+@router.delete("/API/Variants/{variant_id}")
+async def api_delete_variant(request: Request, variant_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
+    if not variant:
+        return JSONResponse({"success": False, "error": "Khong tim thay bien the"}, status_code=404)
+
+    db.delete(variant)
+    db.commit()
+    return JSONResponse({"success": True})
+
+
+@router.get("/API/Variants/{variant_id}")
+async def api_get_variant(request: Request, variant_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
+    if not variant:
+        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+
+    imgs = db.query(ProductImage).filter(
+        ProductImage.variant_id == variant_id
+    ).order_by(ProductImage.display_order).all()
+
+    return JSONResponse({
+        "success": True,
+        "variant": {
+            "variant_id": variant.variant_id,
+            "product_id": variant.product_id,
+            "color": variant.color or "",
+            "color_hex": variant.color_hex or "",
+            "storage": variant.storage or "",
+            "ram": variant.ram or "",
+            "variant_name": variant.variant_name or "",
+            "sku": variant.sku or "",
+            "price": float(variant.price) if variant.price else None,
+            "original_price": float(variant.original_price) if variant.original_price else None,
+            "stock_quantity": variant.stock_quantity or 0,
+            "display_order": variant.display_order or 0,
+            "is_active": variant.is_active,
+            "images": [
+                {"image_id": i.image_id, "image_url": i.image_url,
+                 "is_primary": i.is_primary, "display_order": i.display_order}
+                for i in imgs
+            ]
+        }
+    })
+
+
+# =====================================================================
+# API: PRODUCT IMAGES
+# =====================================================================
+
+@router.post("/API/ProductImages")
+async def api_upload_product_image(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    form = await request.form()
+    product_id = int(form.get("product_id", 0))
+    variant_id = form.get("variant_id")
+    variant_id = int(variant_id) if variant_id and variant_id != "" else None
+    image_url = form.get("image_url", "").strip()
+    is_primary = form.get("is_primary", "false") == "true"
+    display_order = int(form.get("display_order", 0))
+
+    if not db.query(Product).filter(Product.product_id == product_id).first():
+        return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
+
+    if variant_id and not db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first():
+        return JSONResponse({"success": False, "error": "Bien the khong ton tai"}, status_code=404)
+
+    if is_primary and variant_id:
+        db.query(ProductImage).filter(
+            ProductImage.variant_id == variant_id
+        ).update({"is_primary": False})
+    elif is_primary:
+        db.query(ProductImage).filter(
+            ProductImage.product_id == product_id,
+            ProductImage.variant_id == None
+        ).update({"is_primary": False})
+
+    img = ProductImage(
+        product_id=product_id,
+        variant_id=variant_id,
+        image_url=image_url,
+        is_primary=is_primary,
+        display_order=display_order,
+    )
+    db.add(img)
+    db.commit()
+    db.refresh(img)
+    return JSONResponse({
+        "success": True,
+        "image": {
+            "image_id": img.image_id,
+            "image_url": img.image_url,
+            "is_primary": img.is_primary,
+            "display_order": img.display_order,
+        }
+    })
+
+
+@router.delete("/API/ProductImages/{image_id}")
+async def api_delete_product_image(request: Request, image_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    img = db.query(ProductImage).filter(ProductImage.image_id == image_id).first()
+    if not img:
+        return JSONResponse({"success": False, "error": "Khong tim thay anh"}, status_code=404)
+
+    db.delete(img)
+    db.commit()
+    return JSONResponse({"success": True})
+
+
+@router.put("/API/ProductImages/{image_id}")
+async def api_update_product_image(request: Request, image_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    img = db.query(ProductImage).filter(ProductImage.image_id == image_id).first()
+    if not img:
+        return JSONResponse({"success": False, "error": "Khong tim thay anh"}, status_code=404)
+
+    form = await request.form()
+    if form.get("is_primary") == "true":
+        db.query(ProductImage).filter(
+            ProductImage.variant_id == img.variant_id,
+            ProductImage.image_id != image_id
+        ).update({"is_primary": False})
+        img.is_primary = True
+    img.display_order = int(form.get("display_order", 0))
+
+    db.commit()
+    return JSONResponse({"success": True})
 
 
 # =====================================================================
