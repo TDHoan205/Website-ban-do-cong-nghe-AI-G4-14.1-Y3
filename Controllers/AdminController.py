@@ -13,10 +13,14 @@ from Models.Category import Category
 from Models.Supplier import Supplier
 from Models.Order import Order, OrderItem
 from Models.Order import OrderStatus
+from Models.Chat import ChatSession, ChatMessage
+from fastapi.templating import Jinja2Templates
 import json
 import os
 import shutil
 import uuid
+
+templates = Jinja2Templates(directory="Views")
 
 router = APIRouter(prefix="/Admin")
 
@@ -203,6 +207,60 @@ async def admin_suppliers(request: Request, db: Session = Depends(get_db)):
             "suppliers": suppliers,
         }
     )
+
+
+# =====================================================================
+# API: CHATS (ADMIN)
+# =====================================================================
+
+@router.get("/Chats", response_class=HTMLResponse)
+async def admin_chats(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException as e:
+        if e.status_code == 401:
+            return RedirectResponse(url="/Auth/Admin", status_code=303)
+        raise
+
+    sessions = db.query(ChatSession).order_by(ChatSession.started_at.desc()).all()
+
+    return templates.TemplateResponse(
+        "Admin/chats.html",
+        {
+            "request": request,
+            "page_title": "Lịch sử Chat",
+            "admin": admin,
+            "sessions": sessions,
+        }
+    )
+
+
+@router.get("/API/Chats/{session_uuid}")
+async def api_get_chat_messages(request: Request, session_uuid: str, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    session = db.query(ChatSession).filter(ChatSession.session_uuid == session_uuid).first()
+    if not session:
+        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+
+    messages = db.query(ChatMessage).filter(ChatMessage.session_id == session.session_id).order_by(ChatMessage.created_at.asc()).all()
+
+    msg_list = []
+    for m in messages:
+        msg_list.append({
+            "message_id": m.message_id,
+            "sender": m.sender_type,
+            "content": m.message_content,
+            "created_at": m.created_at.strftime('%H:%M:%S %d/%m/%Y') if m.created_at else ""
+        })
+
+    return JSONResponse({
+        "success": True,
+        "messages": msg_list
+    })
 
 
 # =====================================================================

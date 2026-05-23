@@ -211,5 +211,81 @@ CREATE TABLE OrderItems (
 
 
 
+-- ChatSessions
+CREATE TABLE ChatSessions (
+    session_id INT IDENTITY(1,1) PRIMARY KEY,
+    session_uuid NVARCHAR(36) NOT NULL UNIQUE,
+    account_id INT NULL,
+    device_info NVARCHAR(255) NULL,
+    started_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    ended_at DATETIME2 NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    CONSTRAINT FK_ChatSessions_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
 
+-- ChatMessages
+CREATE TABLE ChatMessages (
+    message_id INT IDENTITY(1,1) PRIMARY KEY,
+    session_id INT NOT NULL,
+    sender_type NVARCHAR(20) NOT NULL,
+    message_content NVARCHAR(MAX) NOT NULL,
+    intent NVARCHAR(50) NULL,
+    confidence_score NVARCHAR(10) NULL,
+    is_product_recommendation BIT NOT NULL DEFAULT 0,
+    recommended_product_ids NVARCHAR(255) NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_ChatMessages_ChatSessions FOREIGN KEY (session_id) REFERENCES ChatSessions(session_id) ON DELETE CASCADE
+);
+
+-- AIConversationLogs
+CREATE TABLE AIConversationLogs (
+    log_id INT IDENTITY(1,1) PRIMARY KEY,
+    session_id INT NOT NULL,
+    account_id INT NULL,
+    user_message NVARCHAR(MAX) NULL,
+    bot_response NVARCHAR(MAX) NULL,
+    intent_detected NVARCHAR(50) NULL,
+    confidence_score NVARCHAR(10) NULL,
+    response_time_ms INT NULL,
+    is_escalated_to_staff BIT NOT NULL DEFAULT 0,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_AIConversationLogs_ChatSessions FOREIGN KEY (session_id) REFERENCES ChatSessions(session_id),
+    CONSTRAINT FK_AIConversationLogs_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
+
+-- FAQs
+CREATE TABLE FAQs (
+    faq_id INT IDENTITY(1,1) PRIMARY KEY,
+    question NVARCHAR(500) NOT NULL,
+    answer NVARCHAR(MAX) NOT NULL,
+    category NVARCHAR(50) NULL,
+    display_order INT NOT NULL DEFAULT 0,
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL
+);
+
+-- Notifications
+CREATE TABLE Notifications (
+    notification_id INT IDENTITY(1,1) PRIMARY KEY,
+    account_id INT NULL,
+    title NVARCHAR(200) NOT NULL,
+    content NVARCHAR(MAX) NOT NULL,
+    notification_type NVARCHAR(50) NULL,
+    is_read BIT NOT NULL DEFAULT 0,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_Notifications_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
+
+-- KnowledgeChunks
+CREATE TABLE KnowledgeChunks (
+    chunk_id INT IDENTITY(1,1) PRIMARY KEY,
+    content NVARCHAR(MAX) NOT NULL,
+    content_type NVARCHAR(50) NULL,
+    source_id INT NULL,
+    source_table NVARCHAR(50) NULL,
+    embedding_vector NVARCHAR(MAX) NULL,
+    metadata_json NVARCHAR(MAX) NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+);
 
