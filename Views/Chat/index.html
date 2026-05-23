@@ -370,33 +370,6 @@
       const urlParams = new URLSearchParams(window.location.search);
       const q = urlParams.get("q");
       if (q) setTimeout(function() { sendMessage(q); }, 500);
-
-      // Load chat history
-      async function loadChatHistory() {
-        if (!sessionUuid) return;
-        try {
-          const r = await fetch(`/Chat/History/${sessionUuid}`);
-          if (r.ok) {
-            const data = await r.json();
-            if (data.messages && data.messages.length > 0) {
-              // Clear default messages
-              chatMessages.innerHTML = '';
-              data.messages.forEach(msg => {
-                const sender = msg.sender === 'user' ? 'user' : 'bot';
-                addMessage(msg.content, sender);
-              });
-              // Hide quick actions
-              document.getElementById("quick-actions").style.display = "none";
-            }
-          }
-        } catch (err) {
-          console.error("Lỗi tải lịch sử chat:", err);
-        }
-      }
-
-      window.addEventListener('DOMContentLoaded', () => {
-        loadChatHistory();
-      });
     </script>
   </body>
 </html>
