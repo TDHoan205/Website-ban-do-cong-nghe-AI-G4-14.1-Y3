@@ -2,16 +2,14 @@
 Database Configuration - Kết nối SQL Server
 Tương tự Data/AppDbContext.cs trong ASP.NET Core
 """
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
-import urllib.parse
+import urllib
 
 # Cấu hình SQL Server - Sửa theo server của bạn
 SQL_SERVER_CONFIG = {
-    # Allow overriding server via environment variable `DB_SERVER`.
-    "server": os.getenv("DB_SERVER", "localhost"),
+    "server": "DESKTOP-1TM8FSO",
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication

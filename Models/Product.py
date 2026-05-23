@@ -62,6 +62,7 @@ class ProductVariant(Base):
     variant_id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("Products.product_id"), nullable=False)
     color = Column(String(50))
+    color_hex = Column(String(7))  # Mã màu hex cho swatch (VD: #FF5733)
     storage = Column(String(20))
     ram = Column(String(20))
     variant_name = Column(String(100))
@@ -74,6 +75,7 @@ class ProductVariant(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product", back_populates="variants")
+    variant_images = relationship("ProductImage", back_populates="variant", cascade="all, delete-orphan")
     order_items = relationship("OrderItem", back_populates="variant")
     cart_items = relationship("CartItem", back_populates="variant")
 
@@ -92,12 +94,14 @@ class ProductImage(Base):
 
     image_id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("Products.product_id"), nullable=False)
+    variant_id = Column(Integer, ForeignKey("ProductVariants.variant_id"), nullable=True)
     image_url = Column(String(500), nullable=False)
     display_order = Column(Integer, default=0)
     is_primary = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product", back_populates="product_images")
+    variant = relationship("ProductVariant", back_populates="variant_images")
 
     def __repr__(self):
         return f"<ProductImage(product_id={self.product_id})>"

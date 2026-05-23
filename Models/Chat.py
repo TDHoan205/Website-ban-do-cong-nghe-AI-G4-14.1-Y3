@@ -3,17 +3,9 @@ Chat Models - AI Chatbot
 Tương đương Models/AI/Chat/Entities/ trong C#
 """
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
-from sqlalchemy.orm import relationship, synonym
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
-
-# Import for type hinting and relationship resolution
-# Account is imported here to avoid "Undefined name" errors in IDEs
-# and to ensure SQLAlchemy can find the model if it's not already in the registry.
-# However, to avoid circular imports with Models/__init__.py, we can use string references
-# which are already used below. If you see errors about "Account" not being defined,
-# it's usually because the model hasn't been loaded into the Base metadata yet.
-
 
 
 class ChatSession(Base):
@@ -121,10 +113,7 @@ class KnowledgeChunk(Base):
     source_id = Column(Integer)  # Reference to source entity
     source_table = Column(String(50))  # Table name
     embedding_vector = Column(Text)  # Vector embedding
-    # Store metadata as JSON string. Use `metadata_json` attribute by default,
-    # and expose `chunk_metadata` synonym for older code compatibility.
     metadata_json = Column(Text)  # JSON metadata
-    chunk_metadata = synonym('metadata_json')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):

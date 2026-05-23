@@ -781,6 +781,81 @@
         text-decoration: none;
       }
       .product-add-btn:hover { background: #0a58ca; color: white; }
+
+      /* Variant selectors */
+      .variant-selectors {
+        padding: 0 14px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .variant-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .variant-label {
+        font-size: 0.72rem;
+        color: #9ca3af;
+        font-weight: 500;
+        min-width: 40px;
+      }
+      .color-swatches {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .color-swatch {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .color-swatch:hover { transform: scale(1.15); }
+      .color-swatch.selected {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px white, 0 0 0 4px #0d6efd;
+      }
+      .color-swatch.no-color {
+        background: #e5e7eb;
+        border: 2px dashed #d1d5db;
+      }
+      .color-swatch.no-color.selected {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px white, 0 0 0 4px #0d6efd;
+      }
+      .storage-btns {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .storage-btn {
+        padding: 3px 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 5px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: white;
+        color: #374151;
+        font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .storage-btn:hover { border-color: #0d6efd; color: #0d6efd; }
+      .storage-btn.selected {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+      }
+      .variant-price-hint {
+        font-size: 0.68rem;
+        color: #9ca3af;
+        margin-top: 2px;
+      }
       .product-empty {
         grid-column: 1 / -1;
         text-align: center;
@@ -1427,7 +1502,10 @@
             <div class="products-grid">
               {% if new_products %}
                 {% for product in new_products %}
-                <div class="product-card">
+                {% set pvariants = new_variants[product.product_id] if product.product_id in new_variants else [] %}
+                {% set has_colors = pvariants | selectattr('color') | list | length > 0 %}
+                {% set has_storage = pvariants | selectattr('storage') | list | length > 0 %}
+                <div class="product-card" data-product-id="{{ product.product_id }}">
                   <a href="/Products/{{ product.product_id }}" class="product-img-wrap">
                     {% if product.is_new %}
                     <span class="product-badge badge-new">Mới</span>
@@ -1441,6 +1519,8 @@
                     <img
                       src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
                       alt="{{ product.name }}"
+                      class="product-main-img"
+                      data-default-img="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
                       onerror="this.src='/static/images/no-image.png'"
                     />
                   </a>
@@ -1459,12 +1539,55 @@
                       <span class="product-reviews">({{ product.rating | default(4.5) }})</span>
                     </div>
                     <div class="product-price-wrap">
-                      <span class="product-price">{{ "{:,.0f}".format(product.price | float) if product.price else '0' }} đ</span>
+                      <span class="product-price product-display-price">{{ "{:,.0f}".format(product.price | float) if product.price else '0' }} đ</span>
                       {% if product.original_price and product.original_price > product.price %}
                       <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
+                    {% if has_colors or has_storage %}
+                    <div class="variant-selectors">
+                      {% if has_colors %}
+                      <div class="variant-row">
+                        <span class="variant-label">Màu:</span>
+                        <div class="color-swatches" id="swatches-{{ product.product_id }}">
+                          {% for v in pvariants %}
+                          {% if v.color %}
+                          <div class="color-swatch {% if loop.first %}selected{% endif %}"
+                               data-variant-id="{{ v.variant_id }}"
+                               data-color="{{ v.color }}"
+                               data-color-hex="{{ v.color_hex or '' }}"
+                               data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}"
+                               data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}"
+                               style="{% if v.color_hex %}background:{{ v.color_hex }};{% endif %}"
+                               title="{{ v.color }}">
+                            {% if not v.color_hex %}<i class="fas fa-circle" style="font-size:0.6rem;color:#9ca3af;"></i>{% endif %}
+                          </div>
+                          {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                      {% endif %}
+                      {% if has_storage %}
+                      <div class="variant-row">
+                        <span class="variant-label">Dung lượng:</span>
+                        <div class="storage-btns" id="storage-{{ product.product_id }}">
+                          {% for v in pvariants %}
+                          {% if v.storage %}
+                          <button class="storage-btn {% if loop.first %}selected{% endif %}"
+                                  data-variant-id="{{ v.variant_id }}"
+                                  data-storage="{{ v.storage }}"
+                                  data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}">
+                            {{ v.storage }}
+                          </button>
+                          {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                      {% endif %}
+                    </div>
+                    {% endif %}
+                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;" onsubmit="return addToCartWithVariant(this, {{ product.product_id }})">
+                      <input type="hidden" name="variant_id" id="variant-{{ product.product_id }}" value="">
                       <button type="submit" class="product-add-btn">
                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                       </button>
@@ -1486,7 +1609,10 @@
             <div class="products-grid">
               {% if featured_products %}
                 {% for product in featured_products %}
-                <div class="product-card">
+                {% set pvariants = featured_variants[product.product_id] if product.product_id in featured_variants else [] %}
+                {% set has_colors = pvariants | selectattr('color') | list | length > 0 %}
+                {% set has_storage = pvariants | selectattr('storage') | list | length > 0 %}
+                <div class="product-card" data-product-id="{{ product.product_id }}">
                   <a href="/Products/{{ product.product_id }}" class="product-img-wrap">
                     {% if product.is_hot %}
                     <span class="product-badge badge-hot">Hot</span>
@@ -1500,6 +1626,8 @@
                     <img
                       src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
                       alt="{{ product.name }}"
+                      class="product-main-img"
+                      data-default-img="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
                       onerror="this.src='/static/images/no-image.png'"
                     />
                   </a>
@@ -1518,12 +1646,55 @@
                       <span class="product-reviews">({{ product.rating | default(4.5) }})</span>
                     </div>
                     <div class="product-price-wrap">
-                      <span class="product-price">{{ "{:,.0f}".format(product.price | float) if product.price else '0' }} đ</span>
+                      <span class="product-price product-display-price">{{ "{:,.0f}".format(product.price | float) if product.price else '0' }} đ</span>
                       {% if product.original_price and product.original_price > product.price %}
                       <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
+                    {% if has_colors or has_storage %}
+                    <div class="variant-selectors">
+                      {% if has_colors %}
+                      <div class="variant-row">
+                        <span class="variant-label">Màu:</span>
+                        <div class="color-swatches" id="swatches-{{ product.product_id }}">
+                          {% for v in pvariants %}
+                          {% if v.color %}
+                          <div class="color-swatch {% if loop.first %}selected{% endif %}"
+                               data-variant-id="{{ v.variant_id }}"
+                               data-color="{{ v.color }}"
+                               data-color-hex="{{ v.color_hex or '' }}"
+                               data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}"
+                               data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}"
+                               style="{% if v.color_hex %}background:{{ v.color_hex }};{% endif %}"
+                               title="{{ v.color }}">
+                            {% if not v.color_hex %}<i class="fas fa-circle" style="font-size:0.6rem;color:#9ca3af;"></i>{% endif %}
+                          </div>
+                          {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                      {% endif %}
+                      {% if has_storage %}
+                      <div class="variant-row">
+                        <span class="variant-label">Dung lượng:</span>
+                        <div class="storage-btns" id="storage-{{ product.product_id }}">
+                          {% for v in pvariants %}
+                          {% if v.storage %}
+                          <button class="storage-btn {% if loop.first %}selected{% endif %}"
+                                  data-variant-id="{{ v.variant_id }}"
+                                  data-storage="{{ v.storage }}"
+                                  data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}">
+                            {{ v.storage }}
+                          </button>
+                          {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                      {% endif %}
+                    </div>
+                    {% endif %}
+                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;" onsubmit="return addToCartWithVariant(this, {{ product.product_id }})">
+                      <input type="hidden" name="variant_id" id="variant-{{ product.product_id }}" value="">
                       <button type="submit" class="product-add-btn">
                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                       </button>
@@ -1556,6 +1727,107 @@
           document.getElementById(tabName).classList.add("active");
           evt.currentTarget.classList.add("active");
         }
+      </script>
+
+      <script>
+      // ─── Variant Selection Logic ───
+      function getSelectedVariantId(productId) {
+        // Storage takes priority, then color
+        const storageContainer = document.getElementById('storage-' + productId);
+        const swatchContainer = document.getElementById('swatches-' + productId);
+
+        let variantId = '';
+
+        if (storageContainer) {
+          const selected = storageContainer.querySelector('.storage-btn.selected');
+          if (selected) variantId = selected.dataset.variantId;
+        }
+
+        if (!variantId && swatchContainer) {
+          const selected = swatchContainer.querySelector('.color-swatch.selected');
+          if (selected) variantId = selected.dataset.variantId;
+        }
+
+        return variantId;
+      }
+
+      function addToCartWithVariant(form, productId) {
+        const variantId = getSelectedVariantId(productId);
+        const hiddenInput = document.getElementById('variant-' + productId);
+        if (hiddenInput) hiddenInput.value = variantId;
+        return true;
+      }
+
+      // Color swatch click
+      document.addEventListener('click', function(e) {
+        const swatch = e.target.closest('.color-swatch');
+        if (!swatch) return;
+
+        const container = swatch.parentElement;
+        container.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        swatch.classList.add('selected');
+
+        const productCard = swatch.closest('.product-card');
+        const productId = productCard.dataset.productId;
+
+        // Change image
+        const img = productCard.querySelector('.product-main-img');
+        const imgUrl = swatch.dataset.img;
+        if (imgUrl) {
+          img.src = imgUrl;
+        }
+
+        // Update price
+        const price = swatch.dataset.price;
+        if (price) {
+          const priceEl = productCard.querySelector('.product-display-price');
+          if (priceEl) priceEl.textContent = price + ' đ';
+        }
+      });
+
+      // Storage button click
+      document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.storage-btn');
+        if (!btn) return;
+
+        const container = btn.parentElement;
+        container.querySelectorAll('.storage-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        const productCard = btn.closest('.product-card');
+        const productId = productCard.dataset.productId;
+
+        // If there's also a color selector, find the matching variant
+        const swatchContainer = document.getElementById('swatches-' + productId);
+        if (swatchContainer) {
+          const selectedStorage = btn.dataset.storage;
+          const swatches = swatchContainer.querySelectorAll('.color-swatch');
+          let matchedSwatch = null;
+          for (const s of swatches) {
+            // Try to find a swatch whose variant matches selected storage
+            const variantId = s.dataset.variantId;
+            const storageBtns = document.querySelectorAll(`#storage-${productId} .storage-btn[data-variant-id="${variantId}"]`);
+            if (storageBtns.length > 0 && storageBtns[0].dataset.storage === selectedStorage) {
+              matchedSwatch = s;
+              break;
+            }
+          }
+          if (matchedSwatch) {
+            swatchContainer.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            matchedSwatch.classList.add('selected');
+            const img = productCard.querySelector('.product-main-img');
+            const imgUrl = matchedSwatch.dataset.img;
+            if (imgUrl) img.src = imgUrl;
+          }
+        }
+
+        // Update price
+        const price = btn.dataset.price;
+        if (price) {
+          const priceEl = productCard.querySelector('.product-display-price');
+          if (priceEl) priceEl.textContent = price + ' đ';
+        }
+      });
       </script>
 
       <section class="why-section">

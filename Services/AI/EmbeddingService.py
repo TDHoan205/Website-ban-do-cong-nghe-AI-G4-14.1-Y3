@@ -30,7 +30,7 @@ class EmbeddingService:
 
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY", "")
-        self.model = os.getenv("EMBEDDING_MODEL", "text-embedding-004")
+        self.model = os.getenv("EMBEDDING_MODEL", "gemini-embedding-2")
         self.client = None
         self._init_client()
 
