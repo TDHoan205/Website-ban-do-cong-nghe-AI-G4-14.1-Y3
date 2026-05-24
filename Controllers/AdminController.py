@@ -5,6 +5,18 @@ from fastapi import APIRouter, Request, Depends, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
+from sqlalchemy.orm import joinedload
+from decimal import Decimal
+from Data.database import get_db
+from Models import (
+    Account, Employee, Role, Category, Supplier,
+    Product, ProductVariant, ProductImage,
+    Inventory, ReceiptShipment, Cart, CartItem,
+    Order, OrderItem, ChatSession, ChatMessage,
+    AIConversationLog, FAQ, Notification, KnowledgeChunk
+)
+from Services.AuthService import AuthService
+from datetime import datetime
 from Data.database import get_db
 from Services.AuthService import AuthService
 from Models.Account import Account, Role
@@ -629,8 +641,8 @@ async def api_create_product(request: Request, db: Session = Depends(get_db)):
 
     prod = Product(
         name=name,
-        price=price,
-        original_price=original_price,
+        price=Decimal(str(price)),
+        original_price=Decimal(str(original_price)) if original_price else None,
         description=description,
         image_url=image_url or None,
         stock_quantity=stock,
@@ -640,7 +652,7 @@ async def api_create_product(request: Request, db: Session = Depends(get_db)):
         is_new=is_new,
         is_hot=is_hot,
         discount_percent=discount,
-        rating=4.5,
+        rating=Decimal("4.5"),
     )
     db.add(prod)
     db.commit()
@@ -718,6 +730,14 @@ async def api_get_product(request: Request, product_id: int, db: Session = Depen
     if not prod:
         return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
 
+    # Safe load - use separate queries to avoid DB column errors
+    try:
+        variants = db.query(ProductVariant).filter(ProductVariant.product_id == product_id).all()
+        product_images = db.query(ProductImage).filter(ProductImage.product_id == product_id).all()
+    except Exception:
+        variants = []
+        product_images = []
+
     return JSONResponse({
         "success": True,
         "product": {
@@ -738,7 +758,7 @@ async def api_get_product(request: Request, product_id: int, db: Session = Depen
                 {
                     "variant_id": v.variant_id,
                     "color": v.color or "",
-                    "color_hex": v.color_hex or "",
+                    "color_hex": getattr(v, "color_hex", "") or "",
                     "storage": v.storage or "",
                     "ram": v.ram or "",
                     "variant_name": v.variant_name or "",
@@ -747,11 +767,11 @@ async def api_get_product(request: Request, product_id: int, db: Session = Depen
                     "stock_quantity": v.stock_quantity or 0,
                     "is_active": v.is_active,
                 }
-                for v in prod.variants
+                for v in variants
             ],
             "product_images": [
                 {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary}
-                for i in prod.product_images
+                for i in product_images
             ],
         }
     })
@@ -775,16 +795,22 @@ async def edit_product_page(request: Request, product_id: int, db: Session = Dep
     categories = db.query(Category).filter(Category.is_active == True).all()
     suppliers = db.query(Supplier).filter(Supplier.is_active == True).all()
 
-    # Load variants with images
+    # Safe load - use separate queries to avoid DB column errors
+    try:
+        variants_list = db.query(ProductVariant).filter(ProductVariant.product_id == product_id).all()
+        all_images = db.query(ProductImage).filter(ProductImage.product_id == product_id).all()
+    except Exception:
+        variants_list = []
+        all_images = []
+
+    # Build variants_data
     variants_data = []
-    for v in prod.variants:
-        imgs = db.query(ProductImage).filter(
-            ProductImage.variant_id == v.variant_id
-        ).order_by(ProductImage.display_order).all()
+    for v in variants_list:
+        imgs = [i for i in all_images if getattr(i, "variant_id", None) == v.variant_id]
         variants_data.append({
             "variant_id": v.variant_id,
             "color": v.color or "",
-            "color_hex": v.color_hex or "",
+            "color_hex": getattr(v, "color_hex", "") or "",
             "storage": v.storage or "",
             "ram": v.ram or "",
             "variant_name": v.variant_name or "",
@@ -805,7 +831,7 @@ async def edit_product_page(request: Request, product_id: int, db: Session = Dep
     product_images = [
         {"image_id": i.image_id, "image_url": i.image_url,
          "is_primary": i.is_primary, "display_order": i.display_order}
-        for i in prod.product_images if not i.variant_id
+        for i in all_images if not getattr(i, "variant_id", None)
     ]
 
     return templates.TemplateResponse(
@@ -832,30 +858,36 @@ async def api_create_variant(request: Request, db: Session = Depends(get_db)):
         admin = _check_admin(request, db)
     except HTTPException:
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+    except Exception as e:
+        return JSONResponse({"success": False, "error": f"Loi xac thuc: {str(e)}"}, status_code=500)
 
     form = await request.form()
     product_id = int(form.get("product_id", 0))
     if not db.query(Product).filter(Product.product_id == product_id).first():
         return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
 
-    variant = ProductVariant(
-        product_id=product_id,
-        color=form.get("color", "").strip() or None,
-        color_hex=form.get("color_hex", "").strip() or None,
-        storage=form.get("storage", "").strip() or None,
-        ram=form.get("ram", "").strip() or None,
-        variant_name=form.get("variant_name", "").strip() or None,
-        sku=form.get("sku", "").strip() or None,
-        price=float(form.get("price")) if form.get("price") else None,
-        original_price=float(form.get("original_price")) if form.get("original_price") else None,
-        stock_quantity=int(form.get("stock_quantity", 0)),
-        display_order=int(form.get("display_order", 0)),
-        is_active=True,
-    )
-    db.add(variant)
-    db.commit()
-    db.refresh(variant)
-    return JSONResponse({"success": True, "variant_id": variant.variant_id})
+    try:
+        variant = ProductVariant(
+            product_id=product_id,
+            color=form.get("color", "").strip() or None,
+            color_hex=form.get("color_hex", "").strip() or None,
+            storage=form.get("storage", "").strip() or None,
+            ram=form.get("ram", "").strip() or None,
+            variant_name=form.get("variant_name", "").strip() or None,
+            sku=form.get("sku", "").strip() or None,
+            price=float(form.get("price")) if form.get("price") else None,
+            original_price=float(form.get("original_price")) if form.get("original_price") else None,
+            stock_quantity=int(form.get("stock_quantity", 0)),
+            display_order=int(form.get("display_order", 0)),
+            is_active=True,
+        )
+        db.add(variant)
+        db.commit()
+        db.refresh(variant)
+        return JSONResponse({"success": True, "variant_id": variant.variant_id})
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({"success": False, "error": f"Loi luu variant: {str(e)}"}, status_code=500)
 
 
 @router.put("/API/Variants/{variant_id}")
@@ -954,50 +986,74 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
         admin = _check_admin(request, db)
     except HTTPException:
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+    except Exception as e:
+        return JSONResponse({"success": False, "error": f"Loi xac thuc: {str(e)}"}, status_code=500)
 
     form = await request.form()
     product_id = int(form.get("product_id", 0))
     variant_id = form.get("variant_id")
     variant_id = int(variant_id) if variant_id and variant_id != "" else None
-    image_url = form.get("image_url", "").strip()
+    file = form.get("file")
     is_primary = form.get("is_primary", "false") == "true"
     display_order = int(form.get("display_order", 0))
 
     if not db.query(Product).filter(Product.product_id == product_id).first():
         return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
 
-    if variant_id and not db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first():
-        return JSONResponse({"success": False, "error": "Bien the khong ton tai"}, status_code=404)
+    if variant_id:
+        variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
+        if not variant:
+            return JSONResponse({"success": False, "error": "Bien the khong ton tai"}, status_code=404)
 
-    if is_primary and variant_id:
-        db.query(ProductImage).filter(
-            ProductImage.variant_id == variant_id
-        ).update({"is_primary": False})
-    elif is_primary:
-        db.query(ProductImage).filter(
-            ProductImage.product_id == product_id,
-            ProductImage.variant_id == None
-        ).update({"is_primary": False})
+    image_url = ""
+    if file and hasattr(file, "filename"):
+        upload_dir = os.path.join("wwwroot", "uploads", "products")
+        os.makedirs(upload_dir, exist_ok=True)
+        ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
+        filename = f"{uuid.uuid4()}{ext}"
+        filepath = os.path.join(upload_dir, filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        image_url = f"/static/uploads/products/{filename}"
+    else:
+        image_url = form.get("image_url", "").strip()
 
-    img = ProductImage(
-        product_id=product_id,
-        variant_id=variant_id,
-        image_url=image_url,
-        is_primary=is_primary,
-        display_order=display_order,
-    )
-    db.add(img)
-    db.commit()
-    db.refresh(img)
-    return JSONResponse({
-        "success": True,
-        "image": {
-            "image_id": img.image_id,
-            "image_url": img.image_url,
-            "is_primary": img.is_primary,
-            "display_order": img.display_order,
-        }
-    })
+    if not image_url:
+        return JSONResponse({"success": False, "error": "Khong co anh nao duoc upload"}, status_code=400)
+
+    try:
+        if is_primary and variant_id:
+            db.query(ProductImage).filter(
+                ProductImage.variant_id == variant_id
+            ).update({"is_primary": False})
+        elif is_primary:
+            db.query(ProductImage).filter(
+                ProductImage.product_id == product_id,
+                ProductImage.variant_id == None
+            ).update({"is_primary": False})
+
+        img = ProductImage(
+            product_id=product_id,
+            variant_id=variant_id,
+            image_url=image_url,
+            is_primary=is_primary,
+            display_order=display_order,
+        )
+        db.add(img)
+        db.commit()
+        db.refresh(img)
+        return JSONResponse({
+            "success": True,
+            "image": {
+                "image_id": img.image_id,
+                "image_url": img.image_url,
+                "is_primary": img.is_primary,
+                "display_order": img.display_order,
+            }
+        })
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({"success": False, "error": f"Loi luu anh: {str(e)}"}, status_code=500)
 
 
 @router.delete("/API/ProductImages/{image_id}")

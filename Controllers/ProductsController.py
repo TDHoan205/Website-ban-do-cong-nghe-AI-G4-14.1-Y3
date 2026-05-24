@@ -153,6 +153,49 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
         product_id, product.category_id if product.category_id else 0
     )
 
+    # Safe load variants + images using separate queries
+    try:
+        from Models.Product import ProductVariant, ProductImage
+        variants_list = db.query(ProductVariant).filter(
+            ProductVariant.product_id == product_id
+        ).all()
+        all_images = db.query(ProductImage).filter(
+            ProductImage.product_id == product_id
+        ).all()
+    except Exception:
+        variants_list = []
+        all_images = []
+
+    variants_data = []
+    for v in variants_list:
+        is_active = getattr(v, 'is_active', True)
+        if is_active == False:
+            continue
+        var_imgs = [i for i in all_images if getattr(i, 'variant_id', None) == v.variant_id]
+        if not var_imgs:
+            var_imgs = [i for i in all_images if not getattr(i, 'variant_id', None)]
+        variants_data.append({
+            "variant_id": v.variant_id,
+            "color": v.color or "",
+            "color_hex": getattr(v, 'color_hex', "") or "",
+            "storage": v.storage or "",
+            "ram": v.ram or "",
+            "variant_name": v.variant_name or "",
+            "price": float(v.price) if v.price else None,
+            "original_price": float(v.original_price) if v.original_price else None,
+            "stock_quantity": getattr(v, 'stock_quantity', 0) or 0,
+            "is_active": is_active,
+            "images": [
+                {"image_url": i.image_url, "is_primary": i.is_primary}
+                for i in var_imgs
+            ]
+        })
+
+    product_images = [
+        {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary}
+        for i in all_images if not getattr(i, 'variant_id', None)
+    ]
+
     current_user = _get_current_user(request, db)
 
     return templates.TemplateResponse(
@@ -161,6 +204,8 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
             "request": request,
             "page_title": product.name,
             "product": product,
+            "variants": variants_data,
+            "product_images": product_images,
             "related_products": related,
             "current_user": current_user,
         }
@@ -172,6 +217,7 @@ async def add_to_cart(
     request: Request,
     product_id: int,
     quantity: int = Form(1, ge=1),
+    variant_id: Optional[int] = Form(None),
     db: Session = Depends(get_db)
 ):
     try:
@@ -185,7 +231,7 @@ async def add_to_cart(
         return RedirectResponse(url="/Auth/Login", status_code=303)
 
     cart_service = CartService(db)
-    cart_service.add_item(account.account_id, product_id, quantity)
+    cart_service.add_item(account.account_id, product_id, quantity, variant_id)
     cart_count = cart_service.get_cart_item_count(account.account_id)
 
     if is_ajax_request(request):
