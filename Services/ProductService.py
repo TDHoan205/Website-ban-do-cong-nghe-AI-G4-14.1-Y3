@@ -2,7 +2,7 @@
 Product Service - Xử lý logic sản phẩm
 Tương đương Services/ProductService.cs trong C#
 """
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, desc, func, and_
 from typing import Optional, List, Tuple
 from decimal import Decimal
@@ -204,7 +204,9 @@ class ProductService:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        products = self.db.query(Product).filter(
+        products = self.db.query(Product).options(
+            joinedload(Product.product_images)
+        ).filter(
             Product.is_hot == True,
             Product.is_available == True
         ).limit(limit).all()
@@ -218,7 +220,9 @@ class ProductService:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        products = self.db.query(Product).filter(
+        products = self.db.query(Product).options(
+            joinedload(Product.product_images)
+        ).filter(
             Product.is_new == True,
             Product.is_available == True
         ).limit(limit).all()

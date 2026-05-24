@@ -393,11 +393,11 @@ textarea.form-control{resize:vertical;min-height:80px;}
 </div>
 
 <!-- Variant Modal -->
-<div class="modal-overlay" id="variantModal" onclick="if(event.target===this)closeVariantModal()">
-  <div class="modal-box">
+<div class="modal-overlay" id="variantModal" onclick="closeVariantModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title" id="variantModalTitle"><i class="fas fa-plus me-2"></i>Thêm phân loại</div>
-      <button class="modal-close" onclick="closeVariantModal()"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeVariantModal(event)"><i class="fas fa-times"></i></button>
     </div>
     <div id="alertVariant" class="alert-msg"></div>
     <form id="variantForm" onsubmit="return saveVariant(event)">
@@ -462,7 +462,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-modal-cancel" onclick="closeVariantModal()">Hủy</button>
+        <button type="button" class="btn-modal-cancel" onclick="closeVariantModal(event)">Hủy</button>
         <button type="submit" class="btn-modal-save"><i class="fas fa-save"></i> Lưu phân loại</button>
       </div>
     </form>
@@ -470,11 +470,11 @@ textarea.form-control{resize:vertical;min-height:80px;}
 </div>
 
 <!-- Image URL Modal -->
-<div class="modal-overlay" id="imgUrlModal" onclick="if(event.target===this)closeImgUrlModal()">
-  <div class="modal-box" style="width:400px;">
+<div class="modal-overlay" id="imgUrlModal" onclick="closeImgUrlModal(event)">
+  <div class="modal-box" style="width:400px;" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title"><i class="fas fa-link me-2"></i>Nhập URL ảnh</div>
-      <button class="modal-close" onclick="closeImgUrlModal()"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeImgUrlModal(event)"><i class="fas fa-times"></i></button>
     </div>
     <div class="form-group">
       <label class="form-label">URL ảnh</label>
@@ -490,7 +490,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
     <input type="hidden" id="img-target-variant"/>
     <input type="hidden" id="img-target-type"/>
     <div class="form-actions">
-      <button class="btn-modal-cancel" onclick="closeImgUrlModal()">Hủy</button>
+      <button class="btn-modal-cancel" onclick="closeImgUrlModal(event)">Hủy</button>
       <button class="btn-modal-primary" onclick="addImgFromUrl()"><i class="fas fa-plus"></i> Thêm ảnh</button>
     </div>
   </div>
@@ -601,8 +601,19 @@ async function openVariantModal(variantId) {
   document.getElementById('variantModal').classList.add('show');
 }
 
-function closeVariantModal() {
+function closeVariantModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const hasData = ['v-color','v-storage','v-ram','v-name','v-sku'].some(id => document.getElementById(id).value.trim());
+  if (hasData && !confirm('Bạn có dữ liệu chưa lưu. Đóng modal sẽ mất dữ liệu.\n\nBạn có chắc muốn đóng?')) return;
   document.getElementById('variantModal').classList.remove('show');
+}
+
+function closeImgUrlModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const urlVal = document.getElementById('img-url-input')?.value?.trim();
+  if (urlVal && !confirm('Bạn có URL chưa thêm. Đóng modal sẽ mất dữ liệu.\n\nBạn có chắc muốn đóng?')) return;
+  document.getElementById('imgUrlModal').classList.remove('show');
+  document.getElementById('img-url-input').value = '';
 }
 
 async function saveVariant(e) {
