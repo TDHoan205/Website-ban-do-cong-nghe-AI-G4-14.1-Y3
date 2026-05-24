@@ -11,7 +11,7 @@ from sqlalchemy.pool import QueuePool
 
 # Cấu hình SQL Server
 SQL_SERVER_CONFIG = {
-    "server": os.getenv("DB_SERVER", "localhost"),
+    "server": os.getenv("DB_SERVER", "localhost\\SQLEXPRESS"),
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication
@@ -83,7 +83,8 @@ def init_db():
         Product, ProductVariant, ProductImage,
         Cart, CartItem,
         Order, OrderItem,
-        ChatSession, ChatMessage, AIConversationLog, FAQ, Notification, KnowledgeChunk
+        ChatSession, ChatMessage, AIConversationLog, FAQ, Notification, KnowledgeChunk,
+        Payment,
     )
     Base.metadata.create_all(bind=engine)
 

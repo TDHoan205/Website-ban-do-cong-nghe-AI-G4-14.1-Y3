@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thanh toán thành công - Tech Store AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/checkout.css" />
+  <style>
+    body { background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); }
+    .success-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .success-card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      max-width: 540px;
+      width: 100%;
+      overflow: hidden;
+      animation: card-enter 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes card-enter {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .success-top {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      padding: 40px 32px 32px;
+      text-align: center;
+      color: #fff;
+    }
+    .success-top .check-circle {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 3rem;
+      animation: check-pop 0.5s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    @keyframes check-pop {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-top h2 { font-weight: 800; font-size: 1.7rem; margin-bottom: 6px; }
+    .success-top p { opacity: 0.9; font-size: 0.95rem; margin: 0; }
+    .success-body { padding: 32px; }
+    .order-id-display {
+      background: #f0fdf4;
+      border: 2px dashed #22c55e;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .order-id-display .lbl {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .order-id-display .id {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #15803d;
+      letter-spacing: 2px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .detail-box {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .detail-box .lbl { font-size: 0.72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .detail-box .val { font-size: 1rem; font-weight: 700; color: #111827; }
+    .detail-box .val.success { color: #22c55e; }
+    .detail-box .val.primary { color: #3b82f6; }
+    .notice-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .notice-card i { color: #3b82f6; font-size: 1.1rem; margin-top: 2px; flex-shrink: 0; }
+    .notice-card p { margin: 0; font-size: 0.85rem; color: #1e40af; line-height: 1.6; }
+    .action-buttons { display: flex; gap: 12px; }
+    .btn-view-orders {
+      flex: 1; padding: 14px 20px;
+      border-radius: 12px; font-weight: 700; font-size: 0.95rem;
+      border: 2px solid #22c55e; background: #fff; color: #22c55e;
+      cursor: pointer; transition: all 0.25s;
+      font-family: "Be Vietnam Pro", sans-serif;
+      text-decoration: none; text-align: center;
+    }
+    .btn-view-orders:hover { background: #22c55e; color: #fff; }
+    .btn-shop-more {
+      flex: 1; padding: 14px 20px;
+      border-radius: 12px; font-weight: 700; font-size: 0.95rem;
+      border: none;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff; cursor: pointer; transition: all 0.25s;
+      font-family: "Be Vietnam Pro", sans-serif;
+      text-decoration: none; text-align: center;
+    }
+    .btn-shop-more:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); color: #fff; }
+    @media (max-width: 480px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .success-top { padding: 32px 20px 24px; }
+      .success-body { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="success-page">
+  <div class="success-card">
+
+    <!-- Top -->
+    <div class="success-top">
+      <div class="check-circle">
+        <i class="fas fa-check"></i>
+      </div>
+      <h2>Thanh toán thành công!</h2>
+      <p>Cảm ơn bạn đã mua hàng tại Tech Store AI</p>
+    </div>
+
+    <!-- Body -->
+    <div class="success-body">
+
+      <!-- Order ID -->
+      <div class="order-id-display">
+        <div class="lbl">Mã đơn hàng của bạn</div>
+        <div class="id">{{ order.order_id if order else payment.order_id if payment else 'N/A' }}</div>
+      </div>
+
+      <!-- Details grid -->
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="lbl">Phương thức</div>
+          <div class="val success">
+            <i class="fas fa-qrcode me-1"></i>QR Banking
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="lbl">Trạng thái</div>
+          <div class="val success">
+            <i class="fas fa-check-circle me-1"></i>Đã thanh toán
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="lbl">Tổng tiền</div>
+          <div class="val primary">
+            {% if order %}
+              {{ "{:,.0f}".format(order.total_amount | float) }}đ
+            {% elif payment %}
+              {{ "{:,.0f}".format(payment.amount | float) }}đ
+            {% endif %}
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="lbl">Ngày đặt</div>
+          <div class="val">
+            {% if order and order.order_date %}
+              {{ order.order_date.strftime('%d/%m/%Y') }}
+            {% else %}
+              {{ "Hôm nay" }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Notice -->
+      <div class="notice-card">
+        <i class="fas fa-info-circle"></i>
+        <p>
+          Đơn hàng của bạn đang được xử lý và sẽ được giao trong thời gian sớm nhất.
+          Bạn sẽ nhận được thông báo khi đơn hàng được xác nhận.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-buttons">
+        <a href="/Products/" class="btn-shop-more">
+          <i class="fas fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Confetti animation
+  (function() {
+    const colors = ['#22c55e','#3b82f6','#f59e0b','#ef4444','#8b5cf6'];
+    for (let i = 0; i < 60; i++) {
+      const conf = document.createElement('div');
+      conf.style.cssText = `
+        position:fixed; top:-10px; left:${Math.random()*100}%;
+        width:${Math.random()*8+4}px; height:${Math.random()*8+4}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        opacity:${Math.random()*0.6+0.4};
+        pointer-events:none;
+        animation: confetti-fall ${Math.random()*2+2}s linear forwards;
+        z-index:99999;
+      `;
+      document.body.appendChild(conf);
+      setTimeout(() => conf.remove(), 4000);
+    }
+  })();
+</script>
+<style>
+@keyframes confetti-fall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+</style>
+
+</body>
+</html>

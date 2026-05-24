@@ -17,7 +17,18 @@ async function addToCart(productId, quantity = 1) {
             },
             body: new URLSearchParams({ quantity })
         });
+
+        const contentType = response.headers.get('Content-Type') || '';
+        if (!contentType.includes('application/json')) {
+            console.debug('[Cart] Non-JSON response from addToCart. Status:', response.status);
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+            return;
+        }
+
         const data = await response.json();
+        console.debug('[Cart] addToCart response:', data);
 
         if (response.status === 401 && data.login_url) {
             window.location.href = data.login_url;
@@ -25,13 +36,20 @@ async function addToCart(productId, quantity = 1) {
         }
 
         if (response.ok && data.success) {
-            showNotification(data.message || 'Đã thêm vào giỏ hàng!', 'success');
+            const msg = (data.message !== undefined && data.message !== null && data.message !== '')
+                ? data.message
+                : 'Đã thêm sản phẩm vào giỏ hàng!';
+            showNotification(msg, 'success');
             updateCartCount(data.cart_count);
             return;
         }
 
-        showNotification(data.message || 'Có lỗi xảy ra!', 'danger');
+        const errMsg = (data.message !== undefined && data.message !== null && data.message !== '')
+            ? data.message
+            : 'Có lỗi xảy ra!';
+        showNotification(errMsg, 'danger');
     } catch (error) {
+        console.error('[Cart] addToCart error:', error);
         showNotification('Có lỗi xảy ra!', 'danger');
     }
 }
@@ -56,7 +74,22 @@ async function submitAddToCartForm(form) {
             },
             body: new URLSearchParams(formData)
         });
+
+        // ─── Validate JSON response ───
+        const contentType = response.headers.get('Content-Type') || '';
+        if (!contentType.includes('application/json')) {
+            // Server returned HTML/redirect — treat as success (redirect happened)
+            console.debug('[Cart] Non-JSON response, page probably redirected. Status:', response.status);
+            if (response.redirected || response.status === 303) {
+                window.location.href = response.url || form.action;
+            }
+            return;
+        }
+
         const data = await response.json();
+        console.debug('[Cart] Response:', data);
+        // TEMPORARY DEBUG: show raw server response in an alert
+        window.__lastCartResponse = data;
 
         if (response.status === 401 && data.login_url) {
             window.location.href = data.login_url;
@@ -64,13 +97,20 @@ async function submitAddToCartForm(form) {
         }
 
         if (response.ok && data.success) {
-            showNotification(data.message || 'Đã thêm vào giỏ hàng!', 'success');
+            const msg = (data.message !== undefined && data.message !== null && data.message !== '')
+                ? data.message
+                : 'Đã thêm sản phẩm vào giỏ hàng!';
+            showNotification(msg, 'success');
             updateCartCount(data.cart_count);
             return;
         }
 
-        showNotification(data.message || 'Có lỗi xảy ra!', 'danger');
+        const errMsg = (data.message !== undefined && data.message !== null && data.message !== '')
+            ? data.message
+            : 'Có lỗi xảy ra!';
+        showNotification(errMsg, 'danger');
     } catch (error) {
+        console.error('[Cart] Error:', error);
         showNotification('Có lỗi xảy ra!', 'danger');
     } finally {
         if (button) {
@@ -141,26 +181,111 @@ async function clearCart() {
 }
 
 // =====================================================
-// Notification
+// Toast Notification — Modern E-Commerce Style
 // =====================================================
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type} position-fixed animate__animated animate__fadeInRight`;
-    notification.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 250px;';
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close float-end" onclick="this.parentElement.remove()"></button>
-    `;
+function showNotification(message, type = 'success') {
+    // ─── DEBUG: Log all inputs ───
+    console.log('[Toast DEBUG] Called with:', JSON.stringify({ message, type }));
+    console.log('[Toast DEBUG] message type:', typeof message, '| value:', message);
+    console.log('[Toast DEBUG] #toast-container exists:', !!document.getElementById('toast-container'));
 
-    document.body.appendChild(notification);
+    // ─── Null/undefined guard ───
+    if (message === null || message === undefined || message === '') {
+        console.warn('[Toast] Empty message received, using default fallback.');
+        message = type === 'success'
+            ? 'Thao tác thành công!'
+            : type === 'danger'
+            ? 'Đã xảy ra lỗi!'
+            : 'Thông báo!';
+        console.log('[Toast DEBUG] After null-guard, message is:', message);
+    }
 
+    const container = document.getElementById('toast-container');
+    if (!container) {
+        console.error('[Toast FATAL] #toast-container not found in DOM!');
+        return;
+    }
+
+    // ─── Icon config ───
+    const icons = {
+        success: { cls: 'fa-check-circle', color: '#22c55e' },
+        danger:  { cls: 'fa-exclamation-circle', color: '#ef4444' },
+        warning: { cls: 'fa-exclamation-triangle', color: '#f59e0b' },
+        info:    { cls: 'fa-info-circle', color: '#3b82f6' },
+    };
+    const icon = icons[type] || icons.success;
+
+    // ─── Build toast DOM ───
+    const toast = document.createElement('div');
+    toast.className = 'ts-toast ts-toast--' + type;
+    toast.setAttribute('role', 'alert');
+
+    // ─── Safe close handler (no inline onclick for escaping) ───
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'ts-toast__close';
+    closeBtn.setAttribute('aria-label', 'Đóng');
+    closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closeBtn.addEventListener('click', () => dismissToast(toast));
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'ts-toast__content';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'ts-toast__icon';
+    iconSpan.style.color = icon.color;
+    iconSpan.innerHTML = '<i class="fas ' + icon.cls + '"></i>';
+
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'ts-toast__message';
+    messageSpan.textContent = message; // textContent = automatic XSS safe, no escape needed
+    console.log('[Toast DEBUG] messageSpan.textContent set to:', messageSpan.textContent);
+
+    contentDiv.appendChild(iconSpan);
+    contentDiv.appendChild(messageSpan);
+
+    toast.appendChild(contentDiv);
+    toast.appendChild(closeBtn);
+    container.appendChild(toast);
+
+    console.log('[Toast DEBUG] Toast element innerHTML:', toast.innerHTML);
+
+    // Force reflow so animation triggers
+    void toast.offsetHeight;
+
+    // Enter animation
+    requestAnimationFrame(() => {
+        toast.classList.add('ts-toast--in');
+    });
+
+    // Auto dismiss
+    const duration = type === 'danger' ? 5000 : 3000;
+    setTimeout(() => dismissToast(toast), duration);
+
+    console.debug('[Toast] Shown successfully:', { message, type });
+}
+
+function dismissToast(toast) {
+    if (!toast || !toast.parentNode) return;
+    toast.classList.remove('ts-toast--in');
+    toast.classList.add('ts-toast--out');
     setTimeout(() => {
-        notification.classList.remove('animate__fadeInRight');
-        notification.classList.add('animate__fadeOutRight');
-        setTimeout(() => notification.remove(), 500);
-    }, 3000);
+        if (toast.parentNode) toast.remove();
+    }, 450);
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// =====================================================
+// Notification (legacy wrapper)
+// =====================================================
+
+function showNotification_deprecated(message, type) {
+    showNotification(message, type);
 }
 
 // =====================================================

@@ -120,7 +120,7 @@ class AuthService:
         if self.get_account_by_username(username):
             raise ValueError("Username da ton tai")
         if self.get_account_by_email(email):
-            raise ValueError("Email da ton tai")
+            raise ValueError('Email đã tồn tại')
 
         # Tim role theo ten, chi cho phep Customer hoac Admin
         safe_role = "Customer" if role_name not in ("Customer", "Admin") else role_name

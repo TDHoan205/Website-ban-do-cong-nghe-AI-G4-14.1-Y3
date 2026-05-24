@@ -17,6 +17,7 @@ from Models.Chat import (
     FAQ, Notification, KnowledgeChunk
 )
 from Models.AI import AIResponse, RAGContext, ProductContext
+from Models.Payment import Payment, PaymentStatus
 
 __all__ = [
     # Base
@@ -59,4 +60,8 @@ __all__ = [
     "AIResponse",
     "RAGContext",
     "ProductContext",
+
+    # Payment
+    "Payment",
+    "PaymentStatus",
 ]
