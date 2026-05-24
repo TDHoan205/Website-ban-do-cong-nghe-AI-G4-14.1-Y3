@@ -2,14 +2,16 @@
 Database Configuration - Kết nối SQL Server
 Tương tự Data/AppDbContext.cs trong ASP.NET Core
 """
+import os
+import urllib
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
-import urllib
 
-# Cấu hình SQL Server - Sửa theo server của bạn
+# Cấu hình SQL Server
 SQL_SERVER_CONFIG = {
-    "server": "DESKTOP-1TM8FSO",
+    "server": os.getenv("DB_SERVER", "localhost"),
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication
@@ -55,9 +57,6 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_recycle=3600,
     echo=False,  # Bật True để xem SQL logs
-    connect_args={
-        "charset": "utf-8",
-    },
 )
 
 # Session Factory
