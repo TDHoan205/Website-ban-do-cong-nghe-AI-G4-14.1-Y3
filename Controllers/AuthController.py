@@ -22,7 +22,7 @@ async def login_page(request: Request, db: Session = Depends(get_db)):
         "Auth/Login.html",
         {
             "request": request,
-            "page_title": "Dang nhap",
+            "page_title": "Đăng nhập",
             "current_user": current_user,
         }
     )
@@ -42,7 +42,7 @@ async def login(
     user = auth_service.authenticate_user(username, password)
 
     if not user:
-        error = urllib.parse.quote("Ten dang nhap hoac mat khau khong dung")
+        error = urllib.parse.quote("Tên đăng nhập hoặc mật khẩu không đúng")
         return RedirectResponse(url=f"/Auth/Login?error={error}", status_code=303)
 
     # Tao token voi role
@@ -83,7 +83,7 @@ async def admin_login_page(request: Request, db: Session = Depends(get_db)):
         "Auth/AdminLogin.html",
         {
             "request": request,
-            "page_title": "Dang nhap Quan tri",
+            "page_title": "Đăng nhập Quản trị",
             "current_user": current_user,
         }
     )
@@ -103,12 +103,12 @@ async def admin_login(
     user = auth_service.authenticate_user(username, password)
 
     if not user:
-        error = urllib.parse.quote("Ten dang nhap hoac mat khau khong dung")
+        error = urllib.parse.quote("Tên đăng nhập hoặc mật khẩu không đúng")
         return RedirectResponse(url=f"/Auth/Admin?error={error}", status_code=303)
 
     # Chi cho phep Admin
     if user.role_name != "Admin":
-        error = urllib.parse.quote("Ban khong co quyen truy cap trang nay")
+        error = urllib.parse.quote("Bạn không có quyền truy cập trang này")
         return RedirectResponse(url=f"/Auth/Admin?error={error}", status_code=303)
 
     # Tao token
@@ -140,7 +140,7 @@ async def register_page(request: Request, db: Session = Depends(get_db)):
         "Auth/Register.html",
         {
             "request": request,
-            "page_title": "Dang ky",
+            "page_title": "Đăng ký",
             "current_user": current_user,
         }
     )

@@ -21,7 +21,7 @@
       rel="stylesheet"
     />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+    <link rel="stylesheet" href="/static/css/style.css?v=6" />
 
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1465,11 +1465,9 @@
                       <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
-                      <button type="submit" class="product-add-btn">
-                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
-                      </button>
-                    </form>
+                    <button type="button" class="product-add-btn" onclick="addToCart({{ product.product_id }})" style="margin-top:auto;">
+                      <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
                   </div>
                 </div>
                 {% endfor %}
@@ -1525,11 +1523,9 @@
                       <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
-                      <button type="submit" class="product-add-btn">
-                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
-                      </button>
-                    </form>
+                    <button type="button" class="product-add-btn" onclick="addToCart({{ product.product_id }})" style="margin-top:auto;">
+                      <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
                   </div>
                 </div>
                 {% endfor %}
@@ -1941,7 +1937,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    <script src="/static/js/main.js?v=3"></script>
+    <script src="/static/js/main.js?v=7"></script>
     <!-- Dropdown Fix -->
     <script>
       (function() {
@@ -1966,5 +1962,8 @@
         });
       })();
     </script>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>

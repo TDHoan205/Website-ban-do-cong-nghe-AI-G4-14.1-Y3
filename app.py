@@ -29,6 +29,7 @@ from Controllers import (
     ShopController,
     StatisticsController,
     AdminController,
+    PaymentController,
 )
 
 # =====================================================================
@@ -64,6 +65,18 @@ async def inject_current_user(request: Request, call_next):
     request.state.current_user = current_user
 
     response = await call_next(request)
+    return response
+
+
+@app.middleware("http")
+async def force_utf8_encoding(request: Request, call_next):
+    response = await call_next(request)
+    # Force UTF-8 charset on all text-based responses
+    content_type = response.headers.get("content-type", "")
+    if any(ct in content_type for ct in ("application/javascript", "text/css", "text/html", "application/json")):
+        if "charset" not in content_type.lower():
+            content_type += "; charset=utf-8"
+            response.headers["content-type"] = content_type
     return response
 
 
@@ -107,6 +120,7 @@ AuthController.set_templates(templates)
 ChatController.set_templates(templates)
 AdminController.set_templates(templates)
 OrdersController.set_templates(templates)
+PaymentController.set_templates(templates)
 
 # =====================================================================
 # Include Routers
@@ -128,6 +142,7 @@ app.include_router(ReceiptShipmentsController.router)
 app.include_router(CartItemsController.router)
 app.include_router(ShopController.router)
 app.include_router(StatisticsController.router)
+app.include_router(PaymentController.router)
 
 
 # =====================================================================
