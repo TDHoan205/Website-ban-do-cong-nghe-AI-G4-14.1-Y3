@@ -4,7 +4,6 @@ Payment Controller - Thanh toán QR Banking
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
-from decimal import Decimal
 from datetime import datetime
 from typing import Optional
 
@@ -60,7 +59,7 @@ async def checkout_page(request: Request, db: Session = Depends(get_db)):
 
     # Tính tổng tiền (đã có VAT 10%)
     subtotal = sum(item.subtotal for item in items)
-    tax = subtotal * Decimal("0.10")
+    tax = subtotal * 0.10
     total = subtotal + tax
     total_int = int(total)
 
@@ -142,6 +141,17 @@ async def verify_payment(
     if not payment:
         return JSONResponse({"success": False, "message": "Lỗi hệ thống"}, status_code=500)
 
+    # Kiểm tra xem đơn hàng đã được tạo trước đó chưa để tránh tạo trùng lặp (Double Order)
+    from Models.Order import Order
+    existing_order = db.query(Order).filter(Order.notes.like(f"%{order_id}%")).first()
+    if existing_order:
+        return JSONResponse({
+            "success": True,
+            "message": "Đã xác nhận thanh toán trước đó",
+            "order_id": existing_order.order_id,
+            "redirect_url": f"/Checkout/success/{existing_order.order_id}"
+        })
+
     # 3. Tạo đơn hàng
     try:
         order = await _create_order_from_payment(db, payment)
@@ -171,13 +181,35 @@ async def success_page(order_id: str, request: Request, db: Session = Depends(ge
     except HTTPException:
         return RedirectResponse(url="/Auth/Login", status_code=303)
 
-    # Lấy thông tin payment
-    payment_service = PaymentService(db)
-    payment_info = payment_service.get_payment_display_info(order_id)
-
-    # Lấy thông tin order
     from Models.Order import Order
-    order = db.query(Order).filter(Order.order_id == order_id).first()
+    payment_service = PaymentService(db)
+    order = None
+    payment_info = None
+
+    if order_id.isdigit():
+        # URL dạng: /Checkout/success/1 (Order.order_id)
+        order = db.query(Order).filter(Order.order_id == int(order_id)).first()
+        if order:
+            # Trích xuất mã Payment (DHxxxxx) từ notes hoặc lấy payment gần nhất
+            import re
+            match = re.search(r'(DH\d+[A-Z0-9]+)', order.notes or '')
+            if match:
+                payment_info = payment_service.get_payment_display_info(match.group(1))
+            
+            if not payment_info:
+                from Models.Payment import Payment, PaymentStatus
+                from sqlalchemy import desc
+                payment = db.query(Payment).filter(
+                    Payment.account_id == account.account_id,
+                    Payment.status == PaymentStatus.PAID
+                ).order_by(desc(Payment.created_at)).first()
+                if payment:
+                    payment_info = payment_service.get_payment_display_info(payment.order_id)
+    else:
+        # URL dạng: /Checkout/success/DH0525... (Payment.order_id)
+        payment_info = payment_service.get_payment_display_info(order_id)
+        if payment_info:
+            order = db.query(Order).filter(Order.notes.like(f"%{order_id}%")).first()
 
     current_user = _get_current_user(request, db)
     cart_count = _get_cart_count(request, db)
@@ -226,7 +258,7 @@ async def _create_order_from_payment(db: Session, payment) -> "Order":
     # Tạo order
     order = Order(
         account_id=payment.account_id,
-        total_amount=Decimal(str(payment.amount)),
+        total_amount=float(payment.amount),
         status="Confirmed",
         customer_name=account.full_name if account else "Khách hàng",
         customer_phone=account.phone if account else "",
@@ -250,8 +282,8 @@ async def _create_order_from_payment(db: Session, payment) -> "Order":
             product_name=product.name if product else "Sản phẩm",
             variant_name=variant.variant_name if variant and variant.variant_name else "",
             quantity=item.quantity,
-            unit_price=Decimal(str(unit_price)),
-            subtotal=Decimal(str(subtotal)),
+            unit_price=unit_price,
+            subtotal=subtotal,
         )
         db.add(order_item)
 

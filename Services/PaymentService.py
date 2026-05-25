@@ -19,15 +19,15 @@ from Models.Product import Product, ProductVariant
 BANK_CONFIG = {
     "bank_code": "MB",
     "bank_name": "MB Bank",
-    "bank_account": "0123456789",
-    "bank_account_name": "NGUYEN VAN A",
+    "bank_account": "0386267692",
+    "bank_account_name": "TRAN ANH QUAN",
     "bank_bin": "970422",  # BIN của MB Bank
 }
 
-# VietQR format template
+# VietQR format template (định dạng chuẩn Quick Link của VietQR)
 QR_TEMPLATE = (
-    "https://img.vietqr.io/{bank_code}/{account}/{amount}/{message}.png"
-    "?addMaker=1&accountName={account_name}"
+    "https://img.vietqr.io/image/{bank_code}-{account}-compact2.png"
+    "?amount={amount}&addInfo={message}&accountName={account_name}"
 )
 
 
@@ -58,12 +58,15 @@ class PaymentService:
     # ============ Tạo QR image URL ============
     def _build_qr_url(self, amount: int, message: str) -> str:
         """Build VietQR image URL"""
+        import urllib.parse
+        encoded_message = urllib.parse.quote(message)
+        encoded_account_name = urllib.parse.quote(BANK_CONFIG["bank_account_name"].upper())
         return QR_TEMPLATE.format(
             bank_code=BANK_CONFIG["bank_code"].lower(),
             account=BANK_CONFIG["bank_account"],
             amount=amount,
-            message=message,
-            account_name=BANK_CONFIG["bank_account_name"].upper().replace(" ", "+"),
+            message=encoded_message,
+            account_name=encoded_account_name,
         )
 
     # ============ Tạo payment record ============
@@ -82,7 +85,8 @@ class PaymentService:
 
         if existing:
             # Nếu chưa hết hạn, dùng lại
-            if existing.expires_at and existing.expires_at > datetime.datetime.now():
+            expires_at_naive = existing.expires_at.replace(tzinfo=None) if existing.expires_at else None
+            if expires_at_naive and expires_at_naive > datetime.datetime.now():
                 return existing
             # Hết hạn thì mark expired
             existing.status = PaymentStatus.EXPIRED
@@ -148,7 +152,8 @@ class PaymentService:
         if payment.status == PaymentStatus.EXPIRED:
             return False, "Mã thanh toán đã hết hạn"
 
-        if payment.expires_at and payment.expires_at < datetime.datetime.now():
+        expires_at_naive = payment.expires_at.replace(tzinfo=None) if payment.expires_at else None
+        if expires_at_naive and expires_at_naive < datetime.datetime.now():
             payment.status = PaymentStatus.EXPIRED
             self.db.commit()
             return False, "Mã thanh toán đã hết hạn"
@@ -178,7 +183,8 @@ class PaymentService:
 
         remaining = None
         if payment.expires_at:
-            delta = payment.expires_at - datetime.datetime.now()
+            expires_at_naive = payment.expires_at.replace(tzinfo=None)
+            delta = expires_at_naive - datetime.datetime.now()
             remaining = max(0, int(delta.total_seconds()))
 
         return {

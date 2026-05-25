@@ -29,7 +29,7 @@ class Cart(Base):
         return sum(item.quantity for item in self.cart_items)
 
     def __repr__(self):
-        return f"<Cart(account_id={self.account_id}, items={self.total_items})>"
+        return f"<Cart(cart_id={self.cart_id}, account_id={self.account_id})>"
 
 
 """
