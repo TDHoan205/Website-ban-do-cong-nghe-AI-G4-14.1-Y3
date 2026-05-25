@@ -22,6 +22,8 @@ Backend admin hien da on dinh hon truoc o cac luong chinh:
 - Order cancel da hoan kho va dong bo lai `Inventory`.
 - Category, Supplier, Variant, ProductImages da duoc bo sung validation va `IntegrityError + rollback`.
 - Upload anh da kiem tra `content_type` va duoi file hop le.
+- Dashboard admin da co du lieu `stats`, `recent_orders`, `top_products`.
+- Da bo sung route HTML rieng cho admin tai `/Admin/Statistics` va khong con phu thuoc vao link `/Statistics` la API thuan.
 
 Tuy nhien, backend admin van chua hoan toan dong deu tren toan bo CRUD va van con mot so diem nen lam tiep.
 
@@ -51,7 +53,11 @@ Da hoan thanh:
 - Validate `display_order`.
 - Bọc create/update/delete bang `IntegrityError + rollback`.
 - Update co cap nhat `updated_at`.
-- Delete uu tien soft-hide bang `is_active = False`.
+- Delete co ho tro soft-hide bang `is_active = False` o nhung truong hop phu hop.
+
+Luu y trang thai hien tai:
+
+- Neu category con san pham lien quan, endpoint hien van tra `400` va khong soft-delete truong hop do.
 
 ### 3. Supplier API
 
@@ -123,7 +129,7 @@ Mau response nen dung:
 Nhung diem con lai chu yeu la tinh dong deu va cau truc:
 
 - Chuan hoa response loi cho toan bo admin API bang mot cach viet thong nhat hon nua.
-- Can nhac cap nhat `updated_at` cho nhung luong khac neu sau nay mo rong model.
+- `updated_at` da duoc bo sung o mot so luong chinh, nhung chua co chuan hoa dong nhat cho toan bo endpoint update.
 - Tiep tuc tach logic nghiep vu ra khoi `AdminController.py` de de bao tri hon.
 
 ### 3. Tach Bot Logic Khoi AdminController
@@ -153,10 +159,11 @@ Loi ich:
 - [x] Order delete khong xoa cung lich su giao dich.
 - [ ] Tat ca API admin tra JSON loi thong nhat.
 - [x] Cac luong update chinh da duoc cap nhat `updated_at` dong deu hon.
+- [x] Muc `Thong ke` trong admin duoc tro dung route theo dung UX mong muon.
 - [x] Xoa file anh tren filesystem khi xoa `ProductImage`.
 - [x] Bọc thao tac ghi file bang `try/except OSError`.
 - [x] Khong sua `SQL/schema.sql`.
 
 ## Ket Luan
 
-Backend admin hien da on o cac luong chinh nhu product, account va order, va da duoc bo sung bao ve cho category, supplier, variant va product image. Phan viec con lai tap trung vao viec chuan hoa response loi, dong deu `updated_at`, va xu ly file anh tren filesystem. Sau khi cac diem nay duoc lam xong, backend admin se dat muc hoan thien tot de frontend admin goi API an toan hon va giam nguy co loi 500.
+Backend admin hien da on o cac luong chinh nhu product, account va order, va da duoc bo sung bao ve cho category, supplier, variant, product image va route thong ke admin. Phan viec con lai tap trung vao viec chuan hoa response loi va tiep tuc tach bot logic nghiep vu khoi controller. Sau khi cac diem nay duoc lam xong, backend admin se dat muc hoan thien tot de frontend admin goi API an toan hon va giam nguy co loi 500.

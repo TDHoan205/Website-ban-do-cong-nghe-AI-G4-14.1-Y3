@@ -192,6 +192,71 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/Statistics", response_class=HTMLResponse)
+async def admin_statistics(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException as e:
+        if e.status_code == 401:
+            return RedirectResponse(url="/Auth/Admin", status_code=303)
+        raise
+
+    total_orders = db.query(Order).count()
+    delivered_orders = db.query(Order).filter(Order.status == OrderStatus.DELIVERED).count()
+    cancelled_orders = db.query(Order).filter(Order.status == OrderStatus.CANCELLED).count()
+    pending_orders = db.query(Order).filter(Order.status == OrderStatus.PENDING).count()
+    total_revenue = db.query(func.sum(Order.total_amount)).filter(
+        Order.status == OrderStatus.DELIVERED
+    ).scalar() or 0
+
+    top_products = db.query(
+        OrderItem.product_id,
+        OrderItem.product_name,
+        func.sum(OrderItem.quantity).label("total_quantity"),
+        func.sum(OrderItem.subtotal).label("total_amount"),
+    ).join(Order, Order.order_id == OrderItem.order_id).filter(
+        Order.status == OrderStatus.DELIVERED
+    ).group_by(
+        OrderItem.product_id,
+        OrderItem.product_name,
+    ).order_by(
+        func.sum(OrderItem.quantity).desc()
+    ).limit(5).all()
+
+    low_stock_items = db.query(
+        Inventory.inventory_id,
+        Inventory.product_id,
+        Inventory.quantity_in_stock,
+        Inventory.min_stock_level,
+        Product.name.label("product_name"),
+    ).join(
+        Product, Product.product_id == Inventory.product_id
+    ).filter(
+        Inventory.quantity_in_stock <= Inventory.min_stock_level
+    ).order_by(
+        Inventory.quantity_in_stock.asc(),
+        Product.name.asc()
+    ).limit(10).all()
+
+    return templates.TemplateResponse(
+        "Admin/statistics.html",
+        {
+            "request": request,
+            "page_title": "Thong ke",
+            "admin": admin,
+            "summary": {
+                "total_orders": total_orders,
+                "delivered_orders": delivered_orders,
+                "cancelled_orders": cancelled_orders,
+                "pending_orders": pending_orders,
+                "total_revenue": total_revenue,
+            },
+            "top_products": top_products,
+            "low_stock_items": low_stock_items,
+        }
+    )
+
+
 @router.get("/Products", response_class=HTMLResponse)
 async def admin_products(request: Request, db: Session = Depends(get_db)):
     try:
