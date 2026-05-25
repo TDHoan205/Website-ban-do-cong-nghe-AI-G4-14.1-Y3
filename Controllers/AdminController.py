@@ -17,7 +17,7 @@ from Models import (
     AIConversationLog, FAQ, Notification, KnowledgeChunk
 )
 from Services.AuthService import AuthService
-from datetime import datetime
+from datetime import datetime, timedelta
 from Data.database import get_db
 from Services.AuthService import AuthService
 from Models.Account import Account, Role
@@ -157,6 +157,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse(url="/Auth/Admin", status_code=303)
         raise
 
+    # --- Basic stats (existing) ---
     total_products = db.query(Product).count()
     total_customers = db.query(Account).join(Role).filter(Role.role_name == "Customer").count()
     total_admins = db.query(Account).join(Role).filter(Role.role_name == "Admin").count()
@@ -170,6 +171,107 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     top_products = db.query(Product).filter(
         Product.is_available == True
     ).order_by(Product.rating.desc()).limit(5).all()
+
+    # --- Financial Report: Time boundaries ---
+    now = datetime.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=now.weekday())  # Monday
+    month_start = today_start.replace(day=1)
+    year_start = today_start.replace(month=1, day=1)
+
+    # --- Revenue by period (only Delivered orders) ---
+    def _revenue_in_period(start_dt):
+        result = db.query(func.sum(Order.total_amount)).filter(
+            Order.order_date >= start_dt,
+            Order.status == OrderStatus.DELIVERED
+        ).scalar()
+        return float(result) if result else 0
+
+    revenue_today = _revenue_in_period(today_start)
+    revenue_week = _revenue_in_period(week_start)
+    revenue_month = _revenue_in_period(month_start)
+    revenue_year = _revenue_in_period(year_start)
+
+    # --- Products sold by period ---
+    def _products_sold_in_period(start_dt):
+        result = db.query(func.sum(OrderItem.quantity)).join(
+            Order, Order.order_id == OrderItem.order_id
+        ).filter(
+            Order.order_date >= start_dt,
+            Order.status == OrderStatus.DELIVERED
+        ).scalar()
+        return int(result) if result else 0
+
+    products_sold_today = _products_sold_in_period(today_start)
+    products_sold_month = _products_sold_in_period(month_start)
+
+    # --- New orders today ---
+    orders_today = db.query(Order).filter(
+        Order.created_at >= today_start
+    ).count()
+
+    # --- Average order value ---
+    avg_order_value = db.query(func.avg(Order.total_amount)).filter(
+        Order.status == OrderStatus.DELIVERED
+    ).scalar()
+    avg_order_value = float(avg_order_value) if avg_order_value else 0
+
+    # --- Cancellation rate ---
+    cancelled_orders = db.query(Order).filter(
+        Order.status == OrderStatus.CANCELLED
+    ).count()
+    cancel_rate = round((cancelled_orders / total_orders * 100), 1) if total_orders > 0 else 0
+
+    # --- 7-day revenue chart data ---
+    chart_labels = []
+    chart_data = []
+    for i in range(6, -1, -1):
+        day = today_start - timedelta(days=i)
+        next_day = day + timedelta(days=1)
+        day_revenue = db.query(func.sum(Order.total_amount)).filter(
+            Order.order_date >= day,
+            Order.order_date < next_day,
+            Order.status == OrderStatus.DELIVERED
+        ).scalar()
+        chart_labels.append(day.strftime("%d/%m"))
+        chart_data.append(float(day_revenue) if day_revenue else 0)
+
+    # --- Top 5 best selling products this month ---
+    top_selling = db.query(
+        OrderItem.product_id,
+        OrderItem.product_name,
+        func.sum(OrderItem.quantity).label("total_qty"),
+        func.sum(OrderItem.subtotal).label("total_revenue")
+    ).join(Order, Order.order_id == OrderItem.order_id).filter(
+        Order.order_date >= month_start,
+        Order.status == OrderStatus.DELIVERED
+    ).group_by(
+        OrderItem.product_id, OrderItem.product_name
+    ).order_by(
+        func.sum(OrderItem.quantity).desc()
+    ).limit(5).all()
+
+    top_selling_list = [
+        {
+            "product_id": r.product_id,
+            "product_name": r.product_name,
+            "total_qty": int(r.total_qty or 0),
+            "total_revenue": float(r.total_revenue or 0),
+        }
+        for r in top_selling
+    ]
+
+    # --- Low stock products (stock <= 5) ---
+    low_stock_products = db.query(Product).filter(
+        Product.stock_quantity <= 5,
+        Product.is_available == True
+    ).order_by(Product.stock_quantity.asc()).limit(10).all()
+
+    # --- New customers this month ---
+    new_customers_month = db.query(Account).join(Role).filter(
+        Role.role_name == "Customer",
+        Account.created_at >= month_start
+    ).count()
 
     return templates.TemplateResponse(
         "Admin/dashboard.html",
@@ -188,6 +290,24 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "recent_orders": recent_orders,
             "top_products": top_products,
             "order_statuses": OrderStatus.STATUSES,
+            # --- Financial report data ---
+            "finance": {
+                "revenue_today": revenue_today,
+                "revenue_week": revenue_week,
+                "revenue_month": revenue_month,
+                "revenue_year": revenue_year,
+                "products_sold_today": products_sold_today,
+                "products_sold_month": products_sold_month,
+                "orders_today": orders_today,
+                "avg_order_value": avg_order_value,
+                "cancel_rate": cancel_rate,
+                "cancelled_orders": cancelled_orders,
+                "new_customers_month": new_customers_month,
+            },
+            "chart_labels": json.dumps(chart_labels),
+            "chart_data": json.dumps(chart_data),
+            "top_selling": top_selling_list,
+            "low_stock_products": low_stock_products,
         }
     )
 
@@ -274,7 +394,7 @@ async def admin_products(request: Request, db: Session = Depends(get_db)):
         "Admin/products.html",
         {
             "request": request,
-            "page_title": "Quan ly San pham",
+            "page_title": "Quản lý Sản phẩm",
             "admin": admin,
             "products": products,
             "categories": categories,
@@ -322,7 +442,7 @@ async def admin_orders(request: Request, db: Session = Depends(get_db)):
         "Admin/orders.html",
         {
             "request": request,
-            "page_title": "Quan ly Don hang",
+            "page_title": "Quản lý Đơn hàng",
             "admin": admin,
             "orders": orders,
             "order_statuses": OrderStatus.STATUSES,
@@ -345,7 +465,7 @@ async def admin_categories(request: Request, db: Session = Depends(get_db)):
         "Admin/categories.html",
         {
             "request": request,
-            "page_title": "Quan ly Danh muc",
+            "page_title": "Quản lý Danh mục",
             "admin": admin,
             "categories": categories,
         }
@@ -409,7 +529,7 @@ async def api_get_chat_messages(request: Request, session_uuid: str, db: Session
 
     session = db.query(ChatSession).filter(ChatSession.session_uuid == session_uuid).first()
     if not session:
-        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
 
     messages = db.query(ChatMessage).filter(ChatMessage.session_id == session.session_id).order_by(ChatMessage.created_at.asc()).all()
 
@@ -451,7 +571,7 @@ async def order_detail(request: Request, order_id: int, db: Session = Depends(ge
         "Admin/order_detail.html",
         {
             "request": request,
-            "page_title": f"Don hang #{order_id}",
+            "page_title": f"Đơn hàng #{order_id}",
             "admin": admin,
             "order": order,
             "items": items,
@@ -489,7 +609,7 @@ async def api_create_account(
         return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not username or not email or not password:
-        return JSONResponse({"success": False, "error": "Thong tin bat buoc"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Thông tin bắt buộc"}, status_code=400)
 
     # Check exists
     existing = db.query(Account).filter(
@@ -532,7 +652,7 @@ async def api_update_account(
 
     account = db.query(Account).filter(Account.account_id == account_id).first()
     if not account:
-        return JSONResponse({"success": False, "error": "Khong tim thay tai khoan"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy tài khoản"}, status_code=404)
 
     form = await request.form()
     email = form.get("email", "").strip()
@@ -552,7 +672,7 @@ async def api_update_account(
         Account.account_id != account_id
     ).first()
     if existing:
-        return JSONResponse({"success": False, "error": "Email da duoc su dung"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Email đã được sử dụng"}, status_code=400)
 
     account.email = email
     account.full_name = full_name
@@ -582,11 +702,11 @@ async def api_delete_account(
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
 
     if account_id == admin.account_id:
-        return JSONResponse({"success": False, "error": "Khong the xoa tai khoan cua chinh minh"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Không thể xóa tài khoản của chính mình"}, status_code=400)
 
     account = db.query(Account).filter(Account.account_id == account_id).first()
     if not account:
-        return JSONResponse({"success": False, "error": "Khong tim thay tai khoan"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy tài khoản"}, status_code=404)
 
     has_orders = db.query(Order).filter(Order.account_id == account_id).count() > 0
     has_carts = db.query(Cart).filter(Cart.account_id == account_id).count() > 0
@@ -633,7 +753,7 @@ async def api_get_account(
 
     account = db.query(Account).filter(Account.account_id == account_id).first()
     if not account:
-        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
 
     return JSONResponse({
         "success": True,
@@ -672,11 +792,11 @@ async def api_create_category(request: Request, db: Session = Depends(get_db)):
     is_active = form.get("is_active", "true").lower() == "true"
 
     if not name:
-        return JSONResponse({"success": False, "error": "Ten danh muc khong duoc trong"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên danh mục không được để trống"}, status_code=400)
 
     existing = db.query(Category).filter(Category.name == name).first()
     if existing:
-        return JSONResponse({"success": False, "error": "Ten danh muc da ton tai"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên danh mục đã tồn tại"}, status_code=400)
 
     cat = Category(
         name=name,
@@ -702,7 +822,7 @@ async def api_update_category(request: Request, category_id: int, db: Session = 
 
     cat = db.query(Category).filter(Category.category_id == category_id).first()
     if not cat:
-        return JSONResponse({"success": False, "error": "Khong tim thay danh muc"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy danh mục"}, status_code=404)
 
     form = await request.form()
     name = form.get("name", "").strip()
@@ -714,14 +834,14 @@ async def api_update_category(request: Request, category_id: int, db: Session = 
     is_active = form.get("is_active", "true").lower() == "true"
 
     if not name:
-        return JSONResponse({"success": False, "error": "Ten danh muc khong duoc trong"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên danh mục không được để trống"}, status_code=400)
 
     existing = db.query(Category).filter(
         Category.name == name,
         Category.category_id != category_id
     ).first()
     if existing:
-        return JSONResponse({"success": False, "error": "Ten danh muc da ton tai"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên danh mục đã tồn tại"}, status_code=400)
 
     cat.name = name
     cat.description = description
@@ -745,14 +865,14 @@ async def api_delete_category(request: Request, category_id: int, db: Session = 
 
     cat = db.query(Category).filter(Category.category_id == category_id).first()
     if not cat:
-        return JSONResponse({"success": False, "error": "Khong tim thay danh muc"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy danh mục"}, status_code=404)
 
     # Check if has products
     has_products = db.query(Product).filter(Product.category_id == category_id).count() > 0
     if has_products:
         return JSONResponse({
             "success": False,
-            "error": "Danh muc co san pham, khong the xoa. Hay xoa hoac chuyen san pham truoc."
+            "error": "Danh mục có sản phẩm, không thể xóa. Hãy xóa hoặc chuyển sản phẩm trước."
         }, status_code=400)
 
     if getattr(cat, "is_active", None) is not None:
@@ -783,7 +903,7 @@ async def api_get_category(request: Request, category_id: int, db: Session = Dep
 
     cat = db.query(Category).filter(Category.category_id == category_id).first()
     if not cat:
-        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
 
     return JSONResponse({
         "success": True,
@@ -871,7 +991,7 @@ async def api_create_product(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not name or price <= 0:
-        return JSONResponse({"success": False, "error": "Ten va gia san pham khong hop le"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên và giá sản phẩm không hợp lệ"}, status_code=400)
 
     prod = Product(
         name=name,
@@ -908,7 +1028,7 @@ async def api_update_product(request: Request, product_id: int, db: Session = De
 
     prod = db.query(Product).filter(Product.product_id == product_id).first()
     if not prod:
-        return JSONResponse({"success": False, "error": "Khong tim thay san pham"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy sản phẩm"}, status_code=404)
 
     form = await request.form()
     name = form.get("name", "").strip()
@@ -929,7 +1049,7 @@ async def api_update_product(request: Request, product_id: int, db: Session = De
         return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not name or price <= 0:
-        return JSONResponse({"success": False, "error": "Ten va gia san pham khong hop le"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên và giá sản phẩm không hợp lệ"}, status_code=400)
 
     prod.name = name
     prod.price = price
@@ -961,7 +1081,7 @@ async def api_delete_product(request: Request, product_id: int, db: Session = De
 
     prod = db.query(Product).filter(Product.product_id == product_id).first()
     if not prod:
-        return JSONResponse({"success": False, "error": "Khong tim thay san pham"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy sản phẩm"}, status_code=404)
 
     has_order_items = db.query(OrderItem).filter(OrderItem.product_id == product_id).count() > 0
     has_cart_items = db.query(CartItem).filter(CartItem.product_id == product_id).count() > 0
@@ -1003,7 +1123,7 @@ async def api_get_product(request: Request, product_id: int, db: Session = Depen
 
     prod = db.query(Product).filter(Product.product_id == product_id).first()
     if not prod:
-        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
 
     # Safe load - use separate queries to avoid DB column errors
     try:
@@ -1147,7 +1267,7 @@ async def api_create_variant(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not db.query(Product).filter(Product.product_id == product_id).first():
-        return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Sản phẩm không tồn tại"}, status_code=404)
 
     try:
         variant = ProductVariant(
@@ -1182,7 +1302,7 @@ async def api_update_variant(request: Request, variant_id: int, db: Session = De
 
     variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
     if not variant:
-        return JSONResponse({"success": False, "error": "Khong tim thay bien the"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy biến thể"}, status_code=404)
 
     form = await request.form()
     try:
@@ -1222,7 +1342,7 @@ async def api_delete_variant(request: Request, variant_id: int, db: Session = De
 
     variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
     if not variant:
-        return JSONResponse({"success": False, "error": "Khong tim thay bien the"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy biến thể"}, status_code=404)
 
     has_order_items = db.query(OrderItem).filter(OrderItem.variant_id == variant_id).count() > 0
     has_cart_items = db.query(CartItem).filter(CartItem.variant_id == variant_id).count() > 0
@@ -1253,7 +1373,7 @@ async def api_get_variant(request: Request, variant_id: int, db: Session = Depen
 
     variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
     if not variant:
-        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
 
     imgs = db.query(ProductImage).filter(
         ProductImage.variant_id == variant_id
@@ -1340,7 +1460,7 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
         image_url = form.get("image_url", "").strip()
 
     if not image_url:
-        return JSONResponse({"success": False, "error": "Khong co anh nao duoc upload"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Không có ảnh nào được upload"}, status_code=400)
 
     try:
         if is_primary and variant_id:
@@ -1386,7 +1506,7 @@ async def api_delete_product_image(request: Request, image_id: int, db: Session 
 
     img = db.query(ProductImage).filter(ProductImage.image_id == image_id).first()
     if not img:
-        return JSONResponse({"success": False, "error": "Khong tim thay anh"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy ảnh"}, status_code=404)
 
     image_path = _product_upload_path_from_url(img.image_url)
     try:
@@ -1416,7 +1536,7 @@ async def api_update_product_image(request: Request, image_id: int, db: Session 
 
     img = db.query(ProductImage).filter(ProductImage.image_id == image_id).first()
     if not img:
-        return JSONResponse({"success": False, "error": "Khong tim thay anh"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy ảnh"}, status_code=404)
 
     form = await request.form()
     try:
@@ -1467,7 +1587,7 @@ async def api_update_order_status(
 
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:
-        return JSONResponse({"success": False, "error": "Khong tim thay don hang"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy đơn hàng"}, status_code=404)
 
     valid_statuses = [s[0] for s in OrderStatus.STATUSES]
     if new_status not in valid_statuses:
@@ -1499,7 +1619,7 @@ async def api_delete_order(request: Request, order_id: int, db: Session = Depend
 
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:
-        return JSONResponse({"success": False, "error": "Khong tim thay don hang"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy đơn hàng"}, status_code=404)
 
     if order.status != OrderStatus.CANCELLED:
         old_status = order.status
@@ -1551,7 +1671,7 @@ async def api_create_supplier(request: Request, db: Session = Depends(get_db)):
     address = form.get("address", "").strip()
 
     if not name:
-        return JSONResponse({"success": False, "error": "Ten nha cung cap khong duoc trong"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên nhà cung cấp không được để trống"}, status_code=400)
 
     try:
         _validate_email_optional(email)
@@ -1585,7 +1705,7 @@ async def api_update_supplier(request: Request, supplier_id: int, db: Session = 
 
     sup = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
     if not sup:
-        return JSONResponse({"success": False, "error": "Khong tim thay nha cung cap"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy nhà cung cấp"}, status_code=404)
 
     form = await request.form()
     name = form.get("name", "").strip()
@@ -1596,7 +1716,7 @@ async def api_update_supplier(request: Request, supplier_id: int, db: Session = 
     is_active = form.get("is_active", "true").lower() == "true"
 
     if not name:
-        return JSONResponse({"success": False, "error": "Ten nha cung cap khong duoc trong"}, status_code=400)
+        return JSONResponse({"success": False, "error": "Tên nhà cung cấp không được để trống"}, status_code=400)
 
     try:
         _validate_email_optional(email)
@@ -1628,7 +1748,7 @@ async def api_delete_supplier(request: Request, supplier_id: int, db: Session = 
 
     sup = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
     if not sup:
-        return JSONResponse({"success": False, "error": "Khong tim thay nha cung cap"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy nhà cung cấp"}, status_code=404)
 
     has_products = db.query(Product).filter(Product.supplier_id == supplier_id).count() > 0
     if has_products:
@@ -1659,7 +1779,7 @@ async def api_get_supplier(request: Request, supplier_id: int, db: Session = Dep
 
     sup = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
     if not sup:
-        return JSONResponse({"success": False, "error": "Khong tim thay"}, status_code=404)
+        return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
 
     return JSONResponse({
         "success": True,

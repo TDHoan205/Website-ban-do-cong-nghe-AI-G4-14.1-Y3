@@ -38,7 +38,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
         "Orders/index.html",
         {
             "request": request,
-            "page_title": "Don hang cua toi",
+            "page_title": "Đơn hàng của tôi",
             "orders": orders,
             "current_user": account
         }

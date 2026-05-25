@@ -83,7 +83,8 @@ def init_db():
         Product, ProductVariant, ProductImage,
         Cart, CartItem,
         Order, OrderItem,
-        ChatSession, ChatMessage, AIConversationLog, FAQ, Notification, KnowledgeChunk
+        ChatSession, ChatMessage, AIConversationLog, FAQ, Notification, KnowledgeChunk,
+        Payment,
     )
     Base.metadata.create_all(bind=engine)
 

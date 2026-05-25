@@ -50,7 +50,7 @@ async def home_index(request: Request, db: Session = Depends(get_db)):
         "Home/index.html",
         {
             "request": request,
-            "page_title": "Trang chu",
+            "page_title": "Trang chủ",
             "featured_products": featured_products,
             "new_products": new_products,
             "categories": categories,
