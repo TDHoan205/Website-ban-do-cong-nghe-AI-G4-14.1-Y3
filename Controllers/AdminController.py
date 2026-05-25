@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from decimal import Decimal
 from Data.database import get_db
@@ -54,6 +55,93 @@ def _admin_json(request: Request, db: Session):
         return admin
     except HTTPException:
         return None
+
+
+def _to_int(value, default=None, minimum=None, maximum=None):
+    if value is None or value == "":
+        return default
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise ValueError("Gia tri so khong hop le")
+    if minimum is not None and parsed < minimum:
+        raise ValueError(f"Gia tri phai >= {minimum}")
+    if maximum is not None and parsed > maximum:
+        raise ValueError(f"Gia tri phai <= {maximum}")
+    return parsed
+
+
+def _to_decimal(value, default=None, minimum=None):
+    if value is None or value == "":
+        return default
+    try:
+        parsed = Decimal(str(value))
+    except Exception:
+        raise ValueError("Gia tri tien khong hop le")
+    if minimum is not None and parsed < Decimal(str(minimum)):
+        raise ValueError(f"Gia tri phai >= {minimum}")
+    return parsed
+
+
+def _sync_product_inventory(db: Session, product: Product, stock_quantity: int):
+    inventory = db.query(Inventory).filter(Inventory.product_id == product.product_id).first()
+    if not inventory:
+        inventory = Inventory(
+            product_id=product.product_id,
+            quantity_in_stock=stock_quantity,
+            min_stock_level=5,
+            max_stock_level=max(stock_quantity, 100),
+        )
+        db.add(inventory)
+    else:
+        inventory.quantity_in_stock = stock_quantity
+        if inventory.max_stock_level is not None and stock_quantity > inventory.max_stock_level:
+            inventory.max_stock_level = stock_quantity
+    product.stock_quantity = stock_quantity
+
+
+def _validate_role(db: Session, role_id: int):
+    role = db.query(Role).filter(Role.role_id == role_id).first()
+    if not role:
+        raise ValueError("Vai tro khong ton tai")
+    return role
+
+
+def _validate_product_refs(db: Session, category_id, supplier_id):
+    if category_id:
+        category = db.query(Category).filter(Category.category_id == category_id).first()
+        if not category:
+            raise ValueError("Danh muc khong ton tai")
+    if supplier_id:
+        supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+        if not supplier:
+            raise ValueError("Nha cung cap khong ton tai")
+
+
+def _validate_email_optional(value: str):
+    if value and "@" not in value:
+        raise ValueError("Email khong hop le")
+
+
+def _validate_phone_optional(value: str):
+    if value and not all(ch.isdigit() or ch in "+- .()" for ch in value):
+        raise ValueError("So dien thoai khong hop le")
+
+
+def _is_allowed_image_extension(filename: str) -> bool:
+    ext = os.path.splitext(filename or "")[1].lower()
+    return ext in {".jpg", ".jpeg", ".png", ".webp"}
+
+
+def _is_local_product_upload(image_url: str) -> bool:
+    return bool(image_url) and image_url.startswith("/static/uploads/products/")
+
+
+def _product_upload_path_from_url(image_url: str) -> str | None:
+    if not _is_local_product_upload(image_url):
+        return None
+    relative_path = image_url.replace("/static/", "", 1).replace("/", os.sep)
+    return os.path.join("wwwroot", relative_path)
 
 
 # =====================================================================
@@ -329,7 +417,11 @@ async def api_create_account(
     full_name = form.get("full_name", "").strip()
     phone = form.get("phone", "").strip()
     address = form.get("address", "").strip()
-    role_id = int(form.get("role_id", 1))
+    try:
+        role_id = _to_int(form.get("role_id"), 1, minimum=1)
+        _validate_role(db, role_id)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not username or not email or not password:
         return JSONResponse({"success": False, "error": "Thong tin bat buoc"}, status_code=400)
@@ -352,8 +444,12 @@ async def api_create_account(
         role_id=role_id,
         is_active=True
     )
-    db.add(account)
-    db.commit()
+    try:
+        db.add(account)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu tai khoan bi trung hoac khong hop le"}, status_code=400)
     return JSONResponse({"success": True, "account_id": account.account_id})
 
 
@@ -378,7 +474,11 @@ async def api_update_account(
     full_name = form.get("full_name", "").strip()
     phone = form.get("phone", "").strip()
     address = form.get("address", "").strip()
-    role_id = int(form.get("role_id", account.role_id))
+    try:
+        role_id = _to_int(form.get("role_id"), account.role_id, minimum=1)
+        _validate_role(db, role_id)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
     is_active = form.get("is_active", "true").lower() == "true"
 
     # Check email conflict
@@ -395,7 +495,12 @@ async def api_update_account(
     account.address = address
     account.role_id = role_id
     account.is_active = is_active
-    db.commit()
+    account.updated_at = datetime.now()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu tai khoan bi trung hoac khong hop le"}, status_code=400)
     return JSONResponse({"success": True})
 
 
@@ -418,8 +523,34 @@ async def api_delete_account(
     if not account:
         return JSONResponse({"success": False, "error": "Khong tim thay tai khoan"}, status_code=404)
 
-    db.delete(account)
-    db.commit()
+    has_orders = db.query(Order).filter(Order.account_id == account_id).count() > 0
+    has_carts = db.query(Cart).filter(Cart.account_id == account_id).count() > 0
+    has_chats = db.query(ChatSession).filter(ChatSession.account_id == account_id).count() > 0
+    has_notifications = db.query(Notification).filter(Notification.account_id == account_id).count() > 0
+    has_ai_logs = db.query(AIConversationLog).filter(AIConversationLog.account_id == account_id).count() > 0
+    has_employee = db.query(Employee).filter(Employee.account_id == account_id).count() > 0
+
+    if any([has_orders, has_carts, has_chats, has_notifications, has_ai_logs, has_employee]):
+        account.is_active = False
+        db.commit()
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "Tai khoan co du lieu lien quan nen da duoc khoa thay vi xoa."
+        })
+
+    try:
+        db.delete(account)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        account.is_active = False
+        db.commit()
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "Tai khoan co rang buoc du lieu nen da duoc khoa thay vi xoa."
+        })
     return JSONResponse({"success": True})
 
 
@@ -469,7 +600,10 @@ async def api_create_category(request: Request, db: Session = Depends(get_db)):
     form = await request.form()
     name = form.get("name", "").strip()
     description = form.get("description", "").strip()
-    display_order = int(form.get("display_order", 0))
+    try:
+        display_order = _to_int(form.get("display_order"), 0)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
     is_active = form.get("is_active", "true").lower() == "true"
 
     if not name:
@@ -485,8 +619,12 @@ async def api_create_category(request: Request, db: Session = Depends(get_db)):
         display_order=display_order,
         is_active=is_active
     )
-    db.add(cat)
-    db.commit()
+    try:
+        db.add(cat)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu danh muc khong hop le hoac bi trung"}, status_code=400)
     return JSONResponse({"success": True, "category_id": cat.category_id})
 
 
@@ -504,7 +642,10 @@ async def api_update_category(request: Request, category_id: int, db: Session = 
     form = await request.form()
     name = form.get("name", "").strip()
     description = form.get("description", "").strip()
-    display_order = int(form.get("display_order", 0))
+    try:
+        display_order = _to_int(form.get("display_order"), 0)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
     is_active = form.get("is_active", "true").lower() == "true"
 
     if not name:
@@ -521,7 +662,12 @@ async def api_update_category(request: Request, category_id: int, db: Session = 
     cat.description = description
     cat.display_order = display_order
     cat.is_active = is_active
-    db.commit()
+    cat.updated_at = datetime.now()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu danh muc khong hop le hoac bi trung"}, status_code=400)
     return JSONResponse({"success": True})
 
 
@@ -544,8 +690,22 @@ async def api_delete_category(request: Request, category_id: int, db: Session = 
             "error": "Danh muc co san pham, khong the xoa. Hay xoa hoac chuyen san pham truoc."
         }, status_code=400)
 
-    db.delete(cat)
-    db.commit()
+    if getattr(cat, "is_active", None) is not None:
+        cat.is_active = False
+        cat.updated_at = datetime.now()
+        db.commit()
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "Danh muc da duoc an thay vi xoa cung."
+        })
+
+    try:
+        db.delete(cat)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Khong the xoa danh muc do rang buoc du lieu"}, status_code=409)
     return JSONResponse({"success": True})
 
 
@@ -589,21 +749,26 @@ async def api_upload_image(
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
 
     # Validate file type
-    if not file.content_type.startswith("image/"):
-        return JSONResponse({"success": False, "error": "Chỉ chấp nhận file hình ảnh"}, status_code=400)
+    if not file.content_type or not file.content_type.startswith("image/"):
+        return JSONResponse({"success": False, "error": "Chi chap nhan file hinh anh"}, status_code=400)
+    if not _is_allowed_image_extension(file.filename):
+        return JSONResponse({"success": False, "error": "Dinh dang anh khong hop le"}, status_code=400)
 
     # Create directory if not exists
     upload_dir = os.path.join("wwwroot", "uploads", "products")
     os.makedirs(upload_dir, exist_ok=True)
 
     # Generate unique filename
-    ext = os.path.splitext(file.filename)[1]
+    ext = os.path.splitext(file.filename)[1].lower()
     filename = f"{uuid.uuid4()}{ext}"
     filepath = os.path.join(upload_dir, filename)
 
     # Save file
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    try:
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except OSError:
+        return JSONResponse({"success": False, "error": "Khong the luu file anh len server"}, status_code=500)
 
     return JSONResponse({
         "success": True,
@@ -624,38 +789,48 @@ async def api_create_product(request: Request, db: Session = Depends(get_db)):
 
     form = await request.form()
     name = form.get("name", "").strip()
-    price = float(form.get("price", 0))
     description = form.get("description", "").strip()
     image_url = form.get("image_url", "").strip()
-    stock = int(form.get("stock_quantity", 0))
-    category_id = form.get("category_id")
-    supplier_id = form.get("supplier_id")
     is_available = form.get("is_available", "true").lower() == "true"
     is_new = form.get("is_new", "false").lower() == "true"
     is_hot = form.get("is_hot", "false").lower() == "true"
-    discount = int(form.get("discount_percent", 0))
-    original_price = float(form.get("original_price", 0)) or None
+    try:
+        price = _to_decimal(form.get("price"), Decimal("0"), minimum=0)
+        stock = _to_int(form.get("stock_quantity"), 0, minimum=0)
+        category_id = _to_int(form.get("category_id"), None, minimum=1)
+        supplier_id = _to_int(form.get("supplier_id"), None, minimum=1)
+        discount = _to_int(form.get("discount_percent"), 0, minimum=0, maximum=100)
+        original_price = _to_decimal(form.get("original_price"), None, minimum=0)
+        _validate_product_refs(db, category_id, supplier_id)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not name or price <= 0:
         return JSONResponse({"success": False, "error": "Ten va gia san pham khong hop le"}, status_code=400)
 
     prod = Product(
         name=name,
-        price=Decimal(str(price)),
-        original_price=Decimal(str(original_price)) if original_price else None,
+        price=price,
+        original_price=original_price,
         description=description,
         image_url=image_url or None,
         stock_quantity=stock,
-        category_id=int(category_id) if category_id else None,
-        supplier_id=int(supplier_id) if supplier_id else None,
+        category_id=category_id,
+        supplier_id=supplier_id,
         is_available=is_available,
         is_new=is_new,
         is_hot=is_hot,
         discount_percent=discount,
         rating=Decimal("4.5"),
     )
-    db.add(prod)
-    db.commit()
+    try:
+        db.add(prod)
+        db.flush()
+        _sync_product_inventory(db, prod, stock)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu san pham khong hop le"}, status_code=400)
     return JSONResponse({"success": True, "product_id": prod.product_id})
 
 
@@ -672,17 +847,21 @@ async def api_update_product(request: Request, product_id: int, db: Session = De
 
     form = await request.form()
     name = form.get("name", "").strip()
-    price = float(form.get("price", 0))
     description = form.get("description", "").strip()
     image_url = form.get("image_url", "").strip()
-    stock = int(form.get("stock_quantity", 0))
-    category_id = form.get("category_id")
-    supplier_id = form.get("supplier_id")
     is_available = form.get("is_available", "true").lower() == "true"
     is_new = form.get("is_new", "false").lower() == "true"
     is_hot = form.get("is_hot", "false").lower() == "true"
-    discount = int(form.get("discount_percent", 0))
-    original_price = float(form.get("original_price", 0)) or None
+    try:
+        price = _to_decimal(form.get("price"), Decimal("0"), minimum=0)
+        stock = _to_int(form.get("stock_quantity"), 0, minimum=0)
+        category_id = _to_int(form.get("category_id"), None, minimum=1)
+        supplier_id = _to_int(form.get("supplier_id"), None, minimum=1)
+        discount = _to_int(form.get("discount_percent"), 0, minimum=0, maximum=100)
+        original_price = _to_decimal(form.get("original_price"), None, minimum=0)
+        _validate_product_refs(db, category_id, supplier_id)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
     if not name or price <= 0:
         return JSONResponse({"success": False, "error": "Ten va gia san pham khong hop le"}, status_code=400)
@@ -692,14 +871,19 @@ async def api_update_product(request: Request, product_id: int, db: Session = De
     prod.original_price = original_price
     prod.description = description
     prod.image_url = image_url or None
-    prod.stock_quantity = stock
-    prod.category_id = int(category_id) if category_id else None
-    prod.supplier_id = int(supplier_id) if supplier_id else None
+    prod.category_id = category_id
+    prod.supplier_id = supplier_id
     prod.is_available = is_available
     prod.is_new = is_new
     prod.is_hot = is_hot
     prod.discount_percent = discount
-    db.commit()
+    prod.updated_at = datetime.now()
+    _sync_product_inventory(db, prod, stock)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu san pham khong hop le"}, status_code=400)
     return JSONResponse({"success": True})
 
 
@@ -714,8 +898,34 @@ async def api_delete_product(request: Request, product_id: int, db: Session = De
     if not prod:
         return JSONResponse({"success": False, "error": "Khong tim thay san pham"}, status_code=404)
 
-    db.delete(prod)
-    db.commit()
+    has_order_items = db.query(OrderItem).filter(OrderItem.product_id == product_id).count() > 0
+    has_cart_items = db.query(CartItem).filter(CartItem.product_id == product_id).count() > 0
+    if has_order_items or has_cart_items:
+        prod.is_available = False
+        db.commit()
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "San pham co trong don hang/gio hang nen da an khoi ban thay vi xoa."
+        })
+
+    inventory = db.query(Inventory).filter(Inventory.product_id == product_id).first()
+    if inventory:
+        db.delete(inventory)
+    try:
+        db.delete(prod)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        prod = db.query(Product).filter(Product.product_id == product_id).first()
+        if prod:
+            prod.is_available = False
+            db.commit()
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "San pham co rang buoc du lieu nen da an khoi ban thay vi xoa."
+        })
     return JSONResponse({"success": True})
 
 
@@ -862,7 +1072,15 @@ async def api_create_variant(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"success": False, "error": f"Loi xac thuc: {str(e)}"}, status_code=500)
 
     form = await request.form()
-    product_id = int(form.get("product_id", 0))
+    try:
+        product_id = _to_int(form.get("product_id"), 0, minimum=1)
+        price = _to_decimal(form.get("price"), None, minimum=0)
+        original_price = _to_decimal(form.get("original_price"), None, minimum=0)
+        stock_quantity = _to_int(form.get("stock_quantity"), 0, minimum=0)
+        display_order = _to_int(form.get("display_order"), 0)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+
     if not db.query(Product).filter(Product.product_id == product_id).first():
         return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
 
@@ -875,19 +1093,19 @@ async def api_create_variant(request: Request, db: Session = Depends(get_db)):
             ram=form.get("ram", "").strip() or None,
             variant_name=form.get("variant_name", "").strip() or None,
             sku=form.get("sku", "").strip() or None,
-            price=float(form.get("price")) if form.get("price") else None,
-            original_price=float(form.get("original_price")) if form.get("original_price") else None,
-            stock_quantity=int(form.get("stock_quantity", 0)),
-            display_order=int(form.get("display_order", 0)),
+            price=price,
+            original_price=original_price,
+            stock_quantity=stock_quantity,
+            display_order=display_order,
             is_active=True,
         )
         db.add(variant)
         db.commit()
         db.refresh(variant)
         return JSONResponse({"success": True, "variant_id": variant.variant_id})
-    except Exception as e:
+    except IntegrityError:
         db.rollback()
-        return JSONResponse({"success": False, "error": f"Loi luu variant: {str(e)}"}, status_code=500)
+        return JSONResponse({"success": False, "error": "Du lieu bien the khong hop le"}, status_code=400)
 
 
 @router.put("/API/Variants/{variant_id}")
@@ -902,21 +1120,31 @@ async def api_update_variant(request: Request, variant_id: int, db: Session = De
         return JSONResponse({"success": False, "error": "Khong tim thay bien the"}, status_code=404)
 
     form = await request.form()
+    try:
+        price = _to_decimal(form.get("price"), None, minimum=0)
+        original_price = _to_decimal(form.get("original_price"), None, minimum=0)
+        stock_quantity = _to_int(form.get("stock_quantity"), 0, minimum=0)
+        display_order = _to_int(form.get("display_order"), 0)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+
     variant.color = form.get("color", "").strip() or None
     variant.color_hex = form.get("color_hex", "").strip() or None
     variant.storage = form.get("storage", "").strip() or None
     variant.ram = form.get("ram", "").strip() or None
     variant.variant_name = form.get("variant_name", "").strip() or None
     variant.sku = form.get("sku", "").strip() or None
-    if form.get("price"):
-        variant.price = float(form.get("price"))
-    if form.get("original_price"):
-        variant.original_price = float(form.get("original_price"))
-    variant.stock_quantity = int(form.get("stock_quantity", 0))
-    variant.display_order = int(form.get("display_order", 0))
+    variant.price = price
+    variant.original_price = original_price
+    variant.stock_quantity = stock_quantity
+    variant.display_order = display_order
     variant.is_active = form.get("is_active", "true") == "true"
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu bien the khong hop le"}, status_code=400)
     return JSONResponse({"success": True})
 
 
@@ -931,8 +1159,23 @@ async def api_delete_variant(request: Request, variant_id: int, db: Session = De
     if not variant:
         return JSONResponse({"success": False, "error": "Khong tim thay bien the"}, status_code=404)
 
-    db.delete(variant)
-    db.commit()
+    has_order_items = db.query(OrderItem).filter(OrderItem.variant_id == variant_id).count() > 0
+    has_cart_items = db.query(CartItem).filter(CartItem.variant_id == variant_id).count() > 0
+    if has_order_items or has_cart_items:
+        variant.is_active = False
+        db.commit()
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "Bien the da duoc an thay vi xoa cung."
+        })
+
+    try:
+        db.delete(variant)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Khong the xoa bien the do rang buoc du lieu"}, status_code=409)
     return JSONResponse({"success": True})
 
 
@@ -990,30 +1233,43 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
         return JSONResponse({"success": False, "error": f"Loi xac thuc: {str(e)}"}, status_code=500)
 
     form = await request.form()
-    product_id = int(form.get("product_id", 0))
-    variant_id = form.get("variant_id")
-    variant_id = int(variant_id) if variant_id and variant_id != "" else None
+    try:
+        product_id = _to_int(form.get("product_id"), 0, minimum=1)
+        variant_id = _to_int(form.get("variant_id"), None, minimum=1)
+        display_order = _to_int(form.get("display_order"), 0)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+
     file = form.get("file")
     is_primary = form.get("is_primary", "false") == "true"
-    display_order = int(form.get("display_order", 0))
 
-    if not db.query(Product).filter(Product.product_id == product_id).first():
+    product = db.query(Product).filter(Product.product_id == product_id).first()
+    if not product:
         return JSONResponse({"success": False, "error": "San pham khong ton tai"}, status_code=404)
 
     if variant_id:
         variant = db.query(ProductVariant).filter(ProductVariant.variant_id == variant_id).first()
         if not variant:
             return JSONResponse({"success": False, "error": "Bien the khong ton tai"}, status_code=404)
+        if variant.product_id != product_id:
+            return JSONResponse({"success": False, "error": "Bien the khong thuoc san pham nay"}, status_code=400)
 
     image_url = ""
     if file and hasattr(file, "filename"):
+        if not getattr(file, "content_type", "") or not file.content_type.startswith("image/"):
+            return JSONResponse({"success": False, "error": "Chi chap nhan file hinh anh"}, status_code=400)
+        if not _is_allowed_image_extension(file.filename):
+            return JSONResponse({"success": False, "error": "Dinh dang anh khong hop le"}, status_code=400)
         upload_dir = os.path.join("wwwroot", "uploads", "products")
         os.makedirs(upload_dir, exist_ok=True)
-        ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
+        ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".jpg"
         filename = f"{uuid.uuid4()}{ext}"
         filepath = os.path.join(upload_dir, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        try:
+            with open(filepath, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+        except OSError:
+            return JSONResponse({"success": False, "error": "Khong the luu file anh len server"}, status_code=500)
         image_url = f"/static/uploads/products/{filename}"
     else:
         image_url = form.get("image_url", "").strip()
@@ -1051,9 +1307,9 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
                 "display_order": img.display_order,
             }
         })
-    except Exception as e:
+    except IntegrityError:
         db.rollback()
-        return JSONResponse({"success": False, "error": f"Loi luu anh: {str(e)}"}, status_code=500)
+        return JSONResponse({"success": False, "error": "Du lieu anh san pham khong hop le"}, status_code=400)
 
 
 @router.delete("/API/ProductImages/{image_id}")
@@ -1067,8 +1323,22 @@ async def api_delete_product_image(request: Request, image_id: int, db: Session 
     if not img:
         return JSONResponse({"success": False, "error": "Khong tim thay anh"}, status_code=404)
 
-    db.delete(img)
-    db.commit()
+    image_path = _product_upload_path_from_url(img.image_url)
+    try:
+        db.delete(img)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Khong the xoa anh do rang buoc du lieu"}, status_code=409)
+
+    if image_path and os.path.exists(image_path):
+        try:
+            os.remove(image_path)
+        except OSError:
+            return JSONResponse({
+                "success": True,
+                "warning": "Da xoa ban ghi DB nhung khong xoa duoc file anh tren o dia."
+            })
     return JSONResponse({"success": True})
 
 
@@ -1084,15 +1354,31 @@ async def api_update_product_image(request: Request, image_id: int, db: Session 
         return JSONResponse({"success": False, "error": "Khong tim thay anh"}, status_code=404)
 
     form = await request.form()
-    if form.get("is_primary") == "true":
-        db.query(ProductImage).filter(
-            ProductImage.variant_id == img.variant_id,
-            ProductImage.image_id != image_id
-        ).update({"is_primary": False})
-        img.is_primary = True
-    img.display_order = int(form.get("display_order", 0))
+    try:
+        display_order = _to_int(form.get("display_order"), 0)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
 
-    db.commit()
+    if form.get("is_primary") == "true":
+        if img.variant_id:
+            db.query(ProductImage).filter(
+                ProductImage.variant_id == img.variant_id,
+                ProductImage.image_id != image_id
+            ).update({"is_primary": False})
+        else:
+            db.query(ProductImage).filter(
+                ProductImage.product_id == img.product_id,
+                ProductImage.variant_id == None,
+                ProductImage.image_id != image_id
+            ).update({"is_primary": False})
+        img.is_primary = True
+    img.display_order = display_order
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu anh san pham khong hop le"}, status_code=400)
     return JSONResponse({"success": True})
 
 
@@ -1122,7 +1408,19 @@ async def api_update_order_status(
     if new_status not in valid_statuses:
         return JSONResponse({"success": False, "error": "Trang thai khong hop le"}, status_code=400)
 
+    old_status = order.status
     order.status = new_status
+    order.updated_at = datetime.now()
+
+    if new_status == OrderStatus.CANCELLED and old_status != OrderStatus.CANCELLED:
+        items = db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
+        for item in items:
+            product = db.query(Product).filter(Product.product_id == item.product_id).first()
+            if not product:
+                continue
+            new_stock = (product.stock_quantity or 0) + (item.quantity or 0)
+            _sync_product_inventory(db, product, new_stock)
+
     db.commit()
     return JSONResponse({"success": True})
 
@@ -1138,9 +1436,35 @@ async def api_delete_order(request: Request, order_id: int, db: Session = Depend
     if not order:
         return JSONResponse({"success": False, "error": "Khong tim thay don hang"}, status_code=404)
 
-    db.delete(order)
-    db.commit()
-    return JSONResponse({"success": True})
+    if order.status != OrderStatus.CANCELLED:
+        old_status = order.status
+        order.status = OrderStatus.CANCELLED
+        order.updated_at = datetime.now()
+
+        if old_status != OrderStatus.CANCELLED:
+            items = db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
+            for item in items:
+                product = db.query(Product).filter(Product.product_id == item.product_id).first()
+                if not product:
+                    continue
+                new_stock = (product.stock_quantity or 0) + (item.quantity or 0)
+                _sync_product_inventory(db, product, new_stock)
+
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            return JSONResponse({"success": False, "error": "Khong the huy don hang do rang buoc du lieu"}, status_code=409)
+        return JSONResponse({
+            "success": True,
+            "soft_deleted": True,
+            "message": "Don hang da duoc chuyen sang Cancelled thay vi xoa cung."
+        })
+
+    return JSONResponse({
+        "success": False,
+        "error": "Don hang la lich su giao dich, khong ho tro xoa cung."
+    }, status_code=400)
 
 
 # =====================================================================
@@ -1164,6 +1488,12 @@ async def api_create_supplier(request: Request, db: Session = Depends(get_db)):
     if not name:
         return JSONResponse({"success": False, "error": "Ten nha cung cap khong duoc trong"}, status_code=400)
 
+    try:
+        _validate_email_optional(email)
+        _validate_phone_optional(phone)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+
     sup = Supplier(
         name=name,
         contact_person=contact_person,
@@ -1172,8 +1502,12 @@ async def api_create_supplier(request: Request, db: Session = Depends(get_db)):
         address=address,
         is_active=True
     )
-    db.add(sup)
-    db.commit()
+    try:
+        db.add(sup)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu nha cung cap khong hop le"}, status_code=400)
     return JSONResponse({"success": True, "supplier_id": sup.supplier_id})
 
 
@@ -1199,13 +1533,24 @@ async def api_update_supplier(request: Request, supplier_id: int, db: Session = 
     if not name:
         return JSONResponse({"success": False, "error": "Ten nha cung cap khong duoc trong"}, status_code=400)
 
+    try:
+        _validate_email_optional(email)
+        _validate_phone_optional(phone)
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+
     sup.name = name
     sup.contact_person = contact_person
     sup.phone = phone
     sup.email = email
     sup.address = address
     sup.is_active = is_active
-    db.commit()
+    sup.updated_at = datetime.now()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Du lieu nha cung cap khong hop le"}, status_code=400)
     return JSONResponse({"success": True})
 
 
@@ -1222,13 +1567,21 @@ async def api_delete_supplier(request: Request, supplier_id: int, db: Session = 
 
     has_products = db.query(Product).filter(Product.supplier_id == supplier_id).count() > 0
     if has_products:
+        sup.is_active = False
+        sup.updated_at = datetime.now()
+        db.commit()
         return JSONResponse({
-            "success": False,
-            "error": "Nha cung cap co san pham, khong the xoa."
-        }, status_code=400)
+            "success": True,
+            "soft_deleted": True,
+            "message": "Nha cung cap da duoc an thay vi xoa cung."
+        })
 
-    db.delete(sup)
-    db.commit()
+    try:
+        db.delete(sup)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return JSONResponse({"success": False, "error": "Khong the xoa nha cung cap do rang buoc du lieu"}, status_code=409)
     return JSONResponse({"success": True})
 
 
