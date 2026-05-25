@@ -4,7 +4,7 @@ Admin Controller - Trang quan tri he thong (Full CRUD)
 from fastapi import APIRouter, Request, Depends, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, cast, Date
 from sqlalchemy.orm import joinedload
 from decimal import Decimal
 from Data.database import get_db
@@ -16,7 +16,7 @@ from Models import (
     AIConversationLog, FAQ, Notification, KnowledgeChunk
 )
 from Services.AuthService import AuthService
-from datetime import datetime
+from datetime import datetime, timedelta
 from Data.database import get_db
 from Services.AuthService import AuthService
 from Models.Account import Account, Role
@@ -69,6 +69,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse(url="/Auth/Admin", status_code=303)
         raise
 
+    # --- Basic stats (existing) ---
     total_products = db.query(Product).count()
     total_customers = db.query(Account).join(Role).filter(Role.role_name == "Customer").count()
     total_admins = db.query(Account).join(Role).filter(Role.role_name == "Admin").count()
@@ -82,6 +83,107 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     top_products = db.query(Product).filter(
         Product.is_available == True
     ).order_by(Product.rating.desc()).limit(5).all()
+
+    # --- Financial Report: Time boundaries ---
+    now = datetime.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=now.weekday())  # Monday
+    month_start = today_start.replace(day=1)
+    year_start = today_start.replace(month=1, day=1)
+
+    # --- Revenue by period (only Delivered orders) ---
+    def _revenue_in_period(start_dt):
+        result = db.query(func.sum(Order.total_amount)).filter(
+            Order.order_date >= start_dt,
+            Order.status == OrderStatus.DELIVERED
+        ).scalar()
+        return float(result) if result else 0
+
+    revenue_today = _revenue_in_period(today_start)
+    revenue_week = _revenue_in_period(week_start)
+    revenue_month = _revenue_in_period(month_start)
+    revenue_year = _revenue_in_period(year_start)
+
+    # --- Products sold by period ---
+    def _products_sold_in_period(start_dt):
+        result = db.query(func.sum(OrderItem.quantity)).join(
+            Order, Order.order_id == OrderItem.order_id
+        ).filter(
+            Order.order_date >= start_dt,
+            Order.status == OrderStatus.DELIVERED
+        ).scalar()
+        return int(result) if result else 0
+
+    products_sold_today = _products_sold_in_period(today_start)
+    products_sold_month = _products_sold_in_period(month_start)
+
+    # --- New orders today ---
+    orders_today = db.query(Order).filter(
+        Order.created_at >= today_start
+    ).count()
+
+    # --- Average order value ---
+    avg_order_value = db.query(func.avg(Order.total_amount)).filter(
+        Order.status == OrderStatus.DELIVERED
+    ).scalar()
+    avg_order_value = float(avg_order_value) if avg_order_value else 0
+
+    # --- Cancellation rate ---
+    cancelled_orders = db.query(Order).filter(
+        Order.status == OrderStatus.CANCELLED
+    ).count()
+    cancel_rate = round((cancelled_orders / total_orders * 100), 1) if total_orders > 0 else 0
+
+    # --- 7-day revenue chart data ---
+    chart_labels = []
+    chart_data = []
+    for i in range(6, -1, -1):
+        day = today_start - timedelta(days=i)
+        next_day = day + timedelta(days=1)
+        day_revenue = db.query(func.sum(Order.total_amount)).filter(
+            Order.order_date >= day,
+            Order.order_date < next_day,
+            Order.status == OrderStatus.DELIVERED
+        ).scalar()
+        chart_labels.append(day.strftime("%d/%m"))
+        chart_data.append(float(day_revenue) if day_revenue else 0)
+
+    # --- Top 5 best selling products this month ---
+    top_selling = db.query(
+        OrderItem.product_id,
+        OrderItem.product_name,
+        func.sum(OrderItem.quantity).label("total_qty"),
+        func.sum(OrderItem.subtotal).label("total_revenue")
+    ).join(Order, Order.order_id == OrderItem.order_id).filter(
+        Order.order_date >= month_start,
+        Order.status == OrderStatus.DELIVERED
+    ).group_by(
+        OrderItem.product_id, OrderItem.product_name
+    ).order_by(
+        func.sum(OrderItem.quantity).desc()
+    ).limit(5).all()
+
+    top_selling_list = [
+        {
+            "product_id": r.product_id,
+            "product_name": r.product_name,
+            "total_qty": int(r.total_qty or 0),
+            "total_revenue": float(r.total_revenue or 0),
+        }
+        for r in top_selling
+    ]
+
+    # --- Low stock products (stock <= 5) ---
+    low_stock_products = db.query(Product).filter(
+        Product.stock_quantity <= 5,
+        Product.is_available == True
+    ).order_by(Product.stock_quantity.asc()).limit(10).all()
+
+    # --- New customers this month ---
+    new_customers_month = db.query(Account).join(Role).filter(
+        Role.role_name == "Customer",
+        Account.created_at >= month_start
+    ).count()
 
     return templates.TemplateResponse(
         "Admin/dashboard.html",
@@ -100,6 +202,24 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "recent_orders": recent_orders,
             "top_products": top_products,
             "order_statuses": OrderStatus.STATUSES,
+            # --- Financial report data ---
+            "finance": {
+                "revenue_today": revenue_today,
+                "revenue_week": revenue_week,
+                "revenue_month": revenue_month,
+                "revenue_year": revenue_year,
+                "products_sold_today": products_sold_today,
+                "products_sold_month": products_sold_month,
+                "orders_today": orders_today,
+                "avg_order_value": avg_order_value,
+                "cancel_rate": cancel_rate,
+                "cancelled_orders": cancelled_orders,
+                "new_customers_month": new_customers_month,
+            },
+            "chart_labels": json.dumps(chart_labels),
+            "chart_data": json.dumps(chart_data),
+            "top_selling": top_selling_list,
+            "low_stock_products": low_stock_products,
         }
     )
 

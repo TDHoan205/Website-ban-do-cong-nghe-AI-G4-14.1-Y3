@@ -465,22 +465,120 @@
         margin-bottom: 24px;
       }
 
+      /* ===== FINANCE CARDS ===== */
+      .finance-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+      .finance-card {
+        border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08); transition: transform 0.25s, box-shadow 0.25s;
+      }
+      .finance-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+      .finance-card .fc-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 14px; }
+      .finance-card .fc-value { font-size: 1.45rem; font-weight: 800; color: white; margin-bottom: 2px; }
+      .finance-card .fc-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+      .fc-today { background: linear-gradient(135deg, #1a3a2a 0%, #0d2818 100%); }
+      .fc-today .fc-icon { background: rgba(16,185,129,0.2); color: #34d399; }
+      .fc-week { background: linear-gradient(135deg, #1a2a4a 0%, #0d1830 100%); }
+      .fc-week .fc-icon { background: rgba(59,130,246,0.2); color: #60a5fa; }
+      .fc-month { background: linear-gradient(135deg, #2a1a4a 0%, #1a0d30 100%); }
+      .fc-month .fc-icon { background: rgba(139,92,246,0.2); color: #a78bfa; }
+      .fc-year { background: linear-gradient(135deg, #3a2a1a 0%, #2a1a0d 100%); }
+      .fc-year .fc-icon { background: rgba(251,191,36,0.2); color: #fbbf24; }
+
+      .sales-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+      .sales-card {
+        background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px;
+        display: flex; align-items: center; gap: 14px; transition: all 0.2s;
+      }
+      .sales-card:hover { border-color: #ffd700; transform: translateY(-2px); }
+      .sales-card .sc-icon { width: 46px; height: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+      .sales-card .sc-value { font-size: 1.35rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 3px; }
+      .sales-card .sc-label { font-size: 0.73rem; color: #64748b; font-weight: 500; }
+
+      /* Chart */
+      .chart-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 24px; margin-bottom: 28px; }
+      .chart-card canvas { max-height: 280px; }
+
+      /* Low stock */
+      .low-stock-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+      .low-stock-item:last-child { border-bottom: none; }
+      .low-stock-name { font-size: 0.84rem; color: #cbd5e1; font-weight: 500; }
+      .low-stock-qty { font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: rgba(239,68,68,0.12); color: #f87171; }
+
+      /* ===== CHAT BUBBLE ===== */
+      .chat-fab {
+        position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+        width: 60px; height: 60px; border-radius: 50%;
+        background: linear-gradient(135deg, #ffd700, #f59e0b);
+        color: #0f172a; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; box-shadow: 0 6px 24px rgba(255,215,0,0.35);
+        transition: transform 0.3s, box-shadow 0.3s;
+        animation: fabPulse 2s infinite;
+      }
+      .chat-fab:hover { transform: scale(1.1); box-shadow: 0 8px 32px rgba(255,215,0,0.5); }
+      @keyframes fabPulse {
+        0%,100% { box-shadow: 0 6px 24px rgba(255,215,0,0.35); }
+        50% { box-shadow: 0 6px 32px rgba(255,215,0,0.55); }
+      }
+      .chat-fab .fab-badge {
+        position: absolute; top: -2px; right: -2px; width: 18px; height: 18px;
+        background: #ef4444; border-radius: 50%; border: 2px solid #0f172a;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.55rem; font-weight: 800; color: white;
+      }
+      .chat-panel {
+        position: fixed; bottom: 100px; right: 28px; z-index: 9998;
+        width: 380px; max-height: 520px; background: #1e293b;
+        border: 1px solid #334155; border-radius: 18px;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+        display: none; flex-direction: column; overflow: hidden;
+        animation: chatSlideUp 0.3s ease;
+      }
+      .chat-panel.open { display: flex; }
+      @keyframes chatSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      .chat-panel-header {
+        background: linear-gradient(135deg, #ffd700, #f59e0b);
+        padding: 16px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+      }
+      .chat-panel-header .cp-avatar { width: 38px; height: 38px; background: rgba(0,0,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #0f172a; }
+      .chat-panel-header .cp-info h4 { font-size: 0.92rem; font-weight: 700; color: #0f172a; margin: 0; }
+      .chat-panel-header .cp-info p { font-size: 0.7rem; color: rgba(0,0,0,0.5); margin: 0; }
+      .chat-panel-header .cp-close { margin-left: auto; background: rgba(0,0,0,0.1); border: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #0f172a; font-size: 0.85rem; }
+      .chat-panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 360px; }
+      .chat-msg { max-width: 88%; padding: 12px 16px; border-radius: 14px; font-size: 0.82rem; line-height: 1.55; }
+      .chat-msg.bot { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.15); color: #e2e8f0; align-self: flex-start; border-bottom-left-radius: 4px; }
+      .chat-msg.bot strong { color: #ffd700; }
+      .chat-actions { padding: 12px 16px; border-top: 1px solid #334155; display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
+      .chat-action-btn {
+        padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.25);
+        background: rgba(255,215,0,0.06); color: #fbbf24; font-size: 0.75rem; font-weight: 600;
+        cursor: pointer; transition: all 0.2s; font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .chat-action-btn:hover { background: rgba(255,215,0,0.15); border-color: #ffd700; }
+
       /* Responsive */
       @media (max-width: 1200px) {
         .stats-grid { grid-template-columns: repeat(3, 1fr); }
         .products-grid { grid-template-columns: repeat(4, 1fr); }
+        .finance-grid { grid-template-columns: repeat(2, 1fr); }
+        .sales-grid { grid-template-columns: repeat(2, 1fr); }
       }
       @media (max-width: 900px) {
         .admin-sidebar { width: 190px; }
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
         .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
         .content-row { grid-template-columns: 1fr; }
+        .finance-grid { grid-template-columns: repeat(2, 1fr); }
+        .sales-grid { grid-template-columns: repeat(2, 1fr); }
       }
       @media (max-width: 640px) {
         .admin-sidebar { display: none; }
         .admin-main { padding: 16px; }
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
         .quick-actions-grid { grid-template-columns: 1fr; }
+        .finance-grid { grid-template-columns: 1fr; }
+        .sales-grid { grid-template-columns: 1fr; }
+        .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 90px; }
       }
     </style>
   </head>
@@ -630,6 +728,113 @@
           </div>
         </div>
 
+        <!-- ===== BÁO CÁO DOANH THU ===== -->
+        <h3 class="section-title"><i class="fas fa-chart-line"></i> Báo cáo Doanh thu</h3>
+        <div class="finance-grid">
+          <div class="finance-card fc-today">
+            <div class="fc-icon"><i class="fas fa-sun"></i></div>
+            <div class="fc-value">{{ "{:,.0f}".format(finance.revenue_today) }} đ</div>
+            <div class="fc-label">Doanh thu hôm nay</div>
+          </div>
+          <div class="finance-card fc-week">
+            <div class="fc-icon"><i class="fas fa-calendar-week"></i></div>
+            <div class="fc-value">{{ "{:,.0f}".format(finance.revenue_week) }} đ</div>
+            <div class="fc-label">Doanh thu tuần này</div>
+          </div>
+          <div class="finance-card fc-month">
+            <div class="fc-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div class="fc-value">{{ "{:,.0f}".format(finance.revenue_month) }} đ</div>
+            <div class="fc-label">Doanh thu tháng này</div>
+          </div>
+          <div class="finance-card fc-year">
+            <div class="fc-icon"><i class="fas fa-trophy"></i></div>
+            <div class="fc-value">{{ "{:,.0f}".format(finance.revenue_year) }} đ</div>
+            <div class="fc-label">Doanh thu năm nay</div>
+          </div>
+        </div>
+
+        <!-- ===== HOẠT ĐỘNG BÁN HÀNG ===== -->
+        <h3 class="section-title"><i class="fas fa-shopping-cart"></i> Hoạt động Bán hàng</h3>
+        <div class="sales-grid">
+          <div class="sales-card">
+            <div class="sc-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fas fa-box-open"></i></div>
+            <div><div class="sc-value">{{ finance.products_sold_today }}</div><div class="sc-label">SP bán hôm nay</div></div>
+          </div>
+          <div class="sales-card">
+            <div class="sc-icon" style="background:rgba(139,92,246,0.15);color:#8b5cf6;"><i class="fas fa-cubes"></i></div>
+            <div><div class="sc-value">{{ finance.products_sold_month }}</div><div class="sc-label">SP bán tháng này</div></div>
+          </div>
+          <div class="sales-card">
+            <div class="sc-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6;"><i class="fas fa-receipt"></i></div>
+            <div><div class="sc-value">{{ finance.orders_today }}</div><div class="sc-label">Đơn mới hôm nay</div></div>
+          </div>
+          <div class="sales-card">
+            <div class="sc-icon" style="background:rgba(251,191,36,0.15);color:#eab308;"><i class="fas fa-coins"></i></div>
+            <div><div class="sc-value">{{ "{:,.0f}".format(finance.avg_order_value) }} đ</div><div class="sc-label">Giá trị TB / đơn</div></div>
+          </div>
+        </div>
+
+        <!-- ===== BIỂU ĐỒ 7 NGÀY + THỐNG KÊ PHỤ ===== -->
+        <div class="content-row">
+          <div class="chart-card">
+            <div class="section-title" style="margin-bottom:16px;"><i class="fas fa-chart-area"></i> Doanh thu 7 ngày gần nhất</div>
+            <canvas id="revenueChart"></canvas>
+          </div>
+          <div>
+            <!-- Thống kê bổ sung -->
+            <div class="sales-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="sales-card">
+                <div class="sc-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-times-circle"></i></div>
+                <div><div class="sc-value">{{ finance.cancel_rate }}%</div><div class="sc-label">Tỷ lệ hủy ({{ finance.cancelled_orders }} đơn)</div></div>
+              </div>
+              <div class="sales-card">
+                <div class="sc-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fas fa-user-plus"></i></div>
+                <div><div class="sc-value">{{ finance.new_customers_month }}</div><div class="sc-label">Khách mới tháng này</div></div>
+              </div>
+            </div>
+            <!-- Top selling -->
+            <div class="admin-table-card" style="margin-top:16px;">
+              <div class="table-header">
+                <div class="table-title"><i class="fas fa-crown"></i> Top SP bán chạy tháng này</div>
+              </div>
+              {% if top_selling %}
+              <table class="admin-table">
+                <thead><tr><th>Sản phẩm</th><th>SL bán</th><th>Doanh thu</th></tr></thead>
+                <tbody>
+                  {% for item in top_selling %}
+                  <tr>
+                    <td>{{ item.product_name[:40] }}</td>
+                    <td><span style="color:#4ade80;font-weight:700;">{{ item.total_qty }}</span></td>
+                    <td><span class="price-val">{{ "{:,.0f}".format(item.total_revenue) }} đ</span></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <p style="text-align:center;color:#475569;padding:24px;">Chưa có dữ liệu</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CẢNH BÁO HÀNG TỒN KHO THẤP ===== -->
+        {% if low_stock_products %}
+        <div class="admin-table-card" style="margin-bottom:28px;">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> Sản phẩm sắp hết hàng (≤ 5)</div>
+            <a href="/Admin/Products" class="table-btn"><i class="fas fa-arrow-right"></i> Quản lý kho</a>
+          </div>
+          <div style="padding:6px 0;">
+            {% for p in low_stock_products %}
+            <div class="low-stock-item">
+              <span class="low-stock-name">{{ p.name[:50] }}</span>
+              <span class="low-stock-qty">Còn {{ p.stock_quantity }} SP</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Quick Actions -->
         <h3 class="section-title"><i class="fas fa-bolt"></i> Thao tác nhanh</h3>
         <div class="quick-actions-grid">
@@ -772,8 +977,199 @@
 
       </main>
     </div>
+    <!-- ===== CHAT BUBBLE: TRỢ THỦ TÀI CHÍNH ===== -->
+    <button class="chat-fab" id="chatFab" title="Trợ thủ Tài chính AI">
+      <i class="fas fa-robot"></i>
+      <span class="fab-badge">AI</span>
+    </button>
 
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-panel-header">
+        <div class="cp-avatar"><i class="fas fa-robot"></i></div>
+        <div class="cp-info">
+          <h4>Trợ thủ Tài chính AI</h4>
+          <p>Dữ liệu realtime từ hệ thống</p>
+        </div>
+        <button class="cp-close" id="chatClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="chat-panel-body" id="chatBody">
+        <div class="chat-msg bot">
+          👋 Xin chào <strong>{{ admin.username }}</strong>! Tôi là trợ thủ tài chính AI. Chọn một mục bên dưới để xem báo cáo nhanh!
+        </div>
+      </div>
+      <div class="chat-actions" id="chatActions">
+        <button class="chat-action-btn" data-action="overview">📊 Tổng quan</button>
+        <button class="chat-action-btn" data-action="today">☀️ Hôm nay</button>
+        <button class="chat-action-btn" data-action="month">📅 Tháng này</button>
+        <button class="chat-action-btn" data-action="alerts">⚠️ Cảnh báo</button>
+        <button class="chat-action-btn" data-action="top">🏆 Bán chạy</button>
+      </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ===== CHART.JS: Doanh thu 7 ngày =====
+      const ctx = document.getElementById('revenueChart');
+      if (ctx) {
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(255, 215, 0, 0.25)');
+        gradient.addColorStop(1, 'rgba(255, 215, 0, 0.02)');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: {{ chart_labels | safe }},
+            datasets: [{
+              label: 'Doanh thu (VNĐ)',
+              data: {{ chart_data | safe }},
+              borderColor: '#ffd700',
+              backgroundColor: gradient,
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: '#ffd700',
+              pointBorderColor: '#0f172a',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#1e293b',
+                titleColor: '#ffd700',
+                bodyColor: '#e2e8f0',
+                borderColor: '#334155',
+                borderWidth: 1,
+                padding: 12,
+                callbacks: {
+                  label: function(ctx) {
+                    return new Intl.NumberFormat('vi-VN').format(ctx.raw) + ' đ';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 11 } } },
+              y: {
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: {
+                  color: '#64748b', font: { size: 11 },
+                  callback: function(v) {
+                    if (v >= 1000000) return (v/1000000).toFixed(1) + 'M';
+                    if (v >= 1000) return (v/1000).toFixed(0) + 'K';
+                    return v;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // ===== CHAT BUBBLE =====
+      const fab = document.getElementById('chatFab');
+      const panel = document.getElementById('chatPanel');
+      const closeBtn = document.getElementById('chatClose');
+      const body = document.getElementById('chatBody');
+      const actions = document.getElementById('chatActions');
+
+      // Pre-loaded financial data
+      const finData = {
+        revenue_today: '{{ "{:,.0f}".format(finance.revenue_today) }}',
+        revenue_week: '{{ "{:,.0f}".format(finance.revenue_week) }}',
+        revenue_month: '{{ "{:,.0f}".format(finance.revenue_month) }}',
+        revenue_year: '{{ "{:,.0f}".format(finance.revenue_year) }}',
+        products_sold_today: '{{ finance.products_sold_today }}',
+        products_sold_month: '{{ finance.products_sold_month }}',
+        orders_today: '{{ finance.orders_today }}',
+        avg_order_value: '{{ "{:,.0f}".format(finance.avg_order_value) }}',
+        cancel_rate: '{{ finance.cancel_rate }}',
+        cancelled_orders: '{{ finance.cancelled_orders }}',
+        new_customers_month: '{{ finance.new_customers_month }}',
+        total_products: '{{ stats.total_products }}',
+        total_orders: '{{ stats.total_orders }}',
+        pending_orders: '{{ stats.pending_orders }}',
+        total_customers: '{{ stats.total_customers }}',
+      };
+
+      const topSellingData = [
+        {% for item in top_selling %}
+        { name: "{{ item.product_name[:35] }}", qty: {{ item.total_qty }}, rev: '{{ "{:,.0f}".format(item.total_revenue) }}' },
+        {% endfor %}
+      ];
+
+      const lowStockData = [
+        {% for p in low_stock_products %}
+        { name: "{{ p.name[:35] }}", qty: {{ p.stock_quantity }} },
+        {% endfor %}
+      ];
+
+      const responses = {
+        overview: `📊 <strong>Tổng quan hệ thống</strong>\n\n` +
+          `🛍️ Tổng sản phẩm: <strong>${finData.total_products}</strong>\n` +
+          `📦 Tổng đơn hàng: <strong>${finData.total_orders}</strong>\n` +
+          `⏳ Đơn chờ xử lý: <strong>${finData.pending_orders}</strong>\n` +
+          `👥 Tổng khách hàng: <strong>${finData.total_customers}</strong>\n` +
+          `💰 Giá trị TB/đơn: <strong>${finData.avg_order_value} đ</strong>\n` +
+          `❌ Tỷ lệ hủy: <strong>${finData.cancel_rate}%</strong> (${finData.cancelled_orders} đơn)`,
+
+        today: `☀️ <strong>Báo cáo hôm nay</strong>\n\n` +
+          `💰 Doanh thu: <strong>${finData.revenue_today} đ</strong>\n` +
+          `📦 Đơn hàng mới: <strong>${finData.orders_today}</strong>\n` +
+          `🛒 SP đã bán: <strong>${finData.products_sold_today}</strong>`,
+
+        month: `📅 <strong>Báo cáo tháng này</strong>\n\n` +
+          `💰 Doanh thu tháng: <strong>${finData.revenue_month} đ</strong>\n` +
+          `📊 Doanh thu tuần: <strong>${finData.revenue_week} đ</strong>\n` +
+          `🛒 SP đã bán: <strong>${finData.products_sold_month}</strong>\n` +
+          `👤 Khách hàng mới: <strong>${finData.new_customers_month}</strong>\n` +
+          `🏆 Doanh thu năm: <strong>${finData.revenue_year} đ</strong>`,
+
+        alerts: (() => {
+          let msg = `⚠️ <strong>Cảnh báo hệ thống</strong>\n\n`;
+          if (parseInt(finData.pending_orders) > 0) msg += `⏳ Có <strong>${finData.pending_orders}</strong> đơn đang chờ xử lý!\n`;
+          if (lowStockData.length > 0) {
+            msg += `📦 <strong>${lowStockData.length}</strong> SP sắp hết hàng:\n`;
+            lowStockData.slice(0, 5).forEach(p => { msg += `  • ${p.name}: còn <strong>${p.qty}</strong> SP\n`; });
+          }
+          if (parseFloat(finData.cancel_rate) > 10) msg += `❌ Tỷ lệ hủy đơn cao: <strong>${finData.cancel_rate}%</strong>\n`;
+          if (lowStockData.length === 0 && parseInt(finData.pending_orders) === 0) msg += `✅ Không có cảnh báo nào. Mọi thứ đều ổn!`;
+          return msg;
+        })(),
+
+        top: (() => {
+          let msg = `🏆 <strong>Top SP bán chạy tháng này</strong>\n\n`;
+          if (topSellingData.length === 0) return msg + `Chưa có dữ liệu bán hàng tháng này.`;
+          topSellingData.forEach((p, i) => { msg += `${i+1}. <strong>${p.name}</strong> — ${p.qty} SP — ${p.rev} đ\n`; });
+          return msg;
+        })(),
+      };
+
+      fab.addEventListener('click', () => { panel.classList.toggle('open'); });
+      closeBtn.addEventListener('click', () => { panel.classList.remove('open'); });
+
+      actions.addEventListener('click', (e) => {
+        const btn = e.target.closest('.chat-action-btn');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const text = responses[action];
+        if (!text) return;
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg bot';
+        msg.innerHTML = text.replace(/\n/g, '<br>');
+        body.appendChild(msg);
+        body.scrollTop = body.scrollHeight;
+      });
+    });
+    </script>
   </body>
 </html>
