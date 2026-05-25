@@ -21,7 +21,7 @@
       rel="stylesheet"
     />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+    <link rel="stylesheet" href="/static/css/style.css?v=6" />
 
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -347,7 +347,9 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    <script src="/static/js/main.js?v=3"></script>
+    <script src="/static/js/main.js?v=7"></script>
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
     <script>
       function decreaseQty() {
         const qty = document.getElementById("quantity");
@@ -385,6 +387,56 @@
           selectVariant(el);
         }
       });
+
+      // ─── Add to Cart for Related Products (uses main.js showNotification) ───
+      function addToCart(productId, variantId) {
+        const btn = event.currentTarget;
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch('/Products/' + productId + '/add-to-cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: variantId ? 'quantity=1&variant_id=' + variantId : 'quantity=1'
+        })
+        .then(function(response) {
+          const contentType = response.headers.get('Content-Type') || '';
+          if (!contentType.includes('application/json')) {
+            if (response.redirected) {
+              window.location.href = response.url;
+            }
+            return;
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          if (!data) return;
+          if (data.success) {
+            showNotification(data.message || 'Đã thêm sản phẩm vào giỏ hàng!', 'success');
+            updateCartCount(data.cart_count);
+          } else {
+            if (data.login_url) {
+              showNotification(data.message || 'Vui lòng đăng nhập!', 'warning');
+              setTimeout(function() { window.location.href = data.login_url; }, 1500);
+            } else {
+              showNotification(data.message || 'Có lỗi xảy ra!', 'danger');
+            }
+          }
+        })
+        .catch(function(err) {
+          console.error('Add to cart error:', err);
+          showNotification('Có lỗi xảy ra, vui lòng thử lại!', 'danger');
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        });
+      }
     </script>
   </body>
 </html>

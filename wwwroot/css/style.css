@@ -217,3 +217,133 @@ footer a:hover {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* =====================================================
+   Toast Notification — Modern E-Commerce Style
+   ===================================================== */
+:root {
+    --ts-success: #22c55e;
+    --ts-danger:  #ef4444;
+    --ts-warning: #f59e0b;
+    --ts-info:    #3b82f6;
+    --ts-radius:  12px;
+    --ts-shadow:  0 8px 32px rgba(0, 0, 0, 0.12);
+    --ts-bg:      #ffffff;
+    --ts-border:  #e5e7eb;
+}
+
+#toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.ts-toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--ts-bg);
+    border: 1.5px solid var(--ts-border);
+    border-radius: var(--ts-radius);
+    box-shadow: var(--ts-shadow);
+    padding: 14px 16px;
+    min-width: 300px;
+    max-width: 420px;
+    pointer-events: all;
+
+    /* Start hidden (before animation) */
+    opacity: 0;
+    transform: translateX(calc(100% + 24px));
+    transition:
+        opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enter animation */
+.ts-toast--in {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Exit animation */
+.ts-toast--out {
+    opacity: 0;
+    transform: translateX(calc(100% + 24px));
+}
+
+/* Variant: success border accent */
+.ts-toast--success { border-left: 4px solid var(--ts-success); }
+.ts-toast--danger  { border-left: 4px solid var(--ts-danger); }
+.ts-toast--warning { border-left: 4px solid var(--ts-warning); }
+.ts-toast--info    { border-left: 4px solid var(--ts-info); }
+
+/* Inner content: icon + message */
+.ts-toast__content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.ts-toast__icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ts-toast__message {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #111827;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow: visible;
+    white-space: normal;
+    display: block;
+}
+
+/* Close button */
+.ts-toast__close {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background 0.2s;
+    margin-left: 8px;
+}
+
+.ts-toast__close:hover {
+    color: #374151;
+    background: #f3f4f6;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    #toast-container {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+    }
+    .ts-toast {
+        min-width: unset;
+        width: 100%;
+    }
+}

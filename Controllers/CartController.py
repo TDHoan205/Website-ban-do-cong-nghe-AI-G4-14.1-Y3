@@ -82,7 +82,7 @@ async def add(
     except HTTPException:
         if is_ajax_request(request):
             return JSONResponse(
-                {"success": False, "message": "Vui long dang nhap de them san pham vao gio hang.", "login_url": "/Auth/Login"},
+                {"success": False, "message": "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.", "login_url": "/Auth/Login"},
                 status_code=401,
             )
         return RedirectResponse(url="/Auth/Login", status_code=303)
@@ -92,7 +92,10 @@ async def add(
     cart_count = cart_service.get_cart_item_count(account.account_id)
 
     if is_ajax_request(request):
-        return {"success": True, "message": "Da them san pham vao gio hang.", "cart_count": cart_count}
+        return JSONResponse(
+            {"success": True, "message": "Đã thêm sản phẩm vào giỏ hàng.", "cart_count": cart_count},
+            status_code=200
+        )
 
     referer = request.headers.get("referer")
     return RedirectResponse(url=referer or "/Cart/", status_code=303)
@@ -102,19 +105,24 @@ async def add(
 async def update(
     item_id: int,
     quantity: int = Form(...),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
     """Cập nhật số lượng"""
     cart_service = CartService(db)
     cart_service.update_item_quantity(item_id, quantity)
+    if request and is_ajax_request(request):
+        return JSONResponse({"success": True}, status_code=200)
     return RedirectResponse(url="/Cart/", status_code=303)
 
 
 @router.post("/remove/{item_id}")
-async def remove(item_id: int, db: Session = Depends(get_db)):
+async def remove(item_id: int, request: Request = None, db: Session = Depends(get_db)):
     """Xóa sản phẩm khỏi giỏ hàng"""
     cart_service = CartService(db)
     cart_service.remove_item(item_id)
+    if request and is_ajax_request(request):
+        return JSONResponse({"success": True}, status_code=200)
     return RedirectResponse(url="/Cart/", status_code=303)
 
 

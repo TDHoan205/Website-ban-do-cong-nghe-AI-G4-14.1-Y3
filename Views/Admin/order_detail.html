@@ -190,7 +190,7 @@
                   <td><span class="price-val">{{ "{:,.0f}".format(item.subtotal) }} đ</span></td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" style="text-align:center;color:#475569;padding:32px;">Khong co san pham nao.</td></tr>
+                <tr><td colspan="5" style="text-align:center;color:#475569;padding:32px;">Không có sản phẩm nào.</td></tr>
                 {% endfor %}
                 <tr class="order-total-row">
                   <td colspan="4" style="text-align:right;">Tong cong:</td>
@@ -219,7 +219,7 @@
             <div class="page-card-title" style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Can than</div>
           </div>
           <div style="padding: 16px 20px;">
-            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Xoa don hang se xoa vinh vien tat ca chi tiet don hang. Han dong nay khong the hoan tac.</p>
+            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Xoa don hang se xoa vinh vien tat ca chi tiet don hang. Han dong nay không thể hoàn tác.</p>
             <button class="btn btn-danger" onclick="deleteOrder({{ order.order_id }})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:7px 16px;border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;">
               <i class="fas fa-trash-alt"></i> Xoa don hang nay
             </button>

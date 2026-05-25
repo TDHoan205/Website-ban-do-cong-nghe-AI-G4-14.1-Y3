@@ -141,7 +141,7 @@ CREATE TABLE ProductImages (
     display_order INT NOT NULL DEFAULT 0,
     is_primary BIT NOT NULL DEFAULT 0,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE,
+    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE NO ACTION,
     CONSTRAINT FK_ProductImages_Variants FOREIGN KEY (variant_id) REFERENCES ProductVariants(variant_id) ON DELETE SET NULL
 );
 
@@ -214,6 +214,29 @@ CREATE TABLE OrderItems (
 
 
 
+-- Payments
+CREATE TABLE Payments (
+    payment_id INT IDENTITY(1,1) PRIMARY KEY,
+    order_id NVARCHAR(50) NOT NULL UNIQUE,
+    account_id INT NULL,
+    amount BIGINT NOT NULL,
+    payment_method NVARCHAR(20) NOT NULL DEFAULT 'QR_BANKING',
+    transaction_code NVARCHAR(100) NULL,
+    transfer_content NVARCHAR(200) NULL,
+    status NVARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    qr_data NVARCHAR(MAX) NULL,
+    qr_image_base64 NVARCHAR(MAX) NULL,
+    bank_code NVARCHAR(20) NULL,
+    bank_account NVARCHAR(50) NULL,
+    bank_account_name NVARCHAR(200) NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    paid_at DATETIME2 NULL,
+    expires_at DATETIME2 NULL,
+    verified_by NVARCHAR(50) NULL,
+    notes NVARCHAR(500) NULL,
+    CONSTRAINT FK_Payments_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+);
+
 -- ChatSessions
 CREATE TABLE ChatSessions (
     session_id INT IDENTITY(1,1) PRIMARY KEY,
@@ -280,7 +303,6 @@ CREATE TABLE Notifications (
     CONSTRAINT FK_Notifications_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
 );
 
--- KnowledgeChunks
 CREATE TABLE KnowledgeChunks (
     chunk_id INT IDENTITY(1,1) PRIMARY KEY,
     content NVARCHAR(MAX) NOT NULL,
