@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Chatbot - Tech Store Admin</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>
+  if (window.location.search.includes('embed=1') || window !== window.parent) {
+    document.documentElement.classList.add('embedded-mode');
+  }
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+.admin-topbar{background:#1e293b;border-bottom:1px solid #334155;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:24px;}
+.admin-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:white;}
+.admin-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#ffd700,#ffb700);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#0f172a;}
+.admin-logo-name{font-size:1.05rem;font-weight:700;}
+.topbar-nav{display:flex;gap:4px;}
+.topbar-nav a{padding:6px 12px;border-radius:6px;color:rgba(255,255,255,0.55);font-size:0.85rem;font-weight:500;text-decoration:none;transition:all 0.2s;}
+.topbar-nav a:hover{background:rgba(255,255,255,0.08);color:white;}
+.topbar-nav a.active{background:rgba(255,255,255,0.1);color:white;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all 0.2s;font-family:'Be Vietnam Pro',sans-serif;}
+.btn-gold{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:#ffd700;}
+.btn-red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;}
+.topbar-user{display:flex;align-items:center;gap:10px;padding:6px 12px;background:rgba(255,255,255,0.06);border-radius:8px;}
+.user-avatar{width:34px;height:34px;background:linear-gradient(135deg,#1a2a3a,#0f1923);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#ffd700;font-size:0.85rem;}
+.user-name{font-size:0.85rem;font-weight:600;color:white;line-height:1.2;}
+.user-role{font-size:0.68rem;color:#ffd700;font-weight:600;}
+.admin-body{display:flex;flex:1;}
+.admin-sidebar{width:230px;background:#1e293b;border-right:1px solid #334155;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;padding:16px 0;}
+.sidebar-section{margin-bottom:4px;}
+.sidebar-section-title{font-size:0.65rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1.2px;padding:10px 20px 4px;}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 20px;color:#94a3b8;font-size:0.86rem;font-weight:500;text-decoration:none;transition:all 0.15s;border-left:3px solid transparent;}
+.sidebar-link:hover{background:rgba(255,255,255,0.04);color:#e2e8f0;border-left-color:#ffd700;}
+.sidebar-link.active{background:rgba(255,215,0,0.06);color:#ffd700;border-left-color:#ffd700;}
+.sidebar-link i{width:18px;text-align:center;font-size:0.82rem;flex-shrink:0;}
+.admin-main{flex:1;padding:28px 32px;}
+.page-title{font-size:1.2rem;font-weight:700;color:white;margin-bottom:20px;}
+.chat-shell{background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:calc(100vh - 170px);}
+.chat-head{padding:16px 20px;border-bottom:1px solid #334155;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:space-between;}
+.chat-head-title{font-size:1rem;font-weight:700;color:white;display:flex;align-items:center;gap:8px;}
+.chat-head-title i{color:#ffd700;}
+.chat-msgs{flex:1;padding:18px;background:#020617;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+.chat-row{display:flex;}
+.chat-row.user{justify-content:flex-end;}
+.chat-row.bot{justify-content:flex-start;}
+.chat-bubble{max-width:76%;padding:12px 14px;border-radius:14px;font-size:0.88rem;line-height:1.6;word-break:break-word;}
+.chat-row.user .chat-bubble{background:#2563eb;color:#fff;border-bottom-right-radius:4px;}
+.chat-row.bot .chat-bubble{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-bottom-left-radius:4px;}
+.chat-input{display:flex;gap:10px;padding:14px;border-top:1px solid #334155;background:#0f172a;}
+.chat-input input{flex:1;border:1px solid #334155;border-radius:12px;background:#020617;color:#e2e8f0;padding:11px 14px;font-size:0.88rem;outline:none;}
+.chat-input button{border:none;border-radius:12px;background:#2563eb;color:#fff;padding:0 16px;font-size:0.9rem;cursor:pointer;}
+.chat-input button:disabled{opacity:.6;cursor:not-allowed;}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid #334155;background:#111827;}
+.quick-actions button{border:1px solid #334155;background:#1e293b;color:#cbd5e1;border-radius:999px;padding:6px 12px;font-size:0.78rem;cursor:pointer;}
+@media(max-width:640px){.admin-sidebar{display:none;}.admin-main{padding:16px;}.chat-shell{min-height:calc(100vh - 120px);}}
+
+/* Embedded mode styles */
+.embedded-mode {
+  background: #0f172a !important;
+}
+.embedded-mode .admin-topbar,
+.embedded-mode .admin-sidebar {
+  display: none !important;
+}
+.embedded-mode .page-title {
+  display: none !important;
+}
+.embedded-mode .admin-main {
+  padding: 16px !important;
+  margin: 0 !important;
+  min-height: 100vh !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+.embedded-mode .chat-shell {
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: calc(100vh - 32px) !important;
+}
+</style>
+</head>
+<body>
+<div class="admin-topbar">
+  <div class="topbar-left">
+    <a href="/Admin/Dashboard" class="admin-logo">
+      <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
+      <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
+    </a>
+    <nav class="topbar-nav">
+      <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
+      <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
+      <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+      <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
+      <a href="/Admin/Chatbot" class="active"><i class="fas fa-robot me-1"></i> AI Chatbot</a>
+    </nav>
+  </div>
+  <div class="topbar-right">
+    <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Website</a>
+    <div class="topbar-user">
+      <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+      <div><div class="user-name">{{ admin.username }}</div><div class="user-role">Quản trị</div></div>
+    </div>
+    <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
+  </div>
+</div>
+
+<div class="admin-body">
+  <aside class="admin-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quản lý</div>
+      <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
+      <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
+      <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
+      <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
+      <a href="/Admin/Orders" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
+      <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
+      <a href="/Admin/FAQs" class="sidebar-link"><i class="fas fa-question-circle"></i> FAQ</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Phân tích</div>
+      <a href="/Admin/Statistics" class="sidebar-link"><i class="fas fa-chart-line"></i> Thống kê</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Hệ thống</div>
+      <a href="/Admin/Chatbot" class="sidebar-link active"><i class="fas fa-robot"></i> AI Chatbot</a>
+      <a href="/Admin/Chats" class="sidebar-link"><i class="fas fa-comments"></i> Lịch sử Chat</a>
+      <a href="/" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <h1 class="page-title"><i class="fas fa-robot me-2" style="color:#ffd700;"></i>AI Chatbot</h1>
+    <div class="chat-shell">
+      <div class="chat-head">
+        <div class="chat-head-title"><i class="fas fa-sparkles"></i> Trợ lý AI trong khu vực quản trị</div>
+      </div>
+      <div class="chat-msgs" id="admin-chat-page-msgs">
+        <div class="chat-row bot">
+          <div class="chat-bubble">Xin chào. Tôi có thể hỗ trợ tra cứu sản phẩm, đơn hàng và nội dung liên quan trong trang admin.</div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <button type="button" onclick="sendQuick('Tóm tắt đơn hàng hôm nay')">Đơn hàng hôm nay</button>
+        <button type="button" onclick="sendQuick('Sản phẩm nào tồn kho thấp?')">Tồn kho thấp</button>
+        <button type="button" onclick="sendQuick('Top sản phẩm bán chạy')">Top bán chạy</button>
+      </div>
+      <div class="chat-input">
+        <input id="admin-chat-page-input" type="text" placeholder="Nhập câu hỏi..." />
+        <button id="admin-chat-page-send" type="button"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const msgs = document.getElementById('admin-chat-page-msgs');
+  const input = document.getElementById('admin-chat-page-input');
+  const sendBtn = document.getElementById('admin-chat-page-send');
+  let sessionUuid = localStorage.getItem('admin_page_chat_session') || '';
+  let sending = false;
+
+  function escHtml(text){
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+  }
+
+  function renderBot(text){
+    let html = escHtml(text);
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
+  function addMsg(content, sender){
+    const row = document.createElement('div');
+    row.className = 'chat-row ' + sender;
+    row.innerHTML = '<div class="chat-bubble">' + (sender === 'bot' ? renderBot(content) : escHtml(content)) + '</div>';
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  async function initSession(){
+    if (sessionUuid) return;
+    const res = await fetch('/Chat/Widget/Init', { method: 'POST' });
+    const data = await res.json();
+    if (data.success && data.session_uuid){
+      sessionUuid = data.session_uuid;
+      localStorage.setItem('admin_page_chat_session', sessionUuid);
+    }
+  }
+
+  async function sendMessage(message){
+    const content = (message || input.value || '').trim();
+    if (!content || sending) return;
+
+    sending = true;
+    sendBtn.disabled = true;
+    input.value = '';
+    addMsg(content, 'user');
+
+    try {
+      await initSession();
+      const res = await fetch('/Chat/Widget/Send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_uuid: sessionUuid, message: content })
+      });
+      const data = await res.json();
+      if (data.success){
+        if (data.session_uuid){
+          sessionUuid = data.session_uuid;
+          localStorage.setItem('admin_page_chat_session', sessionUuid);
+        }
+        addMsg(data.response || 'Da nhan duoc tin nhan.', 'bot');
+      } else {
+        addMsg(data.error || 'He thong dang ban, vui long thu lai.', 'bot');
+      }
+    } catch (_) {
+      addMsg('Khong the ket noi chatbot.', 'bot');
+    }
+
+    sending = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  window.sendQuick = function(message){
+    sendMessage(message);
+  };
+
+  sendBtn.addEventListener('click', function(){ sendMessage(); });
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+})();
+</script>
+<script src="/static/js/admin-chat-widget.js"></script>
+<script src="/static/js/admin-panel.js"></script>
+</body>
+</html>

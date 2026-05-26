@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -596,6 +596,7 @@
           <a href="/Admin/Dashboard" class="active"><i class="fas fa-home me-1"></i> Trang chủ</a>
           <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
           <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+          <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
           <a href="/"><i class="fas fa-external-link-alt me-1"></i> Website</a>
         </nav>
       </div>
@@ -610,8 +611,8 @@
             <div class="user-role">Quản trị viên</div>
           </div>
         </div>
-        <a href="/Auth/Profile" class="topbar-btn btn-gold" title="Tài khoản">
-          <i class="fas fa-user-circle"></i>
+        <a href="#" data-admin-panel="/Admin/Profile" data-admin-panel-title="Tài khoản của tôi" class="topbar-btn btn-gold" title="Tài khoản của tôi">
+          <i class="fas fa-user-circle"></i> Tài khoản của tôi
         </a>
         <a href="/Auth/Logout" class="topbar-btn btn-red">
           <i class="fas fa-sign-out-alt"></i> Đăng xuất
@@ -647,6 +648,9 @@
           <a href="/Admin/Accounts" class="sidebar-link">
             <i class="fas fa-users"></i> Tài khoản
           </a>
+          <a href="/Admin/FAQs" class="sidebar-link">
+            <i class="fas fa-question-circle"></i> FAQ
+          </a>
         </div>
         <div class="sidebar-section">
           <div class="sidebar-section-title">Phân tích</div>
@@ -656,10 +660,7 @@
         </div>
         <div class="sidebar-section">
           <div class="sidebar-section-title">Hệ thống</div>
-          <a href="/Auth/Profile" class="sidebar-link">
-            <i class="fas fa-user-circle"></i> Tài khoản của tôi
-          </a>
-          <a href="/Chat/" target="_blank" class="sidebar-link">
+          <a href="#" data-admin-panel="/Admin/Chatbot?embed=1" data-admin-panel-title="AI Chatbot" data-admin-panel-align="left" class="sidebar-link">
             <i class="fas fa-robot"></i> AI Chatbot
           </a>
           <a href="/Admin/Chats" class="sidebar-link">
@@ -931,8 +932,8 @@
                     {% else %}<span class="status-badge status-pending">{{ order.status or 'N/A' }}</span>{% endif %}
                   </td>
                   <td>
-                    <a href="#" class="action-btn" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
-                    <a href="#" class="action-btn danger" title="Hủy đơn"><i class="fas fa-ban"></i></a>
+                    <a href="/Admin/Orders/{{ order.order_id }}" class="action-btn" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                    <a href="/Admin/Orders" class="action-btn danger" title="Quản lý đơn"><i class="fas fa-ban"></i></a>
                   </td>
                 </tr>
                 {% endfor %}
@@ -1171,5 +1172,12 @@
       });
     });
     </script>
-  </body>
+    <script src="/static/js/admin-chat-widget.js"></script>
+    <script src="/static/js/admin-panel.js"></script>
+</body>
 </html>
+
+
+
+
+

@@ -1,169 +1,105 @@
-# Ke Hoach Hoan Thien Backend Trang Admin
+# Checklist Hoan Thien Trang Admin
 
-Tai lieu nay tong hop cac viec can chinh de hoan thien backend trang admin theo dung database hien tai trong `SQL/schema.sql`. Muc tieu la tang do on dinh cua API admin, tranh loi 500, giu lich su giao dich va khong thay doi cau truc SQL.
+Muc tieu cua file nay la giup ra soat admin theo huong:
 
-## Nguyen Tac Chung
+- khong bi `404` khi mo tung trang
+- khong co dead link
+- menu trai hien day du o moi trang
+- widget chat va trang chat admin hoat dong on dinh
+- cac hanh dong CRUD co route dung va giao dien mo ta dung nghiep vu
 
-- Khong sua `SQL/schema.sql`.
-- Uu tien backend truoc frontend.
-- Moi API admin phai validate du lieu dau vao truoc khi ghi DB.
-- Moi thao tac ghi DB nen co `try/except IntegrityError`, `rollback()` khi loi va tra JSON ro rang.
-- Khong xoa cung du lieu da lien quan den lich su giao dich, gio hang, chat hoac thong bao.
-- Neu model/bang co cot `updated_at`, nen cap nhat khi sua du lieu.
+## 1. Route HTML admin phai ton tai day du
 
-## Tinh Trang Hien Tai
+Can dam bao cac trang sau mo duoc:
 
-Backend admin hien da on dinh hon truoc o cac luong chinh:
-
-- Product create/update da validate gia, ton kho, danh muc, nha cung cap.
-- Product create/update da dong bo `Products.stock_quantity` voi bang `Inventory`.
-- Product delete khong xoa cung neu da co `OrderItems` hoac `CartItems`; thay vao do chuyen `is_available = False`.
-- Account delete khong xoa cung neu da co du lieu lien quan; thay vao do chuyen `is_active = False`.
-- Order cancel da hoan kho va dong bo lai `Inventory`.
-- Category, Supplier, Variant, ProductImages da duoc bo sung validation va `IntegrityError + rollback`.
-- Upload anh da kiem tra `content_type` va duoi file hop le.
-- Dashboard admin da co du lieu `stats`, `recent_orders`, `top_products`.
-- Da bo sung route HTML rieng cho admin tai `/Admin/Statistics` va khong con phu thuoc vao link `/Statistics` la API thuan.
-
-Tuy nhien, backend admin van chua hoan toan dong deu tren toan bo CRUD va van con mot so diem nen lam tiep.
-
-## Cac Hang Muc Da Hoan Thanh
-
-### 1. Validation Chung
-
-Da co helper dung chung:
-
-- `_to_int(...)`
-- `_to_decimal(...)`
-- `_validate_role(...)`
-- `_validate_product_refs(...)`
-- `_validate_email_optional(...)`
-- `_validate_phone_optional(...)`
-- `_is_allowed_image_extension(...)`
-
-Muc tieu da dat duoc:
-
-- Giam nguy co form sai du lieu gay loi 500.
-- Chuan hoa validate cho product, account, category, supplier, variant, product image.
-
-### 2. Category API
-
-Da hoan thanh:
-
-- Validate `display_order`.
-- Bọc create/update/delete bang `IntegrityError + rollback`.
-- Update co cap nhat `updated_at`.
-- Delete co ho tro soft-hide bang `is_active = False` o nhung truong hop phu hop.
-
-Luu y trang thai hien tai:
-
-- Neu category con san pham lien quan, endpoint hien van tra `400` va khong soft-delete truong hop do.
-
-### 3. Supplier API
-
-Da hoan thanh:
-
-- Validate `name`, `email`, `phone`.
-- Bọc create/update/delete bang `IntegrityError + rollback`.
-- Update co cap nhat `updated_at`.
-- Delete uu tien soft-hide neu da co san pham lien quan.
-
-### 4. Variant API
-
-Da hoan thanh:
-
-- Khong con parse truc tiep `int(...)`/`float(...)` cho cac field chinh.
-- Validate `product_id`, `price`, `original_price`, `stock_quantity`, `display_order`.
-- Delete khong xoa cung neu variant da nam trong `CartItems` hoac `OrderItems`.
-- Truong hop co rang buoc, variant se duoc chuyen `is_active = False`.
-
-### 5. ProductImages API
-
-Da hoan thanh:
-
-- Validate `product_id`, `variant_id`, `display_order`.
-- Kiem tra variant co thuoc dung product hay khong.
-- Dat anh chinh khong con anh huong sang san pham khac.
-- Bọc create/update/delete bang `IntegrityError + rollback`.
-- Upload anh da kiem tra `content_type` va duoi file `.jpg`, `.jpeg`, `.png`, `.webp`.
-
-### 6. Order Delete
-
-Da hoan thanh:
-
-- `DELETE /Admin/API/Orders/{order_id}` khong xoa cung don hang nua.
-- Neu don chua `Cancelled`, API se chuyen don sang `Cancelled` va hoan kho.
-- Neu don da `Cancelled`, API tra loi khong ho tro xoa cung lich su giao dich.
-
-## Cac Hang Muc Con Lai Nen Lam
-
-### 1. Chuan Hoa Response Loi Toan Bo Admin API
+- `/Admin/Dashboard`
+- `/Admin/Products`
+- `/Admin/Products/{product_id}/edit`
+- `/Admin/Categories`
+- `/Admin/Suppliers`
+- `/Admin/Orders`
+- `/Admin/Orders/{order_id}`
+- `/Admin/Accounts`
+- `/Admin/Chats`
+- `/Admin/Statistics`
+- `/Admin/Chatbot`
 
 Trang thai hien tai:
 
-- Nhieu endpoint da tra JSON loi ro rang.
-- Tuy nhien chua co lop xu ly dung chung cho toan bo admin API.
+- Da bo sung route `/Admin/Statistics`.
+- Da bo sung route `/Admin/Chatbot`.
 
-Can lam tiep:
+## 2. Khong duoc con link sai route trong template admin
 
-- Thong nhat mau response loi cho tat ca endpoint admin.
-- Duy tri quy uoc:
-  - `400`: du lieu gui len khong hop le
-  - `401`: chua dang nhap
-  - `403`: khong du quyen
-  - `404`: khong tim thay ban ghi
-  - `409`: xung dot du lieu hoac rang buoc khoa ngoai
-  - `500`: loi bat ngo
+Can loai bo cac link co nguy co gay `404` hoac hanh vi sai:
 
-Mau response nen dung:
+- `/Admin/Login` trong khi route dung la `/Auth/Admin`
+- `/Statistics` neu muc dich la mo trang HTML admin
+- `/Admin/Profile` neu route that la `/Auth/Profile`
+- `href="#"` chi de mo chuc nang nhung khong co JS xu ly that
 
-```json
-{
-  "success": false,
-  "error": "Thong bao loi de admin hieu va sua"
-}
-```
+Trang thai hien tai:
 
-### 2. Cac Diem Con Lai Nen Lam
+- Da doi menu `Thong ke` sang `/Admin/Statistics`.
+- Da doi menu `AI Chatbot` sang `/Admin/Chatbot`.
+- Da sua redirect sai `/Admin/Login` ve `/Auth/Admin`.
+- Da thay cac link `data-admin-panel="/Admin/Profile"` bang `/Auth/Profile` o cac trang da ra soat.
 
-Nhung diem con lai chu yeu la tinh dong deu va cau truc:
+## 3. Sidebar admin phai dong deu o moi trang
 
-- Chuan hoa response loi cho toan bo admin API bang mot cach viet thong nhat hon nua.
-- `updated_at` da duoc bo sung o mot so luong chinh, nhung chua co chuan hoa dong nhat cho toan bo endpoint update.
-- Tiep tuc tach logic nghiep vu ra khoi `AdminController.py` de de bao tri hon.
+Moi trang admin nen co day du 3 nhom:
 
-### 3. Tach Bot Logic Khoi AdminController
+- `Quản lý`
+- `Phân tích`
+- `Hệ thống`
 
-Day la viec nen lam sau khi API da on:
+Trong do:
 
-- `AdminProductService`
-- `AdminOrderService`
-- `AdminAccountService`
-- `AdminCatalogService`
+- `Phân tích` phai co `Thống kê`
+- `Hệ thống` phai co `Tài khoản`, `AI Chatbot`, `Lịch sử Chat`, `Xem website`
 
-Loi ich:
+Trang thai hien tai:
 
-- Controller ngan hon.
-- De test hon.
-- De chia viec trong nhom hon.
+- Da bo sung lai `Phân tích` va `Thống kê` tren cac trang admin chinh.
+- Van can tiep tuc ra soat neu con them file admin khac duoc sinh them sau nay.
 
-## Checklist Hoan Thanh
+## 4. AI Chatbot phai hoat dong theo 2 lop
 
-- [x] Category API co validate va rollback day du.
-- [x] Supplier API co validate va rollback day du.
-- [x] Variant API khong con `int(...)`/`float(...)` truc tiep tren form input.
-- [x] Variant delete khong xoa cung neu da co `CartItems` hoac `OrderItems`.
-- [x] ProductImages API validate dung product/variant/display_order.
-- [x] Dat anh chinh khong anh huong sang san pham khac.
-- [x] Upload anh co kiem tra content type, duoi file va loi upload co ban.
-- [x] Order delete khong xoa cung lich su giao dich.
-- [ ] Tat ca API admin tra JSON loi thong nhat.
-- [x] Cac luong update chinh da duoc cap nhat `updated_at` dong deu hon.
-- [x] Muc `Thong ke` trong admin duoc tro dung route theo dung UX mong muon.
-- [x] Xoa file anh tren filesystem khi xoa `ProductImage`.
-- [x] Bọc thao tac ghi file bang `try/except OSError`.
-- [x] Khong sua `SQL/schema.sql`.
+- Widget chat noi phai hien tren moi trang admin.
+- Menu `AI Chatbot` phai mo trang lon `/Admin/Chatbot`.
 
-## Ket Luan
+Trang thai hien tai:
 
-Backend admin hien da on o cac luong chinh nhu product, account va order, va da duoc bo sung bao ve cho category, supplier, variant, product image va route thong ke admin. Phan viec con lai tap trung vao viec chuan hoa response loi va tiep tuc tach bot logic nghiep vu khoi controller. Sau khi cac diem nay duoc lam xong, backend admin se dat muc hoan thien tot de frontend admin goi API an toan hon va giam nguy co loi 500.
+- Da gan script `wwwroot/js/admin-chat-widget.js` vao cac trang admin chinh.
+- Da tao trang lon `Views/Admin/chatbot.html`.
+
+## 5. Khong duoc mo ta sai nghiep vu tren UI
+
+Can dam bao text tren giao dien khop voi backend that:
+
+- `Order delete` hien tai khong xoa cung, ma chuyen `Cancelled`
+- `Account delete` co the tro thanh khoa tai khoan neu co du lieu lien quan
+- `Product delete` co the tro thanh an san pham neu co rang buoc
+
+Trang thai hien tai:
+
+- Da sua text va confirm cua `Order detail` va `Orders`.
+- Da sua confirm cua `Accounts`.
+
+## 6. Kiem tra file JS/CSS duoc nhung vao admin
+
+Khong duoc goi file khong ton tai vi de gay `404`:
+
+- `wwwroot/js/admin-chat-widget.js`
+- `wwwroot/js/admin-panel.js` neu con dung
+
+Trang thai hien tai:
+
+- `admin-chat-widget.js` ton tai va dang duoc dung.
+- `admin-panel.js` da duoc bo bo o cac trang da chuyen sang route that.
+
+## 7. Viec con lai nen lam tiep
+
+- Chuan hoa response loi cho toan bo admin API.
+- Rà them toan bo `Views/Admin` neu co them file moi hoac file chua doc ky.
+- Tiep tuc tach bot logic khoi `AdminController.py` neu muon de bao tri hon.

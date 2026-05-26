@@ -377,6 +377,25 @@ async def admin_statistics(request: Request, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/Chatbot", response_class=HTMLResponse)
+async def admin_chatbot(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException as e:
+        if e.status_code == 401:
+            return RedirectResponse(url="/Auth/Admin", status_code=303)
+        raise
+
+    return templates.TemplateResponse(
+        "Admin/chatbot.html",
+        {
+            "request": request,
+            "page_title": "AI Chatbot",
+            "admin": admin,
+        }
+    )
+
+
 @router.get("/Products", response_class=HTMLResponse)
 async def admin_products(request: Request, db: Session = Depends(get_db)):
     try:
@@ -1181,7 +1200,7 @@ async def edit_product_page(request: Request, product_id: int, db: Session = Dep
     try:
         admin = _check_admin(request, db)
     except HTTPException:
-        return RedirectResponse(url="/Admin/Login", status_code=303)
+        return RedirectResponse(url="/Auth/Admin", status_code=303)
 
     prod = db.query(Product).filter(Product.product_id == product_id).first()
     if not prod:
@@ -1253,8 +1272,6 @@ async def api_create_variant(request: Request, db: Session = Depends(get_db)):
         admin = _check_admin(request, db)
     except HTTPException:
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
-    except Exception as e:
-        return JSONResponse({"success": False, "error": f"Loi xac thuc: {str(e)}"}, status_code=500)
 
     form = await request.form()
     try:
@@ -1414,8 +1431,6 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
         admin = _check_admin(request, db)
     except HTTPException:
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
-    except Exception as e:
-        return JSONResponse({"success": False, "error": f"Loi xac thuc: {str(e)}"}, status_code=500)
 
     form = await request.form()
     try:
@@ -1793,6 +1808,201 @@ async def api_get_supplier(request: Request, supplier_id: int, db: Session = Dep
             "is_active": sup.is_active,
         }
     })
+
+
+# =====================================================================
+# PAGE: FAQs
+# =====================================================================
+
+@router.get("/FAQs", response_class=HTMLResponse)
+async def admin_faqs(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException as e:
+        if e.status_code == 403:
+            error_msg = urllib.parse.quote("Bạn không có quyền truy cập trang quản trị")
+            return RedirectResponse(url=f"/Auth/Admin?error={error_msg}", status_code=303)
+        return RedirectResponse(url="/Auth/Admin", status_code=303)
+
+    faqs = db.query(FAQ).order_by(FAQ.display_order.asc(), FAQ.created_at.desc()).all()
+    faq_categories = ['Vận chuyển', 'Thanh toán', 'Bảo hành', 'Đổi trả', 'Tài khoản', 'Khác']
+
+    return templates.TemplateResponse(
+        "Admin/faqs.html",
+        {
+            "request": request,
+            "admin": admin,
+            "faqs": faqs,
+            "faq_categories": faq_categories,
+        },
+    )
+
+
+# =====================================================================
+# API: FAQs
+# =====================================================================
+
+@router.post("/API/FAQs")
+async def api_create_faq(request: Request, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    form = await request.form()
+    question = form.get("question", "").strip()
+    answer = form.get("answer", "").strip()
+    category = form.get("category", "Khác").strip()
+    
+    try:
+        display_order = int(form.get("display_order", 0) or 0)
+    except ValueError:
+        display_order = 0
+        
+    is_active = form.get("is_active", "false").lower() in ("true", "1", "on")
+
+    if not question or not answer:
+        return JSONResponse({"success": False, "error": "Câu hỏi và câu trả lời không được để trống"}, status_code=400)
+
+    faq = FAQ(
+        question=question,
+        answer=answer,
+        category=category,
+        display_order=display_order,
+        is_active=is_active,
+    )
+    db.add(faq)
+    db.commit()
+    db.refresh(faq)
+    return JSONResponse({"success": True, "faq_id": faq.faq_id})
+
+
+@router.put("/API/FAQs/{faq_id}")
+async def api_update_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    faq = db.query(FAQ).filter(FAQ.faq_id == faq_id).first()
+    if not faq:
+        return JSONResponse({"success": False, "error": "Không tìm thấy FAQ"}, status_code=404)
+
+    form = await request.form()
+    question = form.get("question", "").strip()
+    answer = form.get("answer", "").strip()
+
+    if not question or not answer:
+        return JSONResponse({"success": False, "error": "Câu hỏi và câu trả lời không được để trống"}, status_code=400)
+
+    faq.question = question
+    faq.answer = answer
+    faq.category = form.get("category", faq.category).strip()
+    
+    try:
+        faq.display_order = int(form.get("display_order", faq.display_order) or 0)
+    except ValueError:
+        pass
+        
+    faq.is_active = form.get("is_active", "false").lower() in ("true", "1", "on")
+    db.commit()
+    return JSONResponse({"success": True})
+
+
+@router.delete("/API/FAQs/{faq_id}")
+async def api_delete_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    faq = db.query(FAQ).filter(FAQ.faq_id == faq_id).first()
+    if not faq:
+        return JSONResponse({"success": False, "error": "Không tìm thấy FAQ"}, status_code=404)
+
+    db.delete(faq)
+    db.commit()
+    return JSONResponse({"success": True})
+
+
+@router.get("/API/FAQs/{faq_id}")
+async def api_get_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    faq = db.query(FAQ).filter(FAQ.faq_id == faq_id).first()
+    if not faq:
+        return JSONResponse({"success": False, "error": "Không tìm thấy FAQ"}, status_code=404)
+
+    return JSONResponse({
+        "success": True,
+        "faq": {
+            "faq_id": faq.faq_id,
+            "question": faq.question,
+            "answer": faq.answer,
+            "category": faq.category or "Khác",
+            "display_order": faq.display_order or 0,
+            "is_active": faq.is_active,
+        }
+    })
+
+
+@router.post("/API/FAQs/sync-ai")
+async def api_sync_faq_ai(request: Request, db: Session = Depends(get_db)):
+    """Đồng bộ FAQ vào Vector Store cho AI Chatbot."""
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    try:
+        from Services.AI.EmbeddingService import get_embedding_service
+        from Services.AI.VectorStore import VectorStore
+
+        embed_svc = get_embedding_service()
+        if not embed_svc.is_available():
+            return JSONResponse({
+                "success": False,
+                "error": "Dịch vụ Embedding không khả dụng. Kiểm tra GEMINI_API_KEY."
+            }, status_code=500)
+
+        store = VectorStore(db)
+        faqs = db.query(FAQ).filter(FAQ.is_active == True).all()
+
+        store.delete_by_source("FAQs")
+        synced = 0
+        for faq in faqs:
+            chunk_text = f"Câu hỏi: {faq.question}\nTrả lời: {faq.answer}"
+            vec = embed_svc.embed_text(chunk_text)
+            if vec:
+                store.upsert_chunk(
+                    content=chunk_text,
+                    content_type="faq",
+                    source_id=faq.faq_id,
+                    source_table="FAQs",
+                    embedding=vec,
+                    metadata={"question": faq.question[:100]},
+                )
+                synced += 1
+        db.commit()
+
+        return JSONResponse({
+            "success": True,
+            "message": f"Đã đồng bộ {synced}/{len(faqs)} câu hỏi FAQ vào AI.",
+            "synced_count": synced,
+        })
+    except ImportError:
+        return JSONResponse({
+            "success": False,
+            "error": "Module AI chưa được cài đặt."
+        }, status_code=500)
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "error": f"Lỗi đồng bộ: {str(e)}"
+        }, status_code=500)
 
 
 # =====================================================================
