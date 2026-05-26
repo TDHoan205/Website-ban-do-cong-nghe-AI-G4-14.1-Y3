@@ -44,6 +44,7 @@ Trang thai hien tai:
 - Da doi menu `AI Chatbot` sang `/Admin/Chatbot`.
 - Da sua redirect sai `/Admin/Login` ve `/Auth/Admin`.
 - Da thay cac link `data-admin-panel="/Admin/Profile"` bang `/Auth/Profile` o cac trang da ra soat.
+- Da bo cac link `data-admin-panel="/Admin/Chatbot?embed=1"` o cac trang da ra soat va thay bang route that `/Admin/Chatbot`.
 
 ## 3. Sidebar admin phai dong deu o moi trang
 
