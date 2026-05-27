@@ -960,10 +960,8 @@
               {% for product in top_products %}
               <a href="/Products/{{ product.product_id }}" class="mini-product-card" target="_blank">
                 <div class="mini-product-img">
-                  {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
-                  {% endif %}
-                  <i class="fas fa-box" {% if product.image_url %}style="display:none;"{% endif %}></i>
+                  <img src="{{ product.first_image_url }}" alt="{{ product.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                  <i class="fas fa-box" style="display:none;"></i>
                 </div>
                 <div class="mini-product-name">{{ product.name }}</div>
                 <div class="mini-product-price">{{ "{:,.0f}".format(product.price | float) }} đ</div>

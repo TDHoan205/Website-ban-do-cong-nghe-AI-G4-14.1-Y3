@@ -84,7 +84,9 @@ class ProductService:
         storage: Optional[List[str]] = None,
     ) -> Tuple[List[Product], int]:
         """Lay tat ca san pham co loc nang cao - tra ve list va total"""
-        query = self.db.query(Product).filter(Product.is_available == True)
+        query = self.db.query(Product).options(
+            joinedload(Product.product_images)
+        ).filter(Product.is_available == True)
 
         if category_id:
             query = query.filter(Product.category_id == category_id)
@@ -140,7 +142,9 @@ class ProductService:
         page_size: int = 10
     ) -> PagedList:
         """Lấy tất cả sản phẩm (kể cả unavailable) cho admin"""
-        query = self.db.query(Product)
+        query = self.db.query(Product).options(
+            joinedload(Product.product_images)
+        )
 
         if category_id:
             query = query.filter(Product.category_id == category_id)
@@ -248,7 +252,9 @@ class ProductService:
 
     def get_related_products(self, product_id: int, category_id: int, limit: int = 4) -> List[Product]:
         """Lấy sản phẩm liên quan"""
-        return self.db.query(Product).filter(
+        return self.db.query(Product).options(
+            joinedload(Product.product_images)
+        ).filter(
             Product.category_id == category_id,
             Product.product_id != product_id,
             Product.is_available == True

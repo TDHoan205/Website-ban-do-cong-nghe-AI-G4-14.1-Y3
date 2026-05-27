@@ -1130,7 +1130,7 @@
 
                 <div class="cart-item-img">
                   <img
-                    src="{{ item.product.image_url if item.product and item.product.image_url else '/static/images/no-image.png' }}"
+                    src="{{ item.product.first_image_url if item.product else '/static/images/no-image.png' }}"
                     alt="{{ item.product.name if item.product else 'Sản phẩm' }}"
                     onerror="this.src = '/static/images/no-image.png'"
                   />

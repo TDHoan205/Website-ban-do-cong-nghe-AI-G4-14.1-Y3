@@ -11,7 +11,7 @@ from sqlalchemy.pool import QueuePool
 
 # Cấu hình SQL Server
 SQL_SERVER_CONFIG = {
-    "server": os.getenv("DB_SERVER", "QUANTRAN161204\\SQLEXPRESS"),
+    "server": os.getenv("DB_SERVER", ".\SQLEXPRESS"),
     "database": "TechShopWebsite2",
     "driver": "ODBC Driver 17 for SQL Server",
     "trusted_connection": "yes",  # Windows Authentication

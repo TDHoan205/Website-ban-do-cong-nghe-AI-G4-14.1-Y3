@@ -623,46 +623,15 @@
       /* ===== PRODUCTS AREA ===== */
       .products-area {
       }
-      .products-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-      }
-      .products-result-count {
+      .products-result-bar {
         font-size: 0.88rem;
         color: #6b7280;
+        margin-bottom: 16px;
       }
-      .products-result-count span {
+      .products-result-bar span {
         color: #ff6b00;
         font-weight: 700;
       }
-      .products-sort {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .sort-select {
-        padding: 8px 12px;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-family: "Be Vietnam Pro", sans-serif;
-        color: #374151;
-        background: white;
-        outline: none;
-        cursor: pointer;
-        appearance: auto;
-      }
-      .sort-label {
-        font-size: 0.85rem;
-        color: #6b7280;
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
       /* Products grid - 4 columns on desktop */
       .products-grid {
         display: grid;
@@ -1427,56 +1396,9 @@
 
           <!-- ===== PRODUCTS GRID ===== -->
           <div class="products-area">
-            <!-- Toolbar -->
-            <div class="products-toolbar">
-              <div class="products-result-count">
-                Hiển thị
-                <span>{{ products | length if products else 0 }}</span> / {{
-                total_products | default(0) }} sản phẩm
-              </div>
-              <div class="products-sort">
-                <span class="sort-label">Sắp xếp:</span>
-                <select class="sort-select" onchange="applySort(this.value)">
-                  <option
-                    value="name"
-                    {% if sort_by == "name" %}selected{% endif %}
-                  >
-                    Tên A-Z
-                  </option>
-                  <option
-                    value="name_desc"
-                    {% if sort_by == "name_desc" %}selected{% endif %}
-                  >
-                    Tên Z-A
-                  </option>
-                  <option
-                    value="price"
-                    {% if sort_by == "price" %}selected{% endif %}
-                  >
-                    Giá thấp-cao
-                  </option>
-                  <option
-                    value="price_desc"
-                    {% if sort_by == "price_desc" %}selected{% endif %}
-                  >
-                    Giá cao-thấp
-                  </option>
-                  <option
-                    value="created_at"
-                    {% if sort_by == "created_at" %}selected{% endif %}
-                  >
-                    Mới nhất
-                  </option>
-                  <option
-                    value="rating"
-                    {% if sort_by == "rating" %}selected{% endif %}
-                  >
-                    Đánh giá
-                  </option>
-                </select>
-              </div>
+            <div class="products-result-bar">
+              Hiển thị <span>{{ products | length if products else 0 }}</span> / {{ total_products | default(0) }} sản phẩm
             </div>
-
             <!-- Grid -->
             <div class="products-grid">
               {% if products %} {% for product in products %}
@@ -1495,7 +1417,7 @@
                   >
                   {% endif %}
                   <img
-                    src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
+                    src="{{ product.first_image_url }}"
                     alt="{{ product.name }}"
                     onerror="this.src = '/static/images/no-image.png'"
                   />
@@ -1516,7 +1438,7 @@
                       <i class="fas fa-star-half-alt"></i>
                     </span>
                     <span class="product-reviews"
-                      >{{ product.rating | default(4.5) }}</span
+                      >{{ "%.1f"|format(product.rating | default(4.5) | float) }}</span
                     >
                   </div>
                   <div class="product-price-wrap">

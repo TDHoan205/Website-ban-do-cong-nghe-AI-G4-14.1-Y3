@@ -162,11 +162,8 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
         {% for product in products %}
         <tr data-name="{{ product.name | lower }}" data-cat="{{ (product.category.name if product.category else '') | lower }}">
           <td>
-            {% if product.image_url %}
-              <img src="{{ product.image_url }}" class="product-img" alt="{{ product.name }}" onerror="this.style.display='none'"/>
-            {% else %}
-              <div class="product-img d-flex align-items-center justify-content-center"><i class="fas fa-image text-muted"></i></div>
-            {% endif %}
+            <img src="{{ product.first_image_url }}" class="product-img" alt="{{ product.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+            <div class="product-img d-flex align-items-center justify-content-center" style="display:none;"><i class="fas fa-image text-muted"></i></div>
           </td>
           <td>
             <strong style="color:#e2e8f0;">{{ product.name }}</strong>

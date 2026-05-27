@@ -216,7 +216,7 @@
             {% for item in cart_items %}
             <div class="summary-item">
               <img
-                src="{{ item.product.image_url or '/static/images/no-image.png' }}"
+                src="{{ item.product.first_image_url if item.product else '/static/images/no-image.png' }}"
                 alt="{{ item.product.name }}"
                 class="summary-item-img"
               />

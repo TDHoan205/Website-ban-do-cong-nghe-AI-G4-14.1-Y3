@@ -2,6 +2,7 @@
 Products Controller - Quan ly san pham
 Tuong duong Controllers/ProductsController.cs trong ASP.NET Core
 """
+import json
 from typing import Optional, List
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, Query
 from pydantic import BaseModel
@@ -173,6 +174,16 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
     if not product:
         raise HTTPException(status_code=404, detail="Sản phẩm không tìm thấy")
 
+    # Parse specifications JSON từ database
+    specifications_dict = {}
+    if product.specifications:
+        try:
+            specifications_dict = json.loads(product.specifications)
+            if not isinstance(specifications_dict, dict):
+                specifications_dict = {}
+        except Exception:
+            specifications_dict = {}
+
     related = product_service.get_related_products(
         product_id, product.category_id if product.category_id else 0
     )
@@ -228,6 +239,7 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
             "request": request,
             "page_title": product.name,
             "product": product,
+            "specifications_dict": specifications_dict,
             "variants": variants_data,
             "product_images": product_images,
             "related_products": related,
