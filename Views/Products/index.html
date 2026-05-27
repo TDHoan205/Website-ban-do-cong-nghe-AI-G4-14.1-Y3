@@ -1495,7 +1495,7 @@
                   >
                   {% endif %}
                   <img
-                    src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
+                    src="{% set imgs = product.product_images|selectattr('is_primary')|list %}{{ imgs[0].image_url if imgs and imgs[0].image_url else (product.image_url if product.image_url else '/static/images/no-image.png') }}"
                     alt="{{ product.name }}"
                     onerror="this.src = '/static/images/no-image.png'"
                   />

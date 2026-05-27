@@ -34,6 +34,24 @@ import uuid
 
 templates = Jinja2Templates(directory="Views")
 
+_LOG_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "debug-ed9600.log")
+
+def _debug_log(session_id: str, hypothesis_id: str, location: str, message: str, data: dict):
+    try:
+        log_entry = {
+            "sessionId": session_id,
+            "id": f"log_{int(__import__('time').time() * 1000)}",
+            "timestamp": int(__import__('time').time() * 1000),
+            "location": location,
+            "message": message,
+            "data": data,
+            "hypothesisId": hypothesis_id
+        }
+        with open(_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
 router = APIRouter(prefix="/Admin")
 
 
@@ -820,6 +838,19 @@ async def api_update_product(request: Request, product_id: int, db: Session = De
     prod.is_hot = is_hot
     prod.discount_percent = discount
     db.commit()
+
+    _debug_log("ed9600", "H4", "AdminController.api_update_product:success",
+        "Product updated",
+        {
+            "product_id": product_id,
+            "name": name,
+            "is_hot": is_hot,
+            "is_new": is_new,
+            "is_available": is_available,
+            "product_image_url": prod.image_url,
+            "price": price,
+        })
+
     return JSONResponse({"success": True})
 
 
@@ -1162,6 +1193,31 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
         db.add(img)
         db.commit()
         db.refresh(img)
+
+        _debug_log("ed9600", "H3", "AdminController.api_upload_product_image:success",
+            "ProductImage saved to DB",
+            {
+                "image_id": img.image_id,
+                "product_id": img.product_id,
+                "variant_id": img.variant_id,
+                "image_url": img.image_url,
+                "is_primary": img.is_primary,
+            })
+
+        # Verify: query all images for this product
+        all_imgs = db.query(ProductImage).filter(
+            ProductImage.product_id == product_id
+        ).all()
+        _debug_log("ed9600", "H2", "AdminController.api_upload_product_image:verify",
+            "All ProductImages for product after save",
+            {
+                "product_id": product_id,
+                "all_images": [
+                    {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary, "variant_id": i.variant_id}
+                    for i in all_imgs
+                ]
+            })
+
         return JSONResponse({
             "success": True,
             "image": {
@@ -1204,6 +1260,16 @@ async def api_update_product_image(request: Request, image_id: int, db: Session 
         return JSONResponse({"success": False, "error": "Không tìm thấy ảnh"}, status_code=404)
 
     form = await request.form()
+    _debug_log("ed9600", "H_STAR", "AdminController.api_update_product_image:received",
+        "Star toggle request received",
+        {
+            "image_id": image_id,
+            "product_id": img.product_id,
+            "variant_id": img.variant_id,
+            "current_is_primary": img.is_primary,
+            "form_is_primary": form.get("is_primary"),
+            "form_display_order": form.get("display_order"),
+        })
     if form.get("is_primary") == "true":
         db.query(ProductImage).filter(
             ProductImage.variant_id == img.variant_id,
@@ -1213,6 +1279,22 @@ async def api_update_product_image(request: Request, image_id: int, db: Session 
     img.display_order = int(form.get("display_order", 0))
 
     db.commit()
+
+    # Verify: query ALL images for this product after update
+    all_imgs = db.query(ProductImage).filter(
+        ProductImage.product_id == img.product_id
+    ).all()
+    _debug_log("ed9600", "H_STAR", "AdminController.api_update_product_image:after_commit",
+        "ProductImage state after commit",
+        {
+            "image_id": image_id,
+            "product_id": img.product_id,
+            "updated_is_primary": img.is_primary,
+            "all_images": [
+                {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary, "variant_id": i.variant_id}
+                for i in all_imgs
+            ]
+        })
     return JSONResponse({"success": True})
 
 

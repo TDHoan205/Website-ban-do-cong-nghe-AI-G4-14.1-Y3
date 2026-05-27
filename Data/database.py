@@ -5,10 +5,14 @@ Tương tự Data/AppDbContext.cs trong ASP.NET Core
 import os
 import urllib
 
+import os
+import urllib
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
 
+# Cấu hình SQL Server
 # Cấu hình SQL Server
 SQL_SERVER_CONFIG = {
     "server": os.getenv("DB_SERVER", "QUANTRAN161204\\SQLEXPRESS"),
@@ -83,6 +87,8 @@ def init_db():
         Product, ProductVariant, ProductImage,
         Cart, CartItem,
         Order, OrderItem,
+        ChatSession, ChatMessage, AIConversationLog, FAQ, Notification, KnowledgeChunk,
+        Payment,
         ChatSession, ChatMessage, AIConversationLog, FAQ, Notification, KnowledgeChunk,
         Payment,
     )

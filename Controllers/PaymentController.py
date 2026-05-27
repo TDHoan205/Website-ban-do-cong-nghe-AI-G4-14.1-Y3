@@ -57,6 +57,30 @@ async def checkout_page(request: Request, db: Session = Depends(get_db)):
     if not items:
         return RedirectResponse(url="/Cart/", status_code=303)
 
+    # Kiểm tra các sản phẩm có variants nhưng chưa chọn option
+    unselected_items = []
+    for item in items:
+        if item.variant_id:
+            continue
+        # Kiểm tra sản phẩm này có variants không
+        from Models.Product import ProductVariant
+        has_variants = db.query(ProductVariant).filter(
+            ProductVariant.product_id == item.product_id,
+            ProductVariant.is_active == True
+        ).count() > 0
+        if has_variants:
+            unselected_items.append(item)
+
+    if unselected_items:
+        # Chuyển về giỏ hàng kèm thông báo
+        names = ", ".join([item.product.name if item.product else f"Sản phẩm #{item.product_id}" for item in unselected_items[:3]])
+        if len(unselected_items) > 3:
+            names += f" và {len(unselected_items) - 3} sản phẩm khác"
+        from fastapi import Query
+        import urllib.parse
+        msg = urllib.parse.quote(f"Các sản phẩm sau chưa chọn option (màu/dung lượng): {names}")
+        return RedirectResponse(url=f"/Cart/?error={msg}", status_code=303)
+
     # Tính tổng tiền (đã có VAT 10%)
     subtotal = sum(item.subtotal for item in items)
     tax = subtotal * 0.10

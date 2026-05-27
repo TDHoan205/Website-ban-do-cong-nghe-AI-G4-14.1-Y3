@@ -162,7 +162,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
         {% for product in products %}
         <tr data-name="{{ product.name | lower }}" data-cat="{{ (product.category.name if product.category else '') | lower }}">
           <td>
-            {% if product.image_url %}
+            {% set admin_imgs = product.product_images|selectattr('is_primary')|list %}
+            {% if admin_imgs and admin_imgs[0].image_url %}
+              <img src="{{ admin_imgs[0].image_url }}" class="product-img" alt="{{ product.name }}" onerror="this.style.display='none'"/>
+            {% elif product.image_url %}
               <img src="{{ product.image_url }}" class="product-img" alt="{{ product.name }}" onerror="this.style.display='none'"/>
             {% else %}
               <div class="product-img d-flex align-items-center justify-content-center"><i class="fas fa-image text-muted"></i></div>

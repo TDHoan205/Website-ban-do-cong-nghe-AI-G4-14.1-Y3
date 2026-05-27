@@ -1091,6 +1091,20 @@
       </div>
     </div>
 
+    <!-- ===== ERROR ALERT (from checkout validation) ===== -->
+    <div class="container" id="checkout-error-box" style="margin-top:16px;display:none;">
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;font-family:'Be Vietnam Pro',sans-serif;">
+        <i class="fas fa-exclamation-circle" style="color:#dc2626;font-size:1.2rem;margin-top:2px;flex-shrink:0;"></i>
+        <div style="flex:1;">
+          <strong style="color:#991b1b;font-size:0.9rem;">Chưa chọn option sản phẩm</strong>
+          <p id="checkout-error-msg" style="color:#b91c1c;font-size:0.85rem;margin:4px 0 0;line-height:1.5;"></p>
+        </div>
+        <button onclick="document.getElementById('checkout-error-box').style.display='none'" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:1rem;padding:0;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
     <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content">
       <div class="cart-page">
@@ -1176,13 +1190,23 @@
                   <div class="cart-item-total-price">
                     {{ "{:,.0f}".format(item.subtotal) }} đ
                   </div>
-                  <button
-                    class="cart-item-delete-btn"
-                    onclick="removeItem({{ item.cart_item_id }})"
-                    title="Xóa sản phẩm"
-                  >
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
+                  <div style="display:flex;gap:4px;align-items:center;">
+                    <button
+                      class="cart-item-delete-btn"
+                      onclick="removeItem({{ item.cart_item_id }})"
+                      title="Xóa sản phẩm"
+                    >
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button
+                      class="cart-item-delete-btn"
+                      onclick="evOpen({{ item.cart_item_id }})"
+                      title="Sửa option"
+                      style="color:#0d6efd;"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
               {% endfor %}
@@ -1398,7 +1422,275 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/main.js?v=7"></script>
+    <script src="/static/js/main.js?v=8"></script>
+
+    <!-- Modal: Sửa option sản phẩm trong giỏ hàng -->
+    <style>
+      .ev-overlay {
+        position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9990;
+        display:none;align-items:center;justify-content:center;padding:16px;
+        backdrop-filter:blur(2px);font-family:"Be Vietnam Pro",sans-serif;
+      }
+      .ev-overlay.active{display:flex;}
+      .ev-modal{
+        background:#fff;border-radius:16px;width:100%;max-width:440px;
+        max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);
+        animation:ev-slide 0.3s ease;
+      }
+      @keyframes ev-slide{from{opacity:0;transform:translateY(20px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+      .ev-header{display:flex;align-items:center;padding:18px 20px;border-bottom:1px solid #f0f0f0;gap:14px;}
+      .ev-thumb{width:70px;height:70px;border-radius:10px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #f0f0f0;flex-shrink:0;}
+      .ev-thumb img{max-width:100%;max-height:100%;object-fit:contain;}
+      .ev-info{flex:1;min-width:0;}
+      .ev-name{font-size:0.95rem;font-weight:700;color:#1a1a2e;margin-bottom:4px;line-height:1.3;}
+      .ev-price{font-size:1.1rem;font-weight:800;color:#dc2626;}
+      .ev-price-orig{font-size:0.8rem;color:#9ca3af;text-decoration:line-through;margin-left:6px;}
+      .ev-close{width:34px;height:34px;border-radius:50%;border:none;background:#f3f4f6;color:#6b7280;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all 0.2s;}
+      .ev-close:hover{background:#fee2e2;color:#dc2626;}
+      .ev-body{padding:20px;}
+      .ev-label{font-size:0.82rem;font-weight:700;color:#374151;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+      .ev-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+      .ev-opt{padding:8px 16px;border-radius:20px;border:1.5px solid #e5e7eb;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;background:#fff;color:#374151;font-family:"Be Vietnam Pro",sans-serif;}
+      .ev-opt:hover{border-color:#0d6efd;color:#0d6efd;}
+      .ev-opt.selected{border-color:#0d6efd;background:#eff6ff;color:#0d6efd;}
+      .ev-opt:disabled{opacity:0.4;cursor:not-allowed;}
+      .ev-color-dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:4px;border:1px solid #ccc;}
+      .ev-qty-row{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+      .ev-qty-label{font-size:0.88rem;font-weight:600;color:#374151;}
+      .ev-qty-ctrl{display:flex;align-items:center;border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;}
+      .ev-qty-btn{width:36px;height:36px;border:none;background:#fff;color:#6b7280;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+      .ev-qty-btn:hover{background:#f3f4f6;}
+      .ev-qty-val{width:44px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:700;color:#374151;border-left:1.5px solid #e5e7eb;border-right:1.5px solid #e5e7eb;}
+      .ev-footer{padding:16px 20px;border-top:1px solid #f0f0f0;display:flex;gap:10px;}
+      .ev-save-btn{flex:1;padding:13px;background:#0d6efd;color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:"Be Vietnam Pro",sans-serif;transition:background 0.2s;}
+      .ev-save-btn:hover{background:#0a58ca;}
+      .ev-cancel-btn{padding:13px 20px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;font-family:"Be Vietnam Pro",sans-serif;transition:background 0.2s;}
+      .ev-cancel-btn:hover{background:#e5e7eb;}
+      .ev-loading{display:flex;align-items:center;justify-content:center;padding:40px;color:#9ca3af;font-size:0.9rem;}
+      .ev-current-variant{margin-bottom:16px;padding:10px 14px;background:#fafafa;border-radius:8px;font-size:0.85rem;color:#6b7280;border:1px solid #e5e7eb;}
+      .ev-current-variant strong{color:#374151;}
+    </style>
+
+    <div class="ev-overlay" id="ev-overlay" onclick="if(event.target===this)evClose()">
+      <div class="ev-modal" id="ev-modal">
+        <div class="ev-loading" id="ev-loading"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Đang tải...</div>
+      </div>
+    </div>
+
+    <script>
+      (function(){
+        var evOverlay = document.getElementById('ev-overlay');
+        var evModal = document.getElementById('ev-modal');
+
+        window.evOpen = function(itemId) {
+          evOverlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          evModal.innerHTML = '<div class="ev-loading"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Đang tải...</div>';
+
+          fetch('/Cart/update-variant-data/' + itemId)
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+              if (!data.success) {
+                evModal.innerHTML = '<div style="padding:24px;text-align:center;color:#dc2626;"><i class="fas fa-exclamation-circle"></i> Không tìm thấy sản phẩm.</div>';
+                return;
+              }
+              evModal.innerHTML = buildEvFull(data);
+              initEvLogic(data);
+            })
+            .catch(function(){
+              evModal.innerHTML = '<div style="padding:24px;text-align:center;color:#dc2626;"><i class="fas fa-exclamation-circle"></i> Lỗi tải dữ liệu.</div>';
+            });
+        };
+
+        window.evClose = function() {
+          evOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        };
+
+        function buildEvHeader(product, item) {
+          var price = product.price ? Number(product.price).toLocaleString('vi-VN',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ' : '0 đ';
+          return '<div class="ev-header">' +
+            '<div class="ev-thumb"><img src="' + (product.image_url || '/static/images/no-image.png') + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
+            '<div class="ev-info"><div class="ev-name">' + escHtml(product.name) + '</div><div class="ev-price">' + price + '</div></div>' +
+            '<button class="ev-close" onclick="evClose()" title="Đóng"><i class="fas fa-times"></i></button>' +
+          '</div>';
+        }
+
+        function buildEvFull(data) {
+          var item = data.item;
+          var product = data.product;
+          var variants = data.variants || [];
+          var currentVid = item.variant_id;
+
+          var colors = {}, storages = {}, vMap = {};
+          variants.forEach(function(v){
+            vMap[v.variant_id] = v;
+            if (v.color) colors[v.color] = {hex: v.color_hex, vid: v.variant_id};
+            if (v.storage) storages[v.storage] = v;
+          });
+
+          var html = buildEvHeader(product, item);
+
+          // Current variant info
+          var curVariant = vMap[currentVid];
+          var curLabel = '';
+          if (curVariant) {
+            var parts = [];
+            if (curVariant.color) parts.push('Màu: ' + curVariant.color);
+            if (curVariant.storage) parts.push('Dung lượng: ' + curVariant.storage);
+            curLabel = parts.join(' | ');
+          }
+          if (!curLabel) curLabel = 'Chưa chọn option';
+
+          html += '<div class="ev-body">';
+          html += '<div class="ev-current-variant"><i class="fas fa-info-circle" style="margin-right:6px;color:#0d6efd;"></i>Option hiện tại: <strong>' + escHtml(curLabel) + '</strong></div>';
+
+          // Color options
+          var colorKeys = Object.keys(colors);
+          if (colorKeys.length > 0) {
+            html += '<div class="ev-label">Màu sắc</div>';
+            html += '<div class="ev-row" id="ev-colors">';
+            colorKeys.forEach(function(c){
+              var isSel = curVariant && curVariant.color === c;
+              var hex = colors[c].hex || '#ccc';
+              html += '<button class="ev-opt' + (isSel ? ' selected' : '') + '" data-type="color" data-value="' + escHtml(c) + '" data-vid="' + colors[c].vid + '" onclick="evSelect(this)">' +
+                      '<span class="ev-color-dot" style="background:' + hex + '"></span>' + escHtml(c) + '</button>';
+            });
+            html += '</div>';
+          }
+
+          // Storage options
+          var storageKeys = Object.keys(storages);
+          if (storageKeys.length > 0) {
+            html += '<div class="ev-label">Dung lượng</div>';
+            html += '<div class="ev-row" id="ev-storages">';
+            storageKeys.forEach(function(s){
+              var isSel = curVariant && curVariant.storage === s;
+              html += '<button class="ev-opt' + (isSel ? ' selected' : '') + '" data-type="storage" data-value="' + escHtml(s) + '" data-vid="' + storages[s].variant_id + '" onclick="evSelect(this)">' + escHtml(s) + '</button>';
+            });
+            html += '</div>';
+          }
+
+          html += '<div class="ev-qty-row">' +
+            '<span class="ev-qty-label">Số lượng</span>' +
+            '<div class="ev-qty-ctrl">' +
+              '<button class="ev-qty-btn" onclick="evChangeQty(-1)">-</button>' +
+              '<span class="ev-qty-val" id="ev-qty-val">' + item.quantity + '</span>' +
+              '<button class="ev-qty-btn" onclick="evChangeQty(1)">+</button>' +
+            '</div>' +
+          '</div></div>' +
+          '<div class="ev-footer">' +
+            '<button class="ev-cancel-btn" onclick="evClose()">Hủy</button>' +
+            '<button class="ev-save-btn" id="ev-save-btn" onclick="evSave(' + item.cart_item_id + ')"><i class="fas fa-check"></i> Lưu thay đổi</button>' +
+          '</div>';
+
+          window.__evVariants = vMap;
+          return html;
+        }
+
+        window.initEvLogic = function(data) {};
+
+        window.evSelect = function(el) {
+          var type = el.dataset.type;
+          var row = el.parentElement;
+          row.querySelectorAll('.ev-opt').forEach(function(b){ b.classList.remove('selected'); });
+          el.classList.add('selected');
+
+          var selectedColor = null, selectedStorage = null;
+          var colorBtn = document.querySelector('.ev-opt[data-type="color"].selected');
+          var storageBtn = document.querySelector('.ev-opt[data-type="storage"].selected');
+          if (colorBtn) selectedColor = colorBtn.dataset.value;
+          if (storageBtn) selectedStorage = storageBtn.dataset.value;
+
+          var matched = null;
+          var vMap = window.__evVariants || {};
+          for (var vid in vMap) {
+            var v = vMap[vid];
+            var cm = !selectedColor || v.color === selectedColor;
+            var sm = !selectedStorage || v.storage === selectedStorage;
+            if (cm && sm) {
+              if (selectedColor && selectedStorage) { matched = v; break; }
+              if (!matched) matched = v;
+            }
+          }
+
+          if (matched) {
+            var priceEl = document.querySelector('.ev-price');
+            if (priceEl && matched.price) {
+              priceEl.textContent = Number(matched.price).toLocaleString('vi-VN',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ';
+            }
+            var thumbImg = document.querySelector('.ev-thumb img');
+            if (thumbImg && matched.images && matched.images.length > 0) {
+              var primary = matched.images.find(function(i){ return i.is_primary; });
+              var imgUrl = primary ? primary.image_url : matched.images[0].image_url;
+              if (imgUrl) thumbImg.src = imgUrl;
+            }
+            // Update variant_id on buttons
+            if (colorBtn) colorBtn.dataset.vid = matched.variant_id;
+            if (storageBtn) storageBtn.dataset.vid = matched.variant_id;
+          }
+        };
+
+        window.evChangeQty = function(delta) {
+          var valEl = document.getElementById('ev-qty-val');
+          if (!valEl) return;
+          var val = parseInt(valEl.textContent) || 1;
+          val = Math.max(1, val + delta);
+          valEl.textContent = val;
+        };
+
+        window.evSave = function(itemId) {
+          var selectedColor = document.querySelector('.ev-opt[data-type="color"].selected');
+          var selectedStorage = document.querySelector('.ev-opt[data-type="storage"].selected');
+          var variantId = null;
+          if (selectedColor && selectedColor.dataset.vid) variantId = selectedColor.dataset.vid;
+          else if (selectedStorage && selectedStorage.dataset.vid) variantId = selectedStorage.dataset.vid;
+          var qty = parseInt(document.getElementById('ev-qty-val').textContent) || 1;
+
+          var btn = document.getElementById('ev-save-btn');
+          if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...'; }
+
+          fetch('/Cart/update-variant/' + itemId, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: 'variant_id=' + (variantId || '') + '&quantity=' + qty
+          })
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            if (data.success) {
+              evClose();
+              if (typeof showNotification === 'function') {
+                showNotification(data.message || 'Đã cập nhật option!', 'success');
+              }
+              setTimeout(function(){ location.reload(); }, 500);
+            } else {
+              if (typeof showNotification === 'function') {
+                showNotification(data.message || 'Có lỗi xảy ra!', 'danger');
+              }
+              if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Lưu thay đổi'; }
+            }
+          })
+          .catch(function(){
+            if (typeof showNotification === 'function') {
+              showNotification('Có lỗi xảy ra!', 'danger');
+            }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Lưu thay đổi'; }
+          });
+        };
+
+        function escHtml(s) {
+          if (!s) return '';
+          var d = document.createElement('div');
+          d.textContent = s;
+          return d.innerHTML;
+        }
+      })();
+    </script>
+
     <script>
       function formatCurrency(amount) {
         if (amount === null || amount === undefined || isNaN(amount)) amount = 0;
@@ -1500,6 +1792,19 @@
       }
 
       document.addEventListener("DOMContentLoaded", function() {
+        // Show error from checkout validation redirect
+        var params = new URLSearchParams(window.location.search);
+        var errMsg = params.get("error");
+        if (errMsg) {
+          var errBox = document.getElementById("checkout-error-box");
+          var errText = document.getElementById("checkout-error-msg");
+          if (errBox && errText) {
+            try { errText.textContent = decodeURIComponent(errMsg); } catch(e) { errText.textContent = errMsg; }
+            errBox.style.display = "block";
+            errBox.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+
         document.querySelectorAll(".item-checkbox").forEach(function(cb) {
           cb.checked = true;
           cb.addEventListener("change", updateSummaryFromSelection);

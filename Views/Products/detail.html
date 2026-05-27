@@ -208,62 +208,76 @@
             <div class="mb-4 p-3 border rounded" style="background:#fafafa;">
               <h6 class="mb-3"><i class="fas fa-layer-group me-1"></i> Phân loại sản phẩm</h6>
 
-              {% if variants | selectattr('color') | list | length > 0 %}
+              {% set all_colors = [] %}
+              {% set all_storages = [] %}
+              {% for v in variants %}
+                {% if v.color and v.color not in all_colors %}
+                  {% set _ = all_colors.append(v.color) %}
+                {% endif %}
+                {% if v.storage and v.storage not in all_storages %}
+                  {% set _ = all_storages.append(v.storage) %}
+                {% endif %}
+              {% endfor %}
+
+              {% if all_colors | length > 0 %}
               <div class="mb-3">
                 <div class="mb-2 fw-semibold" style="font-size:0.85rem;color:#374151;">
                   Màu sắc:
                   <span id="selected-color" class="text-primary ms-1"></span>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                  {% for v in variants %}
-                  {% if v.color %}
+                  {% for color_name in all_colors %}
+                  {% set color_variant = variants | selectattr('color', 'equalto', color_name) | list | first %}
                   <div class="form-check form-check-inline">
-                    <input class="btn-check" type="radio" name="color" id="color-{{ v.variant_id }}"
-                           value="{{ v.variant_id }}" data-color="{{ v.color }}"
-                           data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}"
-                           data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}"
+                    <input class="btn-check" type="radio" name="color" id="color-{{ loop.index }}"
+                           value="{{ color_name }}"
+                           data-color="{{ color_name }}"
+                           data-variant-id="{{ color_variant.variant_id if color_variant }}"
+                           data-price="{% if color_variant and color_variant.price %}{{ '{:,.0f}'.format(color_variant.price) }}{% endif %}"
+                           data-img="{% if color_variant %}{% for img in color_variant.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}{% endif %}"
                            autocomplete="off"
                            onchange="selectVariant(this)"/>
-                    <label class="btn btn-outline-secondary" for="color-{{ v.variant_id }}"
+                    <label class="btn btn-outline-secondary" for="color-{{ loop.index }}"
                            style="border-radius:20px;padding:5px 14px;font-size:0.8rem;">
-                      {% if v.color_hex %}
-                      <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{{ v.color_hex }};vertical-align:middle;margin-right:4px;border:1px solid #ccc;"></span>
+                      {% if color_variant and color_variant.color_hex %}
+                      <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{{ color_variant.color_hex }};vertical-align:middle;margin-right:4px;border:1px solid #ccc;"></span>
                       {% endif %}
-                      {{ v.color }}
-                      {% if v.price %} - {{ "{:,.0f}".format(v.price) }}đ{% endif %}
+                      {{ color_name }}
                     </label>
                   </div>
-                  {% endif %}
                   {% endfor %}
                 </div>
               </div>
               {% endif %}
 
-              {% if variants | selectattr('storage') | list | length > 0 %}
+              {% if all_storages | length > 0 %}
               <div class="mb-3">
                 <div class="mb-2 fw-semibold" style="font-size:0.85rem;color:#374151;">
                   Dung lượng:
                   <span id="selected-storage" class="text-primary ms-1"></span>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                  {% for v in variants %}
-                  {% if v.storage %}
+                  {% for storage_name in all_storages %}
+                  {% set storage_variant = variants | selectattr('storage', 'equalto', storage_name) | list | first %}
+                  {% set price_str = '{:,.0f}'.format(storage_variant.price) if storage_variant and storage_variant.price else '' %}
                   <div class="form-check form-check-inline">
-                    <input class="btn-check" type="radio" name="storage" id="storage-{{ v.variant_id }}"
-                           value="{{ v.variant_id }}" data-storage="{{ v.storage }}"
-                           data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}"
+                    <input class="btn-check" type="radio" name="storage" id="storage-{{ loop.index }}"
+                           value="{{ storage_name }}"
+                           data-storage="{{ storage_name }}"
+                           data-variant-id="{{ storage_variant.variant_id if storage_variant }}"
+                           data-price="{{ price_str }}"
                            autocomplete="off"
                            onchange="selectVariant(this)"/>
-                    <label class="btn btn-outline-secondary" for="storage-{{ v.variant_id }}"
+                    <label class="btn btn-outline-secondary" for="storage-{{ loop.index }}"
                            style="border-radius:20px;padding:5px 14px;font-size:0.8rem;">
-                      {{ v.storage }}
+                      {{ storage_name }}
                     </label>
                   </div>
-                  {% endif %}
                   {% endfor %}
                 </div>
               </div>
               {% endif %}
+
             </div>
             {% endif %}
 
@@ -326,7 +340,8 @@
               <div class="col-lg-3 col-md-6 mb-4">
                 <div class="card h-100 product-card">
                   <a href="/Products/{{ rp.product_id }}">
-                    {% set related_image = rp.image_url or (rp.product_images[0].image_url if rp.product_images else none) %}
+                    {% set related_imgs = rp.product_images|selectattr('is_primary')|list %}
+                    {% set related_image = (related_imgs[0].image_url if related_imgs and related_imgs[0].image_url) or rp.image_url or (rp.product_images[0].image_url if rp.product_images else none) %}
                     <img src="{{ related_image if related_image else '/static/images/no-image.png' }}" class="card-img-top product-image" alt="{{ rp.name }}" onerror="this.src='/static/images/no-image.png'" />
                   </a>
                   <div class="card-body text-center">
@@ -361,30 +376,98 @@
       }
 
       // ─── Variant Selection ───
-      let selectedVariantId = '';
+      var selectedColor = null;
+      var selectedStorage = null;
+      var selectedVariantId = null;
+
+      // Build full variant lookup from server data embedded in page
+      var fullVariantMap = {};
+      {% for v in variants %}
+      fullVariantMap['{{ v.variant_id }}'] = {
+        color: '{{ v.color | default("") }}',
+        colorHex: '{{ v.color_hex | default("") }}',
+        storage: '{{ v.storage | default("") }}',
+        price: {% if v.price %}'{{ "{:,.0f}".format(v.price) }}'{% else %}null{% endif %},
+        img: '{% if v.images | list %}{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}{% endif %}',
+        variantId: '{{ v.variant_id }}'
+      };
+      {% endfor %}
 
       function selectVariant(el) {
-        selectedVariantId = el.value;
-        document.getElementById('selected-variant-id').value = selectedVariantId;
-
-        // Update displayed price
-        const priceAttr = el.dataset.price;
-        if (priceAttr) {
-          document.querySelector('.current-price').textContent = priceAttr + ' đ';
+        var name = el.name;
+        if (name === 'color') {
+          selectedColor = el.value;
+          document.getElementById('selected-color').textContent = selectedColor;
+        } else if (name === 'storage') {
+          selectedStorage = el.value;
+          document.getElementById('selected-storage').textContent = selectedStorage;
         }
 
-        // Update main image
-        const imgUrl = el.dataset.img;
-        if (imgUrl) {
-          document.getElementById('main-image').src = imgUrl;
+        // Find the best matching variant
+        var matchedVariant = null;
+        var matchedKey = null;
+
+        for (var key in fullVariantMap) {
+          var v = fullVariantMap[key];
+          var colorMatch = !selectedColor || v.color === selectedColor;
+          var storageMatch = !selectedStorage || v.storage === selectedStorage;
+          if (colorMatch && storageMatch) {
+            // Exact match (both conditions)
+            if (selectedColor && selectedStorage) {
+              matchedVariant = v;
+              matchedKey = key;
+              break;
+            }
+            // Partial match — pick first available
+            if (!matchedVariant) {
+              matchedVariant = v;
+              matchedKey = key;
+            }
+          }
+        }
+
+        if (matchedVariant) {
+          selectedVariantId = matchedVariant.variantId;
+          document.getElementById('selected-variant-id').value = selectedVariantId;
+
+          // Update price
+          if (matchedVariant.price) {
+            document.querySelector('.current-price').textContent = matchedVariant.price + ' đ';
+          }
+
+          // Update image
+          if (matchedVariant.img) {
+            document.getElementById('main-image').src = matchedVariant.img;
+          }
+        } else {
+          // Fallback to data attributes on the element itself
+          document.getElementById('selected-variant-id').value = el.dataset.variantId || el.value;
+          if (el.dataset.price) {
+            document.querySelector('.current-price').textContent = el.dataset.price + ' đ';
+          }
+          if (el.dataset.img) {
+            document.getElementById('main-image').src = el.dataset.img;
+          }
         }
       }
 
-      // Auto-select first variant on load
-      document.querySelectorAll('input[name="color"], input[name="storage"]').forEach(el => {
-        if (!selectedVariantId) {
-          el.checked = true;
-          selectVariant(el);
+      // Auto-select first available variant on load
+      window.addEventListener('DOMContentLoaded', function() {
+        var firstColor = document.querySelector('input[name="color"]');
+        var firstStorage = document.querySelector('input[name="storage"]');
+        if (firstColor) {
+          firstColor.checked = true;
+          selectedColor = firstColor.value;
+          document.getElementById('selected-color').textContent = selectedColor;
+        }
+        if (firstStorage) {
+          firstStorage.checked = true;
+          selectedStorage = firstStorage.value;
+          document.getElementById('selected-storage').textContent = selectedStorage;
+        }
+        var trigger = firstColor || firstStorage;
+        if (trigger) {
+          selectVariant(trigger);
         }
       });
 

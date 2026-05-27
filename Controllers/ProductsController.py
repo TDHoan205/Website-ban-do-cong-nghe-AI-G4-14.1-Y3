@@ -236,6 +236,46 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
     )
 
 
+@router.get("/{product_id}/variants")
+async def get_product_variants(product_id: int, db: Session = Depends(get_db)):
+    """API trả về danh sách variants của sản phẩm (dùng cho modal chọn option)"""
+    try:
+        from Models.Product import ProductVariant, ProductImage
+        variants_list = db.query(ProductVariant).filter(
+            ProductVariant.product_id == product_id,
+            ProductVariant.is_active == True
+        ).all()
+        all_images = db.query(ProductImage).filter(
+            ProductImage.product_id == product_id
+        ).all()
+    except Exception:
+        return JSONResponse({"success": False, "variants": [], "images": []}, status_code=200)
+
+    variants_data = []
+    for v in variants_list:
+        var_imgs = [i for i in all_images if getattr(i, 'variant_id', None) == v.variant_id]
+        if not var_imgs:
+            var_imgs = [i for i in all_images if not getattr(i, 'variant_id', None)]
+        variants_data.append({
+            "variant_id": v.variant_id,
+            "color": v.color or "",
+            "color_hex": getattr(v, 'color_hex', "") or "",
+            "storage": v.storage or "",
+            "variant_name": v.variant_name or "",
+            "price": float(v.price) if v.price else None,
+            "stock_quantity": getattr(v, 'stock_quantity', 0) or 0,
+            "images": [
+                {"image_url": i.image_url, "is_primary": i.is_primary}
+                for i in var_imgs
+            ]
+        })
+
+    return JSONResponse({
+        "success": True,
+        "variants": variants_data
+    })
+
+
 @router.post("/{product_id}/add-to-cart")
 async def add_to_cart(
     request: Request,

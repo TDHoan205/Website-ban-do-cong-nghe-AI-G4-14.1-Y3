@@ -2,6 +2,7 @@
 Product Service - Xử lý logic sản phẩm
 Tương đương Services/ProductService.cs trong C#
 """
+import os
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, desc, func, and_
 from typing import Optional, List, Tuple
@@ -10,6 +11,26 @@ from decimal import Decimal
 from Models.Product import Product, ProductVariant, ProductImage
 from Models.Category import Category
 from Utilities import PagedList
+
+_LOG_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "debug-ed9600.log")
+
+
+def _debug_log(session_id: str, hypothesis_id: str, location: str, message: str, data: dict):
+    try:
+        import json
+        log_entry = {
+            "sessionId": session_id,
+            "id": f"log_{int(__import__('time').time() * 1000)}",
+            "timestamp": int(__import__("time").time() * 1000),
+            "location": location,
+            "message": message,
+            "data": data,
+            "hypothesisId": hypothesis_id
+        }
+        with open(_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
 
 
 class ProductService:
@@ -211,7 +232,14 @@ class ProductService:
         """Lấy sản phẩm nổi bật"""
         cache_key = f"featured_{limit}"
         if cache_key in self._cache:
+            _debug_log("ed9600", "H1", "ProductService.get_featured_products:cache_hit",
+                "Cache HIT - returning cached featured products",
+                {"count": len(self._cache[cache_key])})
             return self._cache[cache_key]
+
+        _debug_log("ed9600", "H1", "ProductService.get_featured_products:cache_miss",
+            "Cache MISS - querying database for featured products",
+            {"limit": limit})
 
         products = self.db.query(Product).options(
             joinedload(Product.product_images)
@@ -220,6 +248,28 @@ class ProductService:
             Product.is_available == True
         ).limit(limit).all()
 
+        _debug_log("ed9600", "H2", "ProductService.get_featured_products:db_result",
+            "Featured products loaded from DB",
+            {
+                "count": len(products),
+                "products": [
+                    {
+                        "product_id": p.product_id,
+                        "name": p.name[:30] if p.name else "",
+                        "is_hot": p.is_hot,
+                        "is_new": p.is_new,
+                        "is_available": p.is_available,
+                        "product_image_url": p.image_url,
+                        "product_images_count": len(p.product_images) if p.product_images else 0,
+                        "product_images": [
+                            {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary}
+                            for i in (p.product_images or [])
+                        ]
+                    }
+                    for p in products
+                ]
+            })
+
         self._cache[cache_key] = products
         return products
 
@@ -227,7 +277,14 @@ class ProductService:
         """Lấy sản phẩm mới"""
         cache_key = f"new_{limit}"
         if cache_key in self._cache:
+            _debug_log("ed9600", "H1", "ProductService.get_new_products:cache_hit",
+                "Cache HIT - returning cached new products",
+                {"count": len(self._cache[cache_key])})
             return self._cache[cache_key]
+
+        _debug_log("ed9600", "H1", "ProductService.get_new_products:cache_miss",
+            "Cache MISS - querying database for new products",
+            {"limit": limit})
 
         products = self.db.query(Product).options(
             joinedload(Product.product_images)
@@ -235,6 +292,28 @@ class ProductService:
             Product.is_new == True,
             Product.is_available == True
         ).limit(limit).all()
+
+        _debug_log("ed9600", "H2", "ProductService.get_new_products:db_result",
+            "New products loaded from DB",
+            {
+                "count": len(products),
+                "products": [
+                    {
+                        "product_id": p.product_id,
+                        "name": p.name[:30] if p.name else "",
+                        "is_hot": p.is_hot,
+                        "is_new": p.is_new,
+                        "is_available": p.is_available,
+                        "product_image_url": p.image_url,
+                        "product_images_count": len(p.product_images) if p.product_images else 0,
+                        "product_images": [
+                            {"image_id": i.image_id, "image_url": i.image_url, "is_primary": i.is_primary}
+                            for i in (p.product_images or [])
+                        ]
+                    }
+                    for p in products
+                ]
+            })
 
         self._cache[cache_key] = products
         return products
