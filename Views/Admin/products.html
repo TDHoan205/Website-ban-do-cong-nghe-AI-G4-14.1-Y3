@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -110,6 +110,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
       <a href="/Admin/Suppliers"><i class="fas fa-truck me-1"></i> NCC</a>
       <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
       <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+      <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
     </nav>
   </div>
   <div class="topbar-right">
@@ -132,11 +133,15 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
     <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
     <a href="/Admin/Orders" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
     <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
+    <a href="/Admin/FAQs" class="sidebar-link"><i class="fas fa-question-circle"></i> FAQ</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Phân tích</div>
+    <a href="/Admin/Statistics" class="sidebar-link"><i class="fas fa-chart-line"></i> Thống kê</a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-section-title">Hệ thống</div>
-    <a href="/Auth/Profile" class="sidebar-link"><i class="fas fa-user-circle"></i> Tài khoản của tôi</a>
-    <a href="/Chat/" target="_blank" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
+    <a href="/Admin/Chatbot" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
     <a href="/Admin/Chats" class="sidebar-link"><i class="fas fa-comments"></i> Lịch sử Chat</a>
     <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
   </div>
@@ -472,5 +477,11 @@ async function deleteProduct(id, name) {
   } catch(e) { alert('Lỗi kết nối!'); }
 }
 </script>
+  <script src="/static/js/admin-chat-widget.js"></script>
 </body>
 </html>
+
+
+
+
+

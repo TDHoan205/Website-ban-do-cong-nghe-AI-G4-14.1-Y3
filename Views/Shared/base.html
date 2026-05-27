@@ -142,6 +142,7 @@
     <!-- Main Content -->
     <main class="main-content"></main>
 
+    {% if request and request.url and request.url.path == '/' %}
     <!-- ========== AI CHATBOX POPUP WIDGET ========== -->
     <style>
       .chatbox-toggle {
@@ -445,6 +446,7 @@
     })();
     </script>
     <!-- ========== END CHATBOX WIDGET ========== -->
+    {% endif %}
 
     <!-- Footer -->
     <footer class="bg-dark text-white py-4 mt-5">
