@@ -1440,7 +1440,7 @@
                     {% endif %}
                     <img
                       src="{% set imgs = product.product_images|selectattr('is_primary')|list %}
-                        {% if product.image_url %}{{ product.image_url }}{% elif imgs %}{{ imgs[0].image_url }}{% elif product.product_images %}{{ product.product_images[0].image_url }}{% else %}/static/images/no-image.png{% endif %}"
+                        {% if imgs and imgs[0].image_url %}{{ imgs[0].image_url }}{% elif product.image_url %}{{ product.image_url }}{% elif product.product_images %}{{ product.product_images[0].image_url }}{% else %}/static/images/no-image.png{% endif %}"
                       alt="{{ product.name }}"
                       onerror="this.src='/static/images/no-image.png'"
                     />
@@ -1465,7 +1465,7 @@
                       <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <button type="button" class="product-add-btn" onclick="addToCart({{ product.product_id }})" style="margin-top:auto;">
+                    <button type="button" class="product-add-btn" onclick="openPmoModal(this, {{ product.product_id }})" style="margin-top:auto;">
                       <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                     </button>
                   </div>
@@ -1498,7 +1498,7 @@
                     {% endif %}
                     <img
                       src="{% set imgs = product.product_images|selectattr('is_primary')|list %}
-                        {% if product.image_url %}{{ product.image_url }}{% elif imgs %}{{ imgs[0].image_url }}{% elif product.product_images %}{{ product.product_images[0].image_url }}{% else %}/static/images/no-image.png{% endif %}"
+                        {% if imgs and imgs[0].image_url %}{{ imgs[0].image_url }}{% elif product.image_url %}{{ product.image_url }}{% elif product.product_images %}{{ product.product_images[0].image_url }}{% else %}/static/images/no-image.png{% endif %}"
                       alt="{{ product.name }}"
                       onerror="this.src='/static/images/no-image.png'"
                     />
@@ -1523,7 +1523,7 @@
                       <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <button type="button" class="product-add-btn" onclick="addToCart({{ product.product_id }})" style="margin-top:auto;">
+                    <button type="button" class="product-add-btn" onclick="openPmoModal(this, {{ product.product_id }})" style="margin-top:auto;">
                       <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                     </button>
                   </div>
@@ -1965,5 +1965,366 @@
 
     <!-- Toast Container -->
     <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ===== MODAL: Chọn Option Sản phẩm ===== -->
+    <style>
+      .pmo-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9990;
+        display: none; align-items: center; justify-content: center; padding: 16px;
+        backdrop-filter: blur(2px);
+      }
+      .pmo-overlay.active { display: flex; }
+      .pmo-modal {
+        background: #fff; border-radius: 16px; width: 100%; max-width: 440px;
+        max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        animation: pmo-slide 0.3s ease;
+        font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      @keyframes pmo-slide {
+        from { opacity: 0; transform: translateY(20px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .pmo-header {
+        display: flex; align-items: center; padding: 18px 20px;
+        border-bottom: 1px solid #f0f0f0; gap: 14px;
+      }
+      .pmo-thumb {
+        width: 70px; height: 70px; border-radius: 10px; background: #f8f9fa;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; border: 1px solid #f0f0f0; flex-shrink: 0;
+      }
+      .pmo-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+      .pmo-header-info { flex: 1; min-width: 0; }
+      .pmo-product-name { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; line-height: 1.3; }
+      .pmo-price { font-size: 1.1rem; font-weight: 800; color: #dc2626; }
+      .pmo-price-orig { font-size: 0.8rem; color: #9ca3af; text-decoration: line-through; margin-left: 6px; }
+      .pmo-close {
+        width: 34px; height: 34px; border-radius: 50%; border: none; background: #f3f4f6;
+        color: #6b7280; cursor: pointer; display: flex; align-items: center;
+        justify-content: center; font-size: 1rem; flex-shrink: 0; transition: all 0.2s;
+      }
+      .pmo-close:hover { background: #fee2e2; color: #dc2626; }
+      .pmo-body { padding: 20px; }
+      .pmo-option-label { font-size: 0.82rem; font-weight: 700; color: #374151; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .pmo-option-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .pmo-opt {
+        padding: 8px 16px; border-radius: 20px; border: 1.5px solid #e5e7eb;
+        font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        background: #fff; color: #374151; font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .pmo-opt:hover { border-color: #0d6efd; color: #0d6efd; }
+      .pmo-opt.selected { border-color: #0d6efd; background: #eff6ff; color: #0d6efd; }
+      .pmo-opt:disabled { opacity: 0.4; cursor: not-allowed; }
+      .pmo-color-dot {
+        display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+        vertical-align: middle; margin-right: 4px; border: 1px solid #ccc;
+      }
+      .pmo-qty-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+      .pmo-qty-label { font-size: 0.88rem; font-weight: 600; color: #374151; }
+      .pmo-qty-ctrl {
+        display: flex; align-items: center; border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+      }
+      .pmo-qty-btn {
+        width: 36px; height: 36px; border: none; background: #fff; color: #6b7280;
+        font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+      }
+      .pmo-qty-btn:hover { background: #f3f4f6; }
+      .pmo-qty-val {
+        width: 44px; height: 36px; display: flex; align-items: center; justify-content: center;
+        font-size: 0.95rem; font-weight: 700; color: #374151; border-left: 1.5px solid #e5e7eb; border-right: 1.5px solid #e5e7eb;
+      }
+      .pmo-footer { padding: 16px 20px; border-top: 1px solid #f0f0f0; }
+      .pmo-add-btn {
+        width: 100%; padding: 14px; background: #ff6b00; color: #fff; border: none;
+        border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        font-family: 'Be Vietnam Pro', sans-serif; transition: background 0.2s;
+      }
+      .pmo-add-btn:hover { background: #e55c00; }
+      .pmo-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .pmo-loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: #9ca3af; font-size: 0.9rem; }
+    </style>
+
+    <div class="pmo-overlay" id="pmo-overlay" onclick="if(event.target===this)pmoClose()">
+      <div class="pmo-modal" id="pmo-modal">
+        <div class="pmo-loading" id="pmo-loading">
+          <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Đang tải...
+        </div>
+      </div>
+    </div>
+
+    <script>
+    (function(){
+      var pmoOverlay = document.getElementById('pmo-overlay');
+      var pmoModal = document.getElementById('pmo-modal');
+
+      window.openPmoModal = function(btn, productId) {
+        pmoOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Reset modal content
+        pmoModal.innerHTML = '<div class="pmo-loading" id="pmo-loading"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Đang tải...</div>';
+
+        fetch('/Products/' + productId + '/variants')
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            var card = btn.closest('.product-card');
+            var name = card ? card.querySelector('.product-name') : null;
+            var priceEl = card ? card.querySelector('.product-price') : null;
+            var imgEl = card ? card.querySelector('.product-img-wrap img') : null;
+            var productName = name ? name.textContent.trim() : 'Sản phẩm';
+            var productPrice = priceEl ? priceEl.textContent.trim() : '0';
+            var productImg = imgEl ? imgEl.src : '';
+
+            if (!data.success || !data.variants || data.variants.length === 0) {
+              pmoModal.innerHTML = buildPmoSimple(productId, productName, productPrice, productImg);
+              return;
+            }
+            pmoModal.innerHTML = buildPmoFull(productId, productName, productPrice, productImg, data.variants);
+            initPmoLogic(productId);
+          })
+          .catch(function(){
+            pmoModal.innerHTML = '<div style="padding:24px;text-align:center;color:#dc2626;"><i class="fas fa-exclamation-circle"></i> Không thể tải dữ liệu sản phẩm.</div>';
+          });
+      };
+
+      window.pmoClose = function() {
+        pmoOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      };
+
+      window.pmoAddToCart = function(productId) {
+        var variantInputs = document.querySelectorAll('.pmo-opt.selected[data-type]');
+        var variantId = null;
+        variantInputs.forEach(function(el) {
+          if (!variantId && el.dataset.variantId) variantId = el.dataset.variantId;
+        });
+        var qty = parseInt(document.getElementById('pmo-qty-val').textContent) || 1;
+        var btn = document.getElementById('pmo-add-btn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang thêm...'; }
+
+        var formData = new URLSearchParams();
+        formData.append('quantity', qty);
+        if (variantId) formData.append('variant_id', variantId);
+
+        fetch('/Products/' + productId + '/add-to-cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: formData
+        })
+        .then(function(response){
+          var ct = response.headers.get('Content-Type') || '';
+          if (!ct.includes('application/json')) {
+            if (response.status === 401 || response.status === 303) {
+              response.json().then(function(d){
+                if (d.login_url) window.location.href = d.login_url;
+              });
+            } else {
+              pmoClose();
+              location.reload();
+            }
+            return;
+          }
+          return response.json();
+        })
+        .then(function(data){
+          if (!data) return;
+          if (data.success) {
+            pmoClose();
+            if (typeof showNotification === 'function') {
+              showNotification(data.message || 'Đã thêm vào giỏ hàng!', 'success');
+            }
+            if (data.cart_count !== undefined && typeof updateCartCount === 'function') {
+              updateCartCount(data.cart_count);
+            }
+          } else {
+            if (data.login_url) {
+              window.location.href = data.login_url;
+            } else {
+              if (typeof showNotification === 'function') {
+                showNotification(data.message || 'Có lỗi xảy ra!', 'danger');
+              }
+              if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng'; }
+            }
+          }
+        })
+        .catch(function(){
+          if (typeof showNotification === 'function') {
+            showNotification('Có lỗi xảy ra, vui lòng thử lại!', 'danger');
+          }
+          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng'; }
+        });
+      };
+
+      function buildPmoHeader(productId, productName, productPrice, productImg) {
+        var priceStr = typeof productPrice === 'number'
+          ? productPrice.toLocaleString('vi-VN', {minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ'
+          : productPrice + ' đ';
+        return '<div class="pmo-header">' +
+          '<div class="pmo-thumb"><img src="' + (productImg || '/static/images/no-image.png') + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
+          '<div class="pmo-header-info">' +
+            '<div class="pmo-product-name">' + escHtml(productName) + '</div>' +
+            '<div class="pmo-price">' + priceStr + '</div>' +
+          '</div>' +
+          '<button class="pmo-close" onclick="pmoClose()" title="Đóng"><i class="fas fa-times"></i></button>' +
+        '</div>';
+      }
+
+      function buildPmoSimple(productId, productName, productPrice, productImg) {
+        return buildPmoHeader(productId, productName, productPrice, productImg) +
+          '<div class="pmo-body">' +
+            '<div class="pmo-qty-row">' +
+              '<span class="pmo-qty-label">Số lượng</span>' +
+              '<div class="pmo-qty-ctrl">' +
+                '<button class="pmo-qty-btn" onclick="pmoChangeQty(-1)">-</button>' +
+                '<span class="pmo-qty-val" id="pmo-qty-val">1</span>' +
+                '<button class="pmo-qty-btn" onclick="pmoChangeQty(1)">+</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="pmo-footer">' +
+            '<button class="pmo-add-btn" id="pmo-add-btn" onclick="pmoAddToCart(' + productId + ')">' +
+              '<i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng' +
+            '</button>' +
+          '</div>';
+      }
+
+      function buildPmoFull(productId, productName, productPrice, productImg, variants) {
+        // Gather unique colors and storages
+        var colors = {}, storages = {}, variantMap = {};
+        variants.forEach(function(v){
+          variantMap[v.variant_id] = v;
+          if (v.color) colors[v.color] = {hex: v.color_hex, vid: v.variant_id, price: v.price};
+          if (v.storage) storages[v.storage] = v;
+        });
+
+        var html = buildPmoHeader(productId, productName, productPrice, productImg) + '<div class="pmo-body">';
+
+        // Color options
+        var colorKeys = Object.keys(colors);
+        if (colorKeys.length > 0) {
+          html += '<div class="pmo-option-label">Màu sắc</div>';
+          html += '<div class="pmo-option-row" id="pmo-colors">';
+          colorKeys.forEach(function(c, i){
+            var hex = colors[c].hex || '#ccc';
+            html += '<button class="pmo-opt' + (i === 0 ? ' selected' : '') + '" ' +
+                    'data-type="color" data-value="' + escHtml(c) + '" ' +
+                    'data-variant-id="' + colors[c].vid + '" ' +
+                    'onclick="pmoSelectOpt(this)">' +
+                    '<span class="pmo-color-dot" style="background:' + hex + '"></span>' + escHtml(c) +
+                    '</button>';
+          });
+          html += '</div>';
+        }
+
+        // Storage options
+        var storageKeys = Object.keys(storages);
+        if (storageKeys.length > 0) {
+          html += '<div class="pmo-option-label">Dung lượng</div>';
+          html += '<div class="pmo-option-row" id="pmo-storages">';
+          storageKeys.forEach(function(s, i){
+            html += '<button class="pmo-opt' + (i === 0 ? ' selected' : '') + '" ' +
+                    'data-type="storage" data-value="' + escHtml(s) + '" ' +
+                    'onclick="pmoSelectOpt(this)">' + escHtml(s) + '</button>';
+          });
+          html += '</div>';
+        }
+
+        html += '<div class="pmo-qty-row">' +
+          '<span class="pmo-qty-label">Số lượng</span>' +
+          '<div class="pmo-qty-ctrl">' +
+            '<button class="pmo-qty-btn" onclick="pmoChangeQty(-1)">-</button>' +
+            '<span class="pmo-qty-val" id="pmo-qty-val">1</span>' +
+            '<button class="pmo-qty-btn" onclick="pmoChangeQty(1)">+</button>' +
+          '</div>' +
+        '</div></div>' +
+        '<div class="pmo-footer">' +
+          '<button class="pmo-add-btn" id="pmo-add-btn" onclick="pmoAddToCart(' + productId + ')">' +
+            '<i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng' +
+          '</button>' +
+        '</div>';
+
+        // Store data globally for the logic
+        window.__pmoVariants = variantMap;
+        window.__pmoColors = colors;
+        window.__pmoStorages = storages;
+
+        return html;
+      }
+
+      window.initPmoLogic = function(productId) {
+        // Auto-select first color variant on load
+        var firstColor = document.querySelector('.pmo-opt[data-type="color"]');
+        if (firstColor) {
+          pmoSelectOpt(firstColor);
+        }
+      };
+
+      window.pmoSelectOpt = function(el) {
+        var type = el.dataset.type;
+        var row = el.parentElement;
+        row.querySelectorAll('.pmo-opt').forEach(function(b){ b.classList.remove('selected'); });
+        el.classList.add('selected');
+
+        // Find best matching variant
+        var selectedColor = null, selectedStorage = null;
+        var colorBtn = document.querySelector('.pmo-opt[data-type="color"].selected');
+        var storageBtn = document.querySelector('.pmo-opt[data-type="storage"].selected');
+        if (colorBtn) selectedColor = colorBtn.dataset.value;
+        if (storageBtn) selectedStorage = storageBtn.dataset.value;
+
+        var matched = null;
+        var vMap = window.__pmoVariants || {};
+        for (var vid in vMap) {
+          var v = vMap[vid];
+          var cm = !selectedColor || v.color === selectedColor;
+          var sm = !selectedStorage || v.storage === selectedStorage;
+          if (cm && sm) {
+            if (selectedColor && selectedStorage) {
+              matched = v; break;
+            }
+            if (!matched) matched = v;
+          }
+        }
+
+        if (matched) {
+          // Update price display
+          var priceEl = document.querySelector('.pmo-price');
+          if (priceEl && matched.price) {
+            priceEl.textContent = Number(matched.price).toLocaleString('vi-VN',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ';
+          }
+          // Update image
+          var thumbImg = document.querySelector('.pmo-thumb img');
+          if (thumbImg && matched.images && matched.images.length > 0) {
+            var primary = matched.images.find(function(i){ return i.is_primary; });
+            var imgUrl = primary ? primary.image_url : matched.images[0].image_url;
+            if (imgUrl) thumbImg.src = imgUrl;
+          }
+          // Update variant_id on selected color
+          if (colorBtn) colorBtn.dataset.variantId = matched.variant_id;
+        }
+      };
+
+      window.pmoChangeQty = function(delta) {
+        var valEl = document.getElementById('pmo-qty-val');
+        if (!valEl) return;
+        var val = parseInt(valEl.textContent) || 1;
+        val = Math.max(1, val + delta);
+        valEl.textContent = val;
+      };
+
+      function escHtml(s) {
+        if (!s) return '';
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+    })();
+    </script>
   </body>
 </html>

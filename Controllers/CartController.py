@@ -116,6 +116,83 @@ async def update(
     return RedirectResponse(url="/Cart/", status_code=303)
 
 
+@router.get("/update-variant-data/{item_id}")
+async def get_cart_item_variant_data(item_id: int, db: Session = Depends(get_db)):
+    """API trả về thông tin variant + product của 1 cart item (dùng cho modal sửa option)"""
+    from Models.Cart import CartItem
+    item = db.query(CartItem).filter(CartItem.cart_item_id == item_id).first()
+    if not item:
+        return JSONResponse({"success": False, "message": "Item not found"}, status_code=404)
+
+    try:
+        from Models.Product import ProductVariant, ProductImage
+        variants_list = db.query(ProductVariant).filter(
+            ProductVariant.product_id == item.product_id,
+            ProductVariant.is_active == True
+        ).all()
+        all_images = db.query(ProductImage).filter(
+            ProductImage.product_id == item.product_id
+        ).all()
+    except Exception:
+        variants_list = []
+        all_images = []
+
+    variants_data = []
+    for v in variants_list:
+        var_imgs = [i for i in all_images if getattr(i, 'variant_id', None) == v.variant_id]
+        if not var_imgs:
+            var_imgs = [i for i in all_images if not getattr(i, 'variant_id', None)]
+        variants_data.append({
+            "variant_id": v.variant_id,
+            "color": v.color or "",
+            "color_hex": getattr(v, 'color_hex', "") or "",
+            "storage": v.storage or "",
+            "variant_name": v.variant_name or "",
+            "price": float(v.price) if v.price else None,
+            "stock_quantity": getattr(v, 'stock_quantity', 0) or 0,
+            "images": [
+                {"image_url": i.image_url, "is_primary": i.is_primary}
+                for i in var_imgs
+            ]
+        })
+
+    product_data = None
+    if item.product:
+        product_data = {
+            "product_id": item.product.product_id,
+            "name": item.product.name,
+            "price": float(item.product.price),
+            "image_url": item.product.image_url,
+        }
+
+    return JSONResponse({
+        "success": True,
+        "item": {
+            "cart_item_id": item.cart_item_id,
+            "quantity": item.quantity,
+            "variant_id": item.variant_id,
+        },
+        "product": product_data,
+        "variants": variants_data,
+    })
+
+
+@router.post("/update-variant/{item_id}")
+async def update_variant(
+    item_id: int,
+    variant_id: int = Form(...),
+    quantity: int = Form(1),
+    request: Request = None,
+    db: Session = Depends(get_db)
+):
+    """Cập nhật variant và số lượng của cart item"""
+    cart_service = CartService(db)
+    cart_service.update_item_variant(item_id, variant_id, quantity)
+    if request and is_ajax_request(request):
+        return JSONResponse({"success": True, "message": "Đã cập nhật option sản phẩm."}, status_code=200)
+    return RedirectResponse(url="/Cart/", status_code=303)
+
+
 @router.post("/remove/{item_id}")
 async def remove(item_id: int, request: Request = None, db: Session = Depends(get_db)):
     """Xóa sản phẩm khỏi giỏ hàng"""

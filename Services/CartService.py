@@ -90,6 +90,19 @@ class CartService:
 
         return item
 
+    def update_item_variant(self, cart_item_id: int, variant_id: int, quantity: int = 1) -> Optional[CartItem]:
+        """Cập nhật variant và số lượng của cart item"""
+        item = self.get_cart_item(cart_item_id)
+        if not item:
+            return None
+
+        item.variant_id = variant_id
+        if quantity > 0:
+            item.quantity = quantity
+        self.db.commit()
+        self.db.refresh(item)
+        return item
+
     def remove_item(self, cart_item_id: int) -> bool:
         """Xóa sản phẩm khỏi giỏ hàng"""
         item = self.get_cart_item(cart_item_id)
