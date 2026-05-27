@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from Data.database import get_db
 from Models.Order import Order, OrderItem, OrderStatus
+from Models.Cart import Cart
 from Services.OrderService import OrderService
 from Utilities.auth import require_account
 
@@ -23,6 +24,17 @@ def set_templates(t):
     templates = t
 
 
+def _get_cart_count(request: Request, db: Session) -> int:
+    try:
+        account = require_account(request, db)
+        cart = db.query(Cart).filter(Cart.account_id == account.account_id).first()
+        if cart and cart.cart_items:
+            return sum(ci.quantity for ci in cart.cart_items)
+    except Exception:
+        pass
+    return 0
+
+
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request, db: Session = Depends(get_db)):
     """Trang danh sach don hang cua nguoi dung"""
@@ -32,15 +44,17 @@ async def index(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/Auth/Login", status_code=303)
 
     service = OrderService(db)
-    orders = service.get_orders(account_id=account.account_id)
-    
+    orders = service.get_orders_by_account(account.account_id)
+    cart_count = _get_cart_count(request, db)
+
     return templates.TemplateResponse(
         "Orders/index.html",
         {
             "request": request,
             "page_title": "Đơn hàng của tôi",
             "orders": orders,
-            "current_user": account
+            "current_user": account,
+            "cart_count": cart_count,
         }
     )
 

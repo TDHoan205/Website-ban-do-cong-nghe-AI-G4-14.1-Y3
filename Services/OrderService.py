@@ -2,7 +2,7 @@
 Order Service - Xử lý logic đơn hàng
 Tương đương Services/OrderService.cs trong C#
 """
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import desc
 from typing import List, Optional
 from datetime import datetime
@@ -26,10 +26,12 @@ class OrderService:
         sort_order: str = "date",
         page_number: int = 1,
         page_size: int = 10
-    ) -> PagedList:
-        """Lấy danh sách đơn hàng có phân trang"""
+    ):
+        """Lấy danh sách đơn hàng có phân trang, eager load order_items"""
 
-        query = self.db.query(Order)
+        query = self.db.query(Order).options(
+            joinedload(Order.order_items).joinedload(OrderItem.product)
+        )
 
         if account_id:
             query = query.filter(Order.account_id == account_id)
@@ -105,10 +107,17 @@ class OrderService:
         return self.db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
 
     def get_orders_by_account(self, account_id: int) -> List[Order]:
-        """Lấy đơn hàng của account"""
-        return self.db.query(Order).filter(
-            Order.account_id == account_id
-        ).order_by(desc(Order.order_date)).all()
+        """Lấy đơn hàng của account với eager load đầy đủ"""
+        from sqlalchemy.orm import joinedload
+        return (
+            self.db.query(Order)
+            .options(
+                joinedload(Order.order_items).joinedload(OrderItem.product)
+            )
+            .filter(Order.account_id == account_id)
+            .order_by(desc(Order.order_date))
+            .all()
+        )
 
     def create_order(
         self,

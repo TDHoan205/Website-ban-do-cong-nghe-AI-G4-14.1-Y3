@@ -1,101 +1,868 @@
 {% extends "Shared/base.html" %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-                    <li class="breadcrumb-item active">Đơn hàng của tôi</li>
-                </ol>
-            </nav>
-            <h2 class="fw-bold"><i class="fas fa-shopping-bag text-primary me-2"></i> Lịch sử đơn hàng</h2>
-            <p class="text-muted">Theo dõi và quản lý các đơn hàng bạn đã đặt</p>
+<style>
+  body { min-height: 100vh; overflow-x: hidden; }
+  .orders-full-page {
+    min-height: 100vh;
+    background: #f0f2f5;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── PAGE HEADER ── */
+  .orders-page-header {
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 18px 0 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .orders-page-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  .orders-page-header-topbar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 6px 16px;
+    background: #2d3436;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .orders-topbar-left, .orders-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .orders-topbar-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .orders-topbar-item i { color: #ff6b00; font-size: 0.75rem; }
+  .orders-topbar-divider { color: rgba(255,255,255,0.2); }
+
+  /* Page title row */
+  .orders-title-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0 16px;
+    flex-wrap: wrap;
+  }
+  .orders-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .orders-title-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.15rem;
+    box-shadow: 0 4px 12px rgba(13,110,253,0.35);
+  }
+  .orders-title-main {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 0 0 2px;
+    line-height: 1.2;
+  }
+  .orders-title-sub {
+    font-size: 0.82rem;
+    color: #9ca3af;
+    margin: 0;
+  }
+  .orders-count-pill {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(13,110,253,0.3);
+    white-space: nowrap;
+  }
+
+  /* ── BREADCRUMB ── */
+  .orders-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-bottom: 12px;
+  }
+  .orders-breadcrumb a {
+    color: #0d6efd;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .orders-breadcrumb a:hover { color: #0a58ca; }
+  .orders-breadcrumb .sep { color: #d1d5db; font-size: 0.65rem; }
+  .orders-breadcrumb .current { color: #6b7280; }
+
+  /* ── MAIN CONTENT ── */
+  .orders-main {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
+
+  /* ── STATS ROW ── */
+  .orders-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .orders-stat-card {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+  }
+  .orders-stat-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 12px rgba(13,110,253,0.08);
+    transform: translateY(-1px);
+  }
+  .orders-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .orders-stat-icon-blue { background: #eff6ff; color: #2563eb; }
+  .orders-stat-icon-amber { background: #fffbeb; color: #d97706; }
+  .orders-stat-icon-green { background: #f0fdf4; color: #16a34a; }
+  .orders-stat-icon-red { background: #fef2f2; color: #dc2626; }
+  .orders-stat-info { flex: 1; min-width: 0; }
+  .orders-stat-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1.2;
+  }
+  .orders-stat-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── ORDERS LIST ── */
+  .orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Order Card */
+  .order-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .order-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 6px 24px rgba(13,110,253,0.12);
+    transform: translateY(-2px);
+  }
+
+  /* Card Header */
+  .order-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .order-header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .order-id-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .order-id-badge i { color: #0d6efd; font-size: 0.85rem; }
+  .order-date-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+  .order-date-badge i { font-size: 0.72rem; }
+
+  /* Status Badge */
+  .order-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .order-status-badge i { font-size: 0.7rem; }
+  .status-pending { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+  .status-confirmed { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+  .status-processing { background: #f3e8ff; color: #7c3aed; border: 1px solid #e9d5ff; }
+  .status-shipped { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .status-delivered { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+  .status-cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+  /* Card Body */
+  .order-card-body {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+  }
+
+  /* Products Section */
+  .order-products-section {
+    padding: 12px 18px;
+    border-right: 1px solid #f0f0f0;
+  }
+  .order-product-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f9f9f9;
+    transition: background 0.15s;
+  }
+  .order-product-item:last-of-type { border-bottom: none; }
+  .order-product-item:hover { background: #f9fafb; margin: 0 -8px; padding: 10px 8px; border-radius: 8px; }
+  .order-product-img-wrap {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+  }
+  .order-product-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+  .order-product-img-wrap i { color: #d1d5db; font-size: 1.2rem; }
+  .order-product-details {
+    flex: 1;
+    min-width: 0;
+  }
+  .order-product-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .order-product-variant {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .order-product-qty {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .order-product-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .order-product-price {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #dc2626;
+  }
+  .order-product-unit {
+    font-size: 0.72rem;
+    color: #9ca3af;
+  }
+  .order-products-overflow {
+    text-align: center;
+    padding: 8px 0 4px;
+    font-size: 0.78rem;
+    color: #0d6efd;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Summary Section */
+  .order-summary-section {
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+  }
+  .order-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .order-summary-label {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .order-summary-label i { color: #0d6efd; font-size: 0.68rem; }
+  .order-summary-value {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #dc2626;
+  }
+  .order-summary-address {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #6b7280;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Card Footer */
+  .order-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: #fafafa;
+    border-top: 1px solid #f0f0f0;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .order-footer-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #9ca3af;
+  }
+  .order-footer-hint i { color: #0d6efd; }
+  .order-footer-hint.success i { color: #16a34a; }
+  .order-footer-hint.danger i { color: #dc2626; }
+  .order-footer-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-detail:hover {
+    background: #0a58ca;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+  }
+
+  /* ── EMPTY STATE ── */
+  .orders-empty {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e8e8e8;
+    padding: 64px 24px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    animation: fadeInUp 0.4s ease;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .orders-empty-visual {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+  .orders-empty-ring {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #eff6ff;
+    border: 3px solid #bfdbfe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    color: #2563eb;
+    box-shadow: 0 8px 32px rgba(37,99,235,0.15);
+    animation: pulseRing 2.5s ease infinite;
+  }
+  @keyframes pulseRing {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.2), 0 8px 32px rgba(37,99,235,0.15); }
+    50% { box-shadow: 0 0 0 12px rgba(37,99,235,0), 0 8px 32px rgba(37,99,235,0.15); }
+  }
+  .orders-empty-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 0 0 10px;
+  }
+  .orders-empty-desc {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin: 0 0 28px;
+    line-height: 1.7;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .btn-shop-now {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 32px;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    text-decoration: none;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(13,110,253,0.4);
+    margin-bottom: 40px;
+  }
+  .btn-shop-now:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(13,110,253,0.5);
+    color: white;
+  }
+  .orders-empty-features {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .orders-empty-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .orders-empty-feature-icon {
+    width: 44px;
+    height: 44px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0d6efd;
+    font-size: 1rem;
+  }
+  .orders-empty-feature-text {
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  /* ── LOADING ── */
+  .orders-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .orders-loading-skeleton {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e8e8e8;
+    padding: 16px 18px;
+    animation: shimmer 1.5s ease infinite;
+  }
+  @keyframes shimmer {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+
+  /* ── PAGINATION ── */
+  .orders-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .page-btn {
+    min-width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1.5px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    padding: 0 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+  }
+  .page-btn:hover, .page-btn.active {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .orders-stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .order-card-body { grid-template-columns: 1fr; }
+    .order-products-section { border-right: none; border-bottom: 1px solid #f0f0f0; padding: 12px 16px; }
+    .order-summary-section { padding: 12px 16px; }
+    .order-card-header { padding: 10px 16px; }
+    .order-card-footer { padding: 8px 16px; }
+    .orders-main { padding: 16px 12px 40px; }
+    .orders-stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .orders-empty { padding: 48px 16px; }
+    .orders-empty-features { gap: 20px; }
+    .order-footer-hint { width: 100%; }
+    .order-header-left { gap: 12px; }
+  }
+  @media (max-width: 480px) {
+    .orders-stats-row { grid-template-columns: repeat(2, 1fr); }
+    .order-product-img-wrap { width: 50px; height: 50px; }
+    .orders-empty-features { flex-direction: column; align-items: center; }
+    .order-header-left { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+</style>
+
+<!-- ── PAGE WRAPPER ── -->
+<div class="orders-full-page">
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="orders-page-header">
+    <div class="orders-page-header-topbar">
+      <div class="orders-topbar-left">
+        <span class="orders-topbar-item"><i class="fas fa-phone"></i> 1800.6601</span>
+        <span class="orders-topbar-divider">|</span>
+        <span class="orders-topbar-item"><i class="fas fa-envelope"></i> hotro@techstore.com</span>
+      </div>
+      <div class="orders-topbar-right">
+        <span class="orders-topbar-item"><i class="fas fa-truck"></i> Miễn phí vận chuyển</span>
+        <span class="orders-topbar-divider">|</span>
+        <span class="orders-topbar-item"><i class="fas fa-shield-alt"></i> Bảo hành chính hãng</span>
+      </div>
+    </div>
+    <div class="orders-page-header-inner">
+      <nav class="orders-breadcrumb">
+        <a href="/"><i class="fas fa-home"></i> Trang chủ</a>
+        <span class="sep"><i class="fas fa-chevron-right"></i></span>
+        <span class="current">Đơn hàng của tôi</span>
+      </nav>
+      <div class="orders-title-section">
+        <div class="orders-title-group">
+          <div class="orders-title-icon">
+            <i class="fas fa-shopping-bag"></i>
+          </div>
+          <div>
+            <h1 class="orders-title-main">Đơn hàng của tôi</h1>
+            <p class="orders-title-sub">Theo dõi và quản lý các đơn hàng bạn đã đặt</p>
+          </div>
         </div>
+        {% if orders and orders | length > 0 %}
+        <div class="orders-count-pill">
+          <i class="fas fa-box"></i> {{ orders | length }} đơn hàng
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="orders-main">
+
+    {% if orders and orders | length > 0 %}
+    <!-- ── STATS ROW ── -->
+    {% set total = orders | length %}
+    {% set pending_count = 0 %}
+    {% set delivered_count = 0 %}
+    {% set cancelled_count = 0 %}
+    {% for o in orders %}
+      {% if o.status == 'Pending' %}{% set pending_count = pending_count + 1 %}{% endif %}
+      {% if o.status == 'Delivered' %}{% set delivered_count = delivered_count + 1 %}{% endif %}
+      {% if o.status == 'Cancelled' %}{% set cancelled_count = cancelled_count + 1 %}{% endif %}
+    {% endfor %}
+    <div class="orders-stats-row">
+      <div class="orders-stat-card">
+        <div class="orders-stat-icon orders-stat-icon-blue">
+          <i class="fas fa-boxes-stacked"></i>
+        </div>
+        <div class="orders-stat-info">
+          <div class="orders-stat-value">{{ orders | length }}</div>
+          <div class="orders-stat-label">Tổng đơn hàng</div>
+        </div>
+      </div>
+      <div class="orders-stat-card">
+        <div class="orders-stat-icon orders-stat-icon-amber">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="orders-stat-info">
+          <div class="orders-stat-value">{{ pending_count }}</div>
+          <div class="orders-stat-label">Chờ xác nhận</div>
+        </div>
+      </div>
+      <div class="orders-stat-card">
+        <div class="orders-stat-icon orders-stat-icon-green">
+          <i class="fas fa-check-double"></i>
+        </div>
+        <div class="orders-stat-info">
+          <div class="orders-stat-value">{{ delivered_count }}</div>
+          <div class="orders-stat-label">Đã giao hàng</div>
+        </div>
+      </div>
+      <div class="orders-stat-card">
+        <div class="orders-stat-icon orders-stat-icon-red">
+          <i class="fas fa-ban"></i>
+        </div>
+        <div class="orders-stat-info">
+          <div class="orders-stat-value">{{ cancelled_count }}</div>
+          <div class="orders-stat-label">Đã hủy</div>
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            {% if orders %}
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4">Mã đơn</th>
-                                <th>Ngày đặt</th>
-                                <th>Tổng tiền</th>
-                                <th>Trạng thái</th>
-                                <th class="text-end pe-4">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in orders %}
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-primary">#{{ order.order_id }}</span>
-                                </td>
-                                <td>{{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date else '' }}</td>
-                                <td>
-                                    <span class="fw-bold text-danger">{{ "{:,.0f}".format(order.total_amount) }} đ</span>
-                                </td>
-                                <td>
-                                    {% set status_class = 'bg-secondary' %}
-                                    {% if order.status == 'Pending' %}{% set status_class = 'bg-warning text-dark' %}
-                                    {% elif order.status == 'Confirmed' %}{% set status_class = 'bg-info' %}
-                                    {% elif order.status == 'Processing' %}{% set status_class = 'bg-primary' %}
-                                    {% elif order.status == 'Shipped' %}{% set status_class = 'bg-info' %}
-                                    {% elif order.status == 'Delivered' %}{% set status_class = 'bg-success' %}
-                                    {% elif order.status == 'Cancelled' %}{% set status_class = 'bg-danger' %}
-                                    {% endif %}
-                                    <span class="badge {{ status_class }} px-3 py-2 rounded-pill">{{ order.status }}</span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <a href="/Orders/{{ order.order_id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                        <i class="fas fa-eye me-1"></i> Chi tiết
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+    <!-- ── ORDERS LIST ── -->
+    <div class="orders-list">
+      {% for order in orders %}
+      <div class="order-card">
+        <!-- Card Header -->
+        <div class="order-card-header">
+          <div class="order-header-left">
+            <div class="order-id-badge">
+              <i class="fas fa-receipt"></i>
+              Đơn #{{ order.order_id }}
             </div>
-            {% else %}
-            <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
-                <div class="mb-4">
-                    <i class="fas fa-inbox fa-4x text-light"></i>
-                </div>
-                <h4>Bạn chưa có đơn hàng nào</h4>
-                <p class="text-muted">Hãy khám phá các sản phẩm tuyệt vời của chúng tôi và đặt hàng ngay!</p>
-                <a href="/Products/" class="btn btn-primary px-4 py-2 rounded-pill mt-3">
-                    <i class="fas fa-shopping-cart me-2"></i> Mua sắm ngay
-                </a>
+            <div class="order-date-badge">
+              <i class="fas fa-calendar-alt"></i>
+              {{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date else '' }}
+            </div>
+          </div>
+
+          {% set status_class = '' %}
+          {% set status_icon = '' %}
+          {% if order.status == 'Pending' %}
+            {% set status_class = 'status-pending' %}{% set status_icon = 'fa-clock' %}
+          {% elif order.status == 'Confirmed' %}
+            {% set status_class = 'status-confirmed' %}{% set status_icon = 'fa-check-circle' %}
+          {% elif order.status == 'Processing' %}
+            {% set status_class = 'status-processing' %}{% set status_icon = 'fa-cog fa-spin' %}
+          {% elif order.status == 'Shipped' %}
+            {% set status_class = 'status-shipped' %}{% set status_icon = 'fa-truck' %}
+          {% elif order.status == 'Delivered' %}
+            {% set status_class = 'status-delivered' %}{% set status_icon = 'fa-check-double' %}
+          {% elif order.status == 'Cancelled' %}
+            {% set status_class = 'status-cancelled' %}{% set status_icon = 'fa-times-circle' %}
+          {% endif %}
+          <span class="order-status-badge {{ status_class }}">
+            <i class="fas {{ status_icon }}"></i>
+            {{ order.status }}
+          </span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="order-card-body">
+          <!-- Products -->
+          <div class="order-products-section">
+            {% set items = order.order_items if order.order_items else [] %}
+            {% for item in items %}
+            <div class="order-product-item">
+              <div class="order-product-img-wrap">
+                {% if item.product and item.product.first_image_url %}
+                <img src="{{ item.product.first_image_url }}" alt="{{ item.product_name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                {% endif %}
+                <i class="fas fa-box-open" style="display:flex;"></i>
+              </div>
+              <div class="order-product-details">
+                <div class="order-product-name">{{ item.product_name }}</div>
+                {% if item.variant_name %}
+                <div class="order-product-variant">{{ item.variant_name }}</div>
+                {% endif %}
+                <div class="order-product-qty">Số lượng: {{ item.quantity }}</div>
+              </div>
+              <div class="order-product-right">
+                <div class="order-product-price">{{ "{:,.0f}".format(item.subtotal | float) }} đ</div>
+                <div class="order-product-unit">{{ "{:,.0f}".format(item.unit_price | float) }} đ / cái</div>
+              </div>
+            </div>
+            {% endfor %}
+            {% if not items %}
+            <div style="padding:20px 0;text-align:center;color:#9ca3af;font-size:0.85rem;">
+              <i class="fas fa-inbox" style="font-size:1.5rem;margin-bottom:8px;display:block;color:#e5e7eb;"></i>
+              Không có thông tin sản phẩm
             </div>
             {% endif %}
-        </div>
-    </div>
-</div>
+          </div>
 
-<style>
-    .breadcrumb-item a {
-        text-decoration: none;
-        color: #6c757d;
-    }
-    .table thead th {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 700;
-        padding: 15px;
-    }
-    .table tbody td {
-        padding: 15px;
-        font-size: 0.95rem;
-    }
-    .card {
-        transition: transform 0.2s;
-    }
-</style>
+          <!-- Summary -->
+          <div class="order-summary-section">
+            <div class="order-summary-item">
+              <span class="order-summary-label"><i class="fas fa-money-bill-wave"></i> Tổng tiền</span>
+              <span class="order-summary-value">{{ "{:,.0f}".format(order.total_amount | float) }} đ</span>
+            </div>
+            {% if order.customer_address %}
+            <div class="order-summary-item">
+              <span class="order-summary-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ</span>
+              <span class="order-summary-address">{{ order.customer_address }}</span>
+            </div>
+            {% endif %}
+            {% if order.notes %}
+            <div class="order-summary-item">
+              <span class="order-summary-label"><i class="fas fa-sticky-note"></i> Ghi chú</span>
+              <span style="font-size:0.8rem;color:#6b7280;">{{ order.notes }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="order-card-footer">
+          <div class="order-footer-hint {% if order.status == 'Delivered' %}success{% elif order.status == 'Cancelled' %}danger{% endif %}">
+            {% if order.status == 'Pending' %}
+              <i class="fas fa-info-circle"></i> Vui lòng chờ shop xác nhận đơn
+            {% elif order.status == 'Confirmed' %}
+              <i class="fas fa-check-circle"></i> Đơn đã được xác nhận, đang chờ xử lý
+            {% elif order.status == 'Processing' %}
+              <i class="fas fa-box"></i> Đang được chuẩn bị
+            {% elif order.status == 'Shipped' %}
+              <i class="fas fa-truck"></i> Đang được giao đến bạn
+            {% elif order.status == 'Delivered' %}
+              <i class="fas fa-check-double"></i> Đơn hàng đã giao thành công
+            {% elif order.status == 'Cancelled' %}
+              <i class="fas fa-ban"></i> Đơn hàng đã bị hủy
+            {% endif %}
+          </div>
+          <div class="order-footer-actions">
+            <a href="/Orders/{{ order.order_id }}" class="btn-detail">
+              <i class="fas fa-eye"></i> Chi tiết
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="orders-empty">
+      <div class="orders-empty-visual">
+        <div class="orders-empty-ring">
+          <i class="fas fa-shopping-bag"></i>
+        </div>
+      </div>
+      <h2 class="orders-empty-title">Bạn chưa có đơn hàng nào</h2>
+      <p class="orders-empty-desc">
+        Hãy khám phá các sản phẩm công nghệ tuyệt vời và đặt hàng ngay hôm nay!
+      </p>
+      <a href="/Products/" class="btn-shop-now">
+        <i class="fas fa-shopping-cart"></i> Mua sắm ngay
+      </a>
+      <div class="orders-empty-features">
+        <div class="orders-empty-feature">
+          <div class="orders-empty-feature-icon"><i class="fas fa-certificate"></i></div>
+          <div class="orders-empty-feature-text">Chính hãng 100%</div>
+        </div>
+        <div class="orders-empty-feature">
+          <div class="orders-empty-feature-icon"><i class="fas fa-truck"></i></div>
+          <div class="orders-empty-feature-text">Giao hàng nhanh</div>
+        </div>
+        <div class="orders-empty-feature">
+          <div class="orders-empty-feature-icon"><i class="fas fa-sync-alt"></i></div>
+          <div class="orders-empty-feature-text">Đổi trả 7 ngày</div>
+        </div>
+        <div class="orders-empty-feature">
+          <div class="orders-empty-feature-icon"><i class="fas fa-headset"></i></div>
+          <div class="orders-empty-feature-text">Hỗ trợ 24/7</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+</div>
 {% endblock %}
