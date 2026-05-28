@@ -1754,10 +1754,8 @@
           body: "quantity=" + qty
         })
         .then(function() {
-          var qtyEl = document.getElementById("qty-" + itemId);
-          if (qtyEl) qtyEl.textContent = qty;
-          updateSummaryFromSelection();
-          updateCartCount();
+          // Reload to show updated totals
+          location.reload();
         })
         .catch(function() { location.reload(); });
       }

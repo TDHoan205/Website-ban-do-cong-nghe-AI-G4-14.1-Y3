@@ -14,6 +14,8 @@
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
+.admin-logo-text{line-height:1.2;}
+.admin-logo-badge{font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:700;}
 body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
 .admin-topbar{background:#1e293b;border-bottom:1px solid #334155;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .topbar-left{display:flex;align-items:center;gap:24px;}
@@ -94,25 +96,28 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;color:#e2e8f0;mi
   <div class="topbar-left">
     <a href="/Admin/Dashboard" class="admin-logo">
       <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
-      <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
+      <div class="admin-logo-name">Tech Store <span class="admin-logo-badge">Admin</span></div>
     </a>
-    <nav class="topbar-nav">
-      <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
-      <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
-      <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
-      <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
-      <a href="/Admin/Chatbot" class="active"><i class="fas fa-robot me-1"></i> AI Chatbot</a>
-    </nav>
   </div>
-  <div class="topbar-right">
-    <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Website</a>
-    <div class="topbar-user">
-      <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
-      <div><div class="user-name">{{ admin.username }}</div><div class="user-role">Quản trị</div></div>
+        <div class="topbar-right">
+        <a href="/" target="_blank" class="topbar-btn btn-gold">
+          <i class="fas fa-external-link-alt"></i> Xem website
+        </a>
+        <div class="topbar-user">
+          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+          <div class="user-info">
+            <div class="user-name">{{ admin.username }}</div>
+            <div class="user-role">Quản trị viên</div>
+          </div>
+        </div>
+        <a href="/Auth/Profile" class="topbar-btn btn-gold" title="Tài khoản của tôi">
+          <i class="fas fa-user-circle"></i> Tài khoản của tôi
+        </a>
+        <a href="/Auth/Logout" class="topbar-btn btn-red">
+          <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </a>
+      </div>
     </div>
-    <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
-  </div>
-</div>
 
 <div class="admin-body">
   <aside class="admin-sidebar">
