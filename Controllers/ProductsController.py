@@ -70,6 +70,77 @@ class ProductUpdate(BaseModel):
     supplier_id: Optional[int] = None
 
 
+@router.get("/Admin")
+async def admin_list(
+    search: Optional[str] = Query(None),
+    category_id: Optional[int] = Query(None),
+    sort_order: str = Query("name"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=200),
+    db: Session = Depends(get_db)
+):
+    service = ProductService(db)
+    paged = service.get_all_products_admin(
+        search=search,
+        category_id=category_id,
+        sort_order=sort_order,
+        page_number=page,
+        page_size=page_size,
+    )
+    return {
+        "items": [
+            {
+                "product_id": p.product_id,
+                "name": p.name,
+                "price": float(p.price),
+                "stock_quantity": p.stock_quantity,
+                "is_available": p.is_available,
+                "category_id": p.category_id,
+                "supplier_id": p.supplier_id,
+            }
+            for p in paged
+        ],
+        "page": paged.current_page,
+        "page_size": paged.page_size,
+        "total": paged.total_count,
+        "total_pages": paged.total_pages,
+    }
+
+
+@router.post("/Admin")
+async def admin_create(payload: ProductCreate, db: Session = Depends(get_db)):
+    if not payload.name.strip():
+        raise HTTPException(status_code=400, detail="Product name is required")
+    if payload.price is None or payload.price < 0:
+        raise HTTPException(status_code=400, detail="Invalid price")
+    service = ProductService(db)
+    product = service.create_product(payload.model_dump())
+    return {"product_id": product.product_id}
+
+
+@router.put("/Admin/{product_id}")
+async def admin_update(product_id: int, payload: ProductUpdate, db: Session = Depends(get_db)):
+    data = payload.model_dump(exclude_unset=True)
+    if "name" in data and not data["name"].strip():
+        raise HTTPException(status_code=400, detail="Product name is required")
+    if "price" in data and data["price"] is not None and data["price"] < 0:
+        raise HTTPException(status_code=400, detail="Invalid price")
+    service = ProductService(db)
+    product = service.update_product(product_id, data)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"success": True}
+
+
+@router.delete("/Admin/{product_id}")
+async def admin_delete(product_id: int, db: Session = Depends(get_db)):
+    service = ProductService(db)
+    ok = service.delete_product(product_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"success": True}
+
+
 @router.get("/", response_class=HTMLResponse)
 async def index(
     request: Request,
@@ -318,77 +389,6 @@ async def add_to_cart(
 
     referer = request.headers.get("referer")
     return RedirectResponse(url=referer or f"/Products/{product_id}", status_code=303)
-
-
-@router.get("/Admin")
-async def admin_list(
-    search: Optional[str] = Query(None),
-    category_id: Optional[int] = Query(None),
-    sort_order: str = Query("name"),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=200),
-    db: Session = Depends(get_db)
-):
-    service = ProductService(db)
-    paged = service.get_all_products_admin(
-        search=search,
-        category_id=category_id,
-        sort_order=sort_order,
-        page_number=page,
-        page_size=page_size,
-    )
-    return {
-        "items": [
-            {
-                "product_id": p.product_id,
-                "name": p.name,
-                "price": float(p.price),
-                "stock_quantity": p.stock_quantity,
-                "is_available": p.is_available,
-                "category_id": p.category_id,
-                "supplier_id": p.supplier_id,
-            }
-            for p in paged
-        ],
-        "page": paged.current_page,
-        "page_size": paged.page_size,
-        "total": paged.total_count,
-        "total_pages": paged.total_pages,
-    }
-
-
-@router.post("/Admin")
-async def admin_create(payload: ProductCreate, db: Session = Depends(get_db)):
-    if not payload.name.strip():
-        raise HTTPException(status_code=400, detail="Product name is required")
-    if payload.price is None or payload.price < 0:
-        raise HTTPException(status_code=400, detail="Invalid price")
-    service = ProductService(db)
-    product = service.create_product(payload.model_dump())
-    return {"product_id": product.product_id}
-
-
-@router.put("/Admin/{product_id}")
-async def admin_update(product_id: int, payload: ProductUpdate, db: Session = Depends(get_db)):
-    data = payload.model_dump(exclude_unset=True)
-    if "name" in data and not data["name"].strip():
-        raise HTTPException(status_code=400, detail="Product name is required")
-    if "price" in data and data["price"] is not None and data["price"] < 0:
-        raise HTTPException(status_code=400, detail="Invalid price")
-    service = ProductService(db)
-    product = service.update_product(product_id, data)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"success": True}
-
-
-@router.delete("/Admin/{product_id}")
-async def admin_delete(product_id: int, db: Session = Depends(get_db)):
-    service = ProductService(db)
-    ok = service.delete_product(product_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"success": True}
 
 
 # Templates
