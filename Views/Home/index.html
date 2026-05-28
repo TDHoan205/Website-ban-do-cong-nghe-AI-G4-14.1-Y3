@@ -21,7 +21,7 @@
       rel="stylesheet"
     />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+    <link rel="stylesheet" href="/static/css/style.css?v=6" />
 
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -433,6 +433,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+      }
+      .hero-product-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
       .hero-product-img i {
         font-size: 4rem;
@@ -1254,24 +1260,48 @@
             </div>
           </div>
           <div class="hero-product">
+            {% set hero_product = featured_products[0] if featured_products else none %}
+            {% if hero_product %}
             <div class="hero-product-img">
-              <i class="fas fa-mobile-alt"></i>
+              <img src="{{ hero_product.first_image_url }}" alt="{{ hero_product.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:contain;" />
+              <i class="fas fa-mobile-alt" style="display:none;"></i>
             </div>
-            <div class="hero-product-name">iPhone 15 Pro Max</div>
+            <div class="hero-product-name">{{ hero_product.name }}</div>
             <div class="hero-product-rating">
               <i class="fas fa-star"></i>
               <i class="fas fa-star"></i>
               <i class="fas fa-star"></i>
               <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              &nbsp;5.0
+              <i class="fas fa-star-half-alt"></i>
+              &nbsp;{{ "%.1f"|format(hero_product.rating | default(4.5) | float) }}
             </div>
-            <div class="hero-product-price">24.990.000 đ</div>
-            <div class="hero-product-original">27.990.000 đ</div>
-            <a href="/Products/" class="hero-product-btn">
+            <div class="hero-product-price">{{ "{:,.0f}".format(hero_product.price | default(0) | float) }} đ</div>
+            {% if hero_product.original_price and hero_product.original_price > hero_product.price %}
+            <div class="hero-product-original">{{ "{:,.0f}".format(hero_product.original_price | default(0) | float) }} đ</div>
+            {% endif %}
+            <a href="/Products/{{ hero_product.product_id }}" class="hero-product-btn">
               <i class="fas fa-shopping-cart"></i>
               Mua ngay
             </a>
+            {% else %}
+            <div class="hero-product-img">
+              <i class="fas fa-mobile-alt"></i>
+            </div>
+            <div class="hero-product-name">Sản phẩm nổi bật</div>
+            <div class="hero-product-rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+              &nbsp;4.5
+            </div>
+            <div class="hero-product-price">Liên hệ</div>
+            <a href="/Products/" class="hero-product-btn">
+              <i class="fas fa-shopping-cart"></i>
+              Xem sản phẩm
+            </a>
+            {% endif %}
           </div>
         </div>
       </section>
@@ -1439,8 +1469,7 @@
                     <span class="product-discount">-{{ product.discount_percent }}%</span>
                     {% endif %}
                     <img
-                      src="{% set imgs = product.product_images|selectattr('is_primary')|list %}
-                        {% if product.image_url %}{{ product.image_url }}{% elif imgs %}{{ imgs[0].image_url }}{% elif product.product_images %}{{ product.product_images[0].image_url }}{% else %}/static/images/no-image.png{% endif %}"
+                      src="{{ product.first_image_url }}"
                       alt="{{ product.name }}"
                       onerror="this.src='/static/images/no-image.png'"
                     />
@@ -1457,19 +1486,17 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star-half-alt"></i>
                       </span>
-                      <span class="product-reviews">({{ product.rating | default(4.5) }})</span>
+                      <span class="product-reviews">({{ "%.1f"|format(product.rating | default(4.5) | float) }})</span>
                     </div>
                     <div class="product-price-wrap">
-                      <span class="product-price">{{ "{:,.0f}".format(product.price | float) if product.price else '0' }} đ</span>
+                      <span class="product-price">{{ "{:,.0f}".format(product.price | default(0) | float) if product.price else '0' }} đ</span>
                       {% if product.original_price and product.original_price > product.price %}
-                      <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
+                      <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | default(0) | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
-                      <button type="submit" class="product-add-btn">
-                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
-                      </button>
-                    </form>
+                    <button type="button" class="product-add-btn" onclick="addToCart({{ product.product_id }})" style="margin-top:auto;">
+                      <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
                   </div>
                 </div>
                 {% endfor %}
@@ -1499,8 +1526,7 @@
                     <span class="product-discount">-{{ product.discount_percent }}%</span>
                     {% endif %}
                     <img
-                      src="{% set imgs = product.product_images|selectattr('is_primary')|list %}
-                        {% if product.image_url %}{{ product.image_url }}{% elif imgs %}{{ imgs[0].image_url }}{% elif product.product_images %}{{ product.product_images[0].image_url }}{% else %}/static/images/no-image.png{% endif %}"
+                      src="{{ product.first_image_url }}"
                       alt="{{ product.name }}"
                       onerror="this.src='/static/images/no-image.png'"
                     />
@@ -1517,19 +1543,17 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star-half-alt"></i>
                       </span>
-                      <span class="product-reviews">({{ product.rating | default(4.5) }})</span>
+                      <span class="product-reviews">({{ "%.1f"|format(product.rating | default(4.5) | float) }})</span>
                     </div>
                     <div class="product-price-wrap">
-                      <span class="product-price">{{ "{:,.0f}".format(product.price | float) if product.price else '0' }} đ</span>
+                      <span class="product-price">{{ "{:,.0f}".format(product.price | default(0) | float) if product.price else '0' }} đ</span>
                       {% if product.original_price and product.original_price > product.price %}
-                      <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</span>
+                      <span class="product-price-original">{{ "{:,.0f}".format(product.original_price | default(0) | float) }} đ</span>
                       {% endif %}
                     </div>
-                    <form action="/Products/{{ product.product_id }}/add-to-cart" method="POST" style="margin-top:auto;">
-                      <button type="submit" class="product-add-btn">
-                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
-                      </button>
-                    </form>
+                    <button type="button" class="product-add-btn" onclick="addToCart({{ product.product_id }})" style="margin-top:auto;">
+                      <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
                   </div>
                 </div>
                 {% endfor %}
@@ -1941,7 +1965,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    <script src="/static/js/main.js?v=3"></script>
+    <script src="/static/js/main.js?v=7"></script>
     <!-- Dropdown Fix -->
     <script>
       (function() {
@@ -1966,5 +1990,8 @@
         });
       })();
     </script>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>

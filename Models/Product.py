@@ -36,6 +36,15 @@ class Product(Base):
             self.original_price is not None and self.original_price > self.price
         )
 
+    @property
+    def first_image_url(self) -> str:
+        """Lấy ảnh đầu tiên: ưu tiên primary, không thì theo display_order, fallback sang image_url gốc"""
+        if self.product_images:
+            for img in sorted(self.product_images, key=lambda x: (not x.is_primary, x.display_order)):
+                if img.image_url:
+                    return img.image_url
+        return self.image_url or "/static/images/no-image.png"
+
     # Relationships
     category = relationship("Category", back_populates="products")
     supplier = relationship("Supplier", back_populates="products")

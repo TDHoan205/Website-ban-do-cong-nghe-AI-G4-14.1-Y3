@@ -144,7 +144,7 @@
             <div class="page-card-title"><i class="fas fa-list"></i> Danh sach nha cung cap</div>
             <div class="d-flex gap-2">
               <input type="text" id="search-supplier" class="search-box" placeholder="Tim kiem nha cung cap..." oninput="filterTable()" />
-              <button class="page-btn" onclick="openModal()"><i class="fas fa-plus"></i> Them nha cung cap</button>
+              <button class="page-btn" onclick="openModal()"><i class="fas fa-plus"></i> Thêm nhà cung cấp</button>
             </div>
           </div>
           <div class="table-responsive">
@@ -152,7 +152,7 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Ten nha cung cap</th>
+                  <th>Tên nhà cung cấp</th>
                   <th>Người liên hệ</th>
                   <th>Email</th>
                   <th>So dien thoai</th>
@@ -172,7 +172,7 @@
                     {% if sup.is_active %}
                       <span class="badge badge-active"><i class="fas fa-check-circle"></i> Hoat dong</span>
                     {% else %}
-                      <span class="badge badge-inactive"><i class="fas fa-ban"></i> Khong hoat dong</span>
+                      <span class="badge badge-inactive"><i class="fas fa-ban"></i> Không hoạt động</span>
                     {% endif %}
                   </td>
                   <td>
@@ -194,14 +194,14 @@
     <div class="modal-overlay" id="supplierModal" onclick="if(event.target===this)closeModal()">
       <div class="modal-box">
         <div class="modal-header">
-          <div class="modal-title" id="modalTitle"><i class="fas fa-truck me-2"></i>Them nha cung cap</div>
+          <div class="modal-title" id="modalTitle"><i class="fas fa-truck me-2"></i>Thêm nhà cung cấp</div>
           <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
         </div>
         <div id="modalAlert" class="alert-msg"></div>
         <form id="supplierForm" onsubmit="return saveSupplier(event)">
           <input type="hidden" id="supplier_id" value="" />
           <div class="form-group">
-            <label class="form-label">Ten nha cung cap <span style="color:#ef4444;">*</span></label>
+            <label class="form-label">Tên nhà cung cấp <span style="color:#ef4444;">*</span></label>
             <input type="text" id="sup_name" class="form-control" placeholder="VD: Cong ty ABC" required />
           </div>
           <div class="form-group">
@@ -247,7 +247,7 @@
         document.getElementById('sup_email').value = '';
         document.getElementById('sup_phone').value = '';
         document.getElementById('sup_address').value = '';
-        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-truck me-2"></i>Them nha cung cap';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-truck me-2"></i>Thêm nhà cung cấp';
         document.getElementById('modalAlert').style.display = 'none';
         document.getElementById('supplierModal').classList.add('show');
       }
@@ -309,7 +309,7 @@
       }
 
       async function deleteSupplier(id, name) {
-        if (!confirm('Ban co muon xoa nha cung cap "' + name + '"?\n\nNeu nha cung cap co san pham lien quan, ban khong the xoa.')) return;
+        if (!confirm('Bạn có muốn xóa nhà cung cấp "' + name + '"?\n\nNếu nhà cung cấp có sản phẩm liên quan, bạn không thể xóa.')) return;
         try {
           const res = await fetch(API + '/' + id, { method: 'DELETE' });
           const data = await res.json();

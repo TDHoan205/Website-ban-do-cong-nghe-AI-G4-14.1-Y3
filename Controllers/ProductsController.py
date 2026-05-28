@@ -2,7 +2,8 @@
 Products Controller - Quan ly san pham
 Tuong duong Controllers/ProductsController.cs trong ASP.NET Core
 """
-from typing import Optional
+import json
+from typing import Optional, List
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, Query
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -72,18 +73,38 @@ class ProductUpdate(BaseModel):
 @router.get("/", response_class=HTMLResponse)
 async def index(
     request: Request,
-    category_id: int = Query(None),
-    search: str = Query(None),
+    category_id: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     sort_by: str = Query("created_at"),
     sort_order: str = Query("desc"),
-    min_price: float = Query(None),
-    max_price: float = Query(None),
-    discount: int = Query(None),
-    sort: str = Query(None),
+    min_price: Optional[float] = Query(None),
+    max_price: Optional[float] = Query(None),
+    discount: Optional[int] = Query(None),
+    sort: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(12, ge=1, le=50),
+    storage: Optional[List[str]] = Query(None),
     db: Session = Depends(get_db)
 ):
+    # Normalize: empty strings / "None" string / whitespace-only → None
+    _category_id_raw = category_id
+    try:
+        _cid = category_id.strip() if category_id else ""
+        category_id_int = int(_cid) if _cid and _cid.lower() not in ("", "none", "null") else None
+    except (ValueError, TypeError):
+        category_id_int = None
+
+    _search_raw = search
+    search = search.strip() if search else None
+    if search in ("", "None", "null"):
+        search = None
+
+    _page_raw = page
+    if page < 1:
+        page = 1
+
+    print(f"[Products/index] category_id={category_id_int!r}  search={search!r}  "
+          f"sort_by={sort_by!r}  storage={storage!r}  page={page}")
     product_service = ProductService(db)
 
     is_new = False
@@ -94,7 +115,7 @@ async def index(
         is_hot = True
 
     products, total = product_service.get_all_products(
-        category_id=category_id,
+        category_id=category_id_int,
         search=search,
         sort_by=sort_by,
         sort_order=sort_order,
@@ -105,12 +126,14 @@ async def index(
         discount=(discount == 1),
         is_new=is_new,
         is_hot=is_hot,
+        storage=storage,
     )
     categories = product_service.get_all_categories()
+    storage_counts = product_service.get_storage_counts(category_id=category_id_int)
 
     category_name = None
-    if category_id:
-        cat = product_service.get_category_by_id(category_id)
+    if category_id_int:
+        cat = product_service.get_category_by_id(category_id_int)
         if cat:
             category_name = cat.name
 
@@ -121,7 +144,7 @@ async def index(
         "Products/index.html",
         {
             "request": request,
-            "page_title": category_name or "Tat ca san pham",
+            "page_title": category_name or "Tất cả sản phẩm",
             "category_name": category_name,
             "products": products,
             "categories": categories,
@@ -129,14 +152,16 @@ async def index(
             "page": page,
             "page_size": page_size,
             "total_pages": (total + page_size - 1) // page_size if total > 0 else 1,
-            "category_id": category_id,
-            "search": search,
+            "category_id": category_id_int,
+            "search": search or "",
             "sort_by": sort_by,
             "sort_order": sort_order,
-            "min_price": min_price,
-            "max_price": max_price,
+            "min_price": min_price or "",
+            "max_price": max_price or "",
             "cart_count": cart_count,
             "current_user": current_user,
+            "storage_counts": storage_counts,
+            "selected_storages": storage or [],
         }
     )
 
@@ -147,7 +172,17 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
     product = product_service.get_product_by_id(product_id)
 
     if not product:
-        raise HTTPException(status_code=404, detail="San pham khong tim thay")
+        raise HTTPException(status_code=404, detail="Sản phẩm không tìm thấy")
+
+    # Parse specifications JSON từ database
+    specifications_dict = {}
+    if product.specifications:
+        try:
+            specifications_dict = json.loads(product.specifications)
+            if not isinstance(specifications_dict, dict):
+                specifications_dict = {}
+        except Exception:
+            specifications_dict = {}
 
     related = product_service.get_related_products(
         product_id, product.category_id if product.category_id else 0
@@ -204,6 +239,7 @@ async def detail(request: Request, product_id: int, db: Session = Depends(get_db
             "request": request,
             "page_title": product.name,
             "product": product,
+            "specifications_dict": specifications_dict,
             "variants": variants_data,
             "product_images": product_images,
             "related_products": related,
@@ -225,7 +261,7 @@ async def add_to_cart(
     except HTTPException:
         if is_ajax_request(request):
             return JSONResponse(
-                {"success": False, "message": "Vui long dang nhap de them san pham vao gio hang.", "login_url": "/Auth/Login"},
+                {"success": False, "message": "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.", "login_url": "/Auth/Login"},
                 status_code=401,
             )
         return RedirectResponse(url="/Auth/Login", status_code=303)
@@ -235,7 +271,10 @@ async def add_to_cart(
     cart_count = cart_service.get_cart_item_count(account.account_id)
 
     if is_ajax_request(request):
-        return {"success": True, "message": "Da them san pham vao gio hang.", "cart_count": cart_count}
+        return JSONResponse(
+            {"success": True, "message": "Đã thêm sản phẩm vào giỏ hàng.", "cart_count": cart_count},
+            status_code=200
+        )
 
     referer = request.headers.get("referer")
     return RedirectResponse(url=referer or f"/Products/{product_id}", status_code=303)

@@ -81,9 +81,12 @@ class ProductService:
         discount: bool = False,
         is_new: bool = False,
         is_hot: bool = False,
+        storage: Optional[List[str]] = None,
     ) -> Tuple[List[Product], int]:
         """Lay tat ca san pham co loc nang cao - tra ve list va total"""
-        query = self.db.query(Product).filter(Product.is_available == True)
+        query = self.db.query(Product).options(
+            joinedload(Product.product_images)
+        ).filter(Product.is_available == True)
 
         if category_id:
             query = query.filter(Product.category_id == category_id)
@@ -104,6 +107,14 @@ class ProductService:
             query = query.filter(Product.is_new == True)
         if is_hot:
             query = query.filter(Product.is_hot == True)
+
+        # Storage filter - join with variants and filter by storage value
+        if storage:
+            from Models.Product import ProductVariant
+            query = query.join(ProductVariant, Product.product_id == ProductVariant.product_id).filter(
+                ProductVariant.is_active == True,
+                ProductVariant.storage.in_(storage)
+            ).distinct()
 
         total = query.count()
 
@@ -131,7 +142,9 @@ class ProductService:
         page_size: int = 10
     ) -> PagedList:
         """Lấy tất cả sản phẩm (kể cả unavailable) cho admin"""
-        query = self.db.query(Product)
+        query = self.db.query(Product).options(
+            joinedload(Product.product_images)
+        )
 
         if category_id:
             query = query.filter(Product.category_id == category_id)
@@ -239,7 +252,9 @@ class ProductService:
 
     def get_related_products(self, product_id: int, category_id: int, limit: int = 4) -> List[Product]:
         """Lấy sản phẩm liên quan"""
-        return self.db.query(Product).filter(
+        return self.db.query(Product).options(
+            joinedload(Product.product_images)
+        ).filter(
             Product.category_id == category_id,
             Product.product_id != product_id,
             Product.is_available == True
@@ -393,3 +408,31 @@ class ProductService:
         self.db.delete(image)
         self.db.commit()
         return True
+
+    # ============ Storage counts for filter sidebar ============
+    def get_storage_counts(self, category_id: Optional[int] = None) -> dict:
+        """Lay so luong san pham theo bo nho (storage) tu database"""
+        from Models.Product import ProductVariant
+
+        query = self.db.query(
+            ProductVariant.storage,
+            func.count(ProductVariant.variant_id).label("count")
+        ).filter(
+            ProductVariant.is_active == True,
+            ProductVariant.storage.isnot(None),
+            ProductVariant.storage != ""
+        )
+
+        if category_id:
+            query = query.join(Product, Product.product_id == ProductVariant.product_id).filter(
+                Product.category_id == category_id,
+                Product.is_available == True
+            )
+        else:
+            query = query.join(Product, Product.product_id == ProductVariant.product_id).filter(
+                Product.is_available == True
+            )
+
+        results = query.group_by(ProductVariant.storage).order_by(ProductVariant.storage).all()
+
+        return {row.storage: row.count for row in results}

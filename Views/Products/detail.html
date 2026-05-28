@@ -3,388 +3,685 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ page_title | default('Chi tiet san pham') }} - Tech Store AI</title>
-
-    <!-- Bootstrap 5 -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
-    <!-- Google Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2" />
-
+    <title>{{ page_title | default('Chi tiết sản phẩm') }} - Tech Store AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/style.css?v=8" />
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         font-family: 'Be Vietnam Pro', sans-serif;
-        background: #f0f2f5;
+        background: #f5f6fa;
+        color: #1a1a2e;
         min-height: 100vh;
+        line-height: 1.6;
       }
-      .product-main-image {
-        width: 100%;
-        max-height: 460px;
-        object-fit: contain;
-        background: #fff;
-        padding: 24px;
+      a { text-decoration: none; transition: color 0.2s; }
+      a:hover { color: #2563eb; }
+
+      /* ===== TOP BAR ===== */
+      .top-bar { background: #2d3436; color: rgba(255,255,255,0.7); font-size: 0.78rem; padding: 6px 0; }
+      .top-bar-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+      .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+      .top-bar-item { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.7); }
+      .top-bar-item i { color: #ff6b00; font-size: 0.8rem; }
+      .top-bar-item:hover { color: white; }
+      .top-bar-divider { color: rgba(255,255,255,0.2); }
+
+      /* ===== HEADER ===== */
+      .main-header { background: white; padding: 14px 0; border-bottom: 1px solid #e8e8e8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 999; }
+      .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; gap: 20px; }
+      .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+      .header-logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; }
+      .header-logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+      .header-logo-name { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
+      .header-logo-sub { font-size: 0.68rem; color: #9ca3af; }
+      .header-search { flex: 1; max-width: 520px; }
+      .header-search-form { display: flex; border: 2px solid #2563eb; border-radius: 8px; overflow: hidden; background: white; }
+      .header-search-input { flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 0.88rem; font-family: 'Be Vietnam Pro', sans-serif; color: #374151; background: transparent; }
+      .header-search-input::placeholder { color: #9ca3af; }
+      .header-search-btn { background: #2563eb; color: white; border: none; padding: 10px 18px; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Be Vietnam Pro', sans-serif; font-weight: 500; transition: background 0.2s; }
+      .header-search-btn:hover { background: #1d4ed8; }
+      .header-actions { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+      .header-action { display: flex; align-items: center; gap: 8px; color: #374151; font-size: 0.82rem; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+      .header-action:hover { color: #2563eb; }
+      .header-action-icon { position: relative; font-size: 1.4rem; color: #374151; }
+      .header-action-badge { position: absolute; top: -6px; right: -8px; background: #ff6b00; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+      .header-action-text { display: flex; flex-direction: column; line-height: 1.2; }
+      .header-action-label { font-size: 0.68rem; color: #9ca3af; }
+      .header-user-menu { position: relative; }
+      .header-user-action { cursor: pointer; }
+      .header-user-dropdown { position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.12); min-width: 180px; padding: 6px 0; z-index: 1000; display: none; margin-top: 8px; }
+      .header-user-dropdown .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 0.85rem; color: #374151; font-weight: 500; text-decoration: none; transition: all 0.15s; }
+      .header-user-dropdown .dropdown-item:hover { background: #f3f4f6; color: #2563eb; }
+      .header-user-dropdown .dropdown-item i { width: 16px; text-align: center; }
+      .header-user-dropdown .dropdown-item-red { color: #dc2626; }
+      .header-user-dropdown .dropdown-item-red:hover { background: #fef2f2; color: #dc2626; }
+      .header-user-dropdown .dropdown-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+
+      /* ===== NAV BAR ===== */
+      .nav-bar { background: #2563eb; position: sticky; top: 72px; z-index: 998; }
+      .nav-bar-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; }
+      .nav-links { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; flex: 1; overflow-x: auto; }
+      .nav-links li a { display: block; padding: 11px 16px; color: rgba(255,255,255,0.85); font-size: 0.88rem; font-weight: 500; text-decoration: none; white-space: nowrap; transition: all 0.2s; border-bottom: 3px solid transparent; }
+      .nav-links li a:hover, .nav-links li a.active { color: white; background: rgba(255,255,255,0.1); border-bottom-color: #ff6b00; }
+      .nav-links li a.nav-new { color: #ffd700; }
+      .nav-links li a.nav-hot { color: #ff4757; }
+      .nav-support { display: flex; align-items: center; gap: 6px; padding: 0 16px; color: white; font-size: 0.82rem; font-weight: 500; white-space: nowrap; }
+      .nav-support i { color: #ffd700; }
+
+      /* ===== BREADCRUMB ===== */
+      .breadcrumb-bar { background: white; border-bottom: 1px solid #f0f0f0; }
+      .breadcrumb-bar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; }
+      .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #9ca3af; margin: 0; padding: 0; list-style: none; }
+      .breadcrumb a { color: #2563eb; text-decoration: none; }
+      .breadcrumb a:hover { text-decoration: underline; }
+      .breadcrumb-sep { color: #d1d5db; }
+      .breadcrumb li:last-child { color: #6b7280; }
+
+      /* ===== PRODUCT DETAIL LAYOUT ===== */
+      .detail-page { max-width: 1200px; margin: 0 auto; padding: 28px 16px 48px; }
+      .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+
+      /* ===== GALLERY ===== */
+      .gallery-main-wrap { background: white; border-radius: 16px; border: 1px solid #ebedf0; overflow: hidden; position: relative; }
+      .gallery-main-img { width: 100%; height: 420px; object-fit: contain; background: #fff; padding: 32px; display: block; cursor: zoom-in; transition: transform 0.3s; }
+      .gallery-main-img:hover { transform: scale(1.03); }
+      .gallery-thumbs { display: flex; gap: 10px; padding: 14px 16px; flex-wrap: wrap; border-top: 1px solid #f0f0f0; }
+      .gallery-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; padding: 4px; background: #fafafa; }
+      .gallery-thumb:hover { border-color: #2563eb; }
+      .gallery-thumb.active { border-color: #2563eb; background: #eff6ff; }
+
+      /* ===== PRODUCT INFO ===== */
+      .product-info-card { display: flex; flex-direction: column; gap: 0; }
+      .info-block { background: white; border-radius: 16px; border: 1px solid #ebedf0; padding: 24px; }
+      .info-block + .info-block { margin-top: 16px; }
+
+      .product-category { font-size: 0.78rem; font-weight: 600; color: #2563eb; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+      .product-title { font-size: 1.55rem; font-weight: 800; color: #1a1a2e; line-height: 1.3; margin-bottom: 12px; }
+      .product-rating-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+      .stars { color: #f59e0b; font-size: 0.88rem; letter-spacing: 1px; }
+      .rating-text { font-size: 0.85rem; color: #6b7280; }
+      .rating-text strong { color: #1a1a2e; }
+
+      .price-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+      .price-current { font-size: 2rem; font-weight: 800; color: #dc2626; letter-spacing: -0.5px; }
+      .price-original { font-size: 1.05rem; color: #9ca3af; text-decoration: line-through; }
+      .price-discount { background: #fef2f2; color: #dc2626; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+
+      .product-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+      .badge-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 50px; font-size: 0.78rem; font-weight: 600; border: 1px solid; }
+      .badge-stock { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+      .badge-stock.low { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+      .badge-stock.out { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+      .badge-supplier { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+      .badge-category { background: #faf5ff; color: #7c3aed; border-color: #e9d5ff; }
+
+      .divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+
+      /* ===== VARIANT SELECTOR ===== */
+      .variant-section { }
+      .variant-group { margin-bottom: 18px; }
+      .variant-label { font-size: 0.85rem; font-weight: 600; color: #1a1a2e; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+      .variant-label span { color: #2563eb; font-weight: 700; }
+      .variant-options { display: flex; flex-wrap: wrap; gap: 8px; }
+      .variant-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 10px; border: 1.5px solid #e5e7eb; background: white; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; font-weight: 500; color: #374151; font-family: 'Be Vietnam Pro', sans-serif; }
+      .variant-chip:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+      .variant-chip.selected { border-color: #2563eb; background: #2563eb; color: white; }
+      .variant-chip input[type="radio"] { display: none; }
+      .color-dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0; }
+
+      /* ===== QUANTITY ===== */
+      .quantity-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+      .quantity-label { font-size: 0.88rem; font-weight: 600; color: #374151; }
+      .qty-control { display: flex; align-items: center; border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+      .qty-btn { width: 38px; height: 38px; border: none; background: #f9fafb; color: #374151; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'Be Vietnam Pro', sans-serif; }
+      .qty-btn:hover { background: #e5e7eb; color: #1a1a2e; }
+      .qty-input { width: 48px; height: 38px; border: none; text-align: center; font-size: 0.92rem; font-weight: 600; color: #1a1a2e; font-family: 'Be Vietnam Pro', sans-serif; background: white; outline: none; -moz-appearance: textfield; }
+      .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+      /* ===== ACTION BUTTONS ===== */
+      .action-btns { display: flex; gap: 10px; }
+      .btn-add-cart { flex: 1; padding: 13px 20px; background: #2563eb; color: white; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; letter-spacing: 0.3px; }
+      .btn-add-cart:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); }
+      .btn-add-cart:active { transform: translateY(0); box-shadow: none; }
+      .btn-ai { flex: 0 0 auto; padding: 13px 20px; background: white; color: #2563eb; border: 1.5px solid #2563eb; border-radius: 12px; font-size: 0.95rem; font-weight: 700; font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; text-decoration: none; }
+      .btn-ai:hover { background: #eff6ff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.2); color: #2563eb; }
+
+      /* ===== DESCRIPTION & SPECS ===== */
+      .section-title { font-size: 1.05rem; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+      .section-title i { color: #2563eb; }
+      .product-description { font-size: 0.9rem; color: #4b5563; line-height: 1.8; }
+
+      /* Specs Table */
+      .specs-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+      .specs-table tr { border-bottom: 1px solid #f0f0f0; }
+      .specs-table tr:last-child { border-bottom: none; }
+      .specs-table td { padding: 11px 14px; vertical-align: top; }
+      .specs-table td:first-child { width: 38%; color: #6b7280; font-weight: 500; background: #fafafa; border-radius: 8px 0 0 8px; }
+      .specs-table td:last-child { color: #1a1a2e; font-weight: 600; border-radius: 0 8px 8px 0; }
+      .specs-table tr:hover td:first-child { background: #f0f4ff; }
+      .specs-table tr:hover td:last-child { background: #f8faff; }
+      .empty-specifications { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 28px 16px; color: #9ca3af; font-size: 0.9rem; font-weight: 500; background: #fafafa; border-radius: 10px; border: 1.5px dashed #e5e7eb; }
+      .empty-specifications i { color: #2563eb; font-size: 1rem; }
+
+      /* ===== AI SUGGESTION CARD ===== */
+      .ai-suggest-card { background: linear-gradient(135deg, #eff6ff, #f0f9ff); border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px 20px; }
+      .ai-suggest-title { font-size: 0.85rem; font-weight: 700; color: #1d4ed8; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+      .ai-suggest-title i { color: #2563eb; }
+      .ai-suggest-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+      .ai-suggest-btn { padding: 7px 14px; background: white; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 8px; font-size: 0.8rem; font-weight: 600; font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+      .ai-suggest-btn:hover { background: #2563eb; color: white; border-color: #2563eb; transform: translateY(-1px); }
+
+      /* ===== RELATED PRODUCTS ===== */
+      .related-section { margin-top: 48px; }
+      .related-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+      .related-title { font-size: 1.2rem; font-weight: 800; color: #1a1a2e; display: flex; align-items: center; gap: 8px; }
+      .related-title i { color: #2563eb; }
+      .related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+      /* ===== FOOTER ===== */
+      .main-footer { background: #1a1a2e; padding: 50px 0 0; color: rgba(255,255,255,0.6); margin-top: 60px; }
+      .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+      .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 40px; }
+      .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; text-decoration: none; }
+      .footer-brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; }
+      .footer-brand-name { font-size: 1.2rem; font-weight: 700; color: white; }
+      .footer-brand-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+      .footer-desc { font-size: 0.85rem; line-height: 1.7; margin-bottom: 18px; }
+      .footer-socials { display: flex; gap: 10px; }
+      .footer-social { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); transition: all 0.2s; text-decoration: none; font-size: 0.9rem; }
+      .footer-social:hover { background: #2563eb; color: white; }
+      .footer-col-title { font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+      .footer-links li a { color: rgba(255,255,255,0.55); font-size: 0.85rem; text-decoration: none; transition: color 0.2s; display: flex; align-items: center; gap: 6px; }
+      .footer-links li a:hover { color: white; }
+      .footer-links li a i { font-size: 0.7rem; color: #ff6b00; }
+      .footer-contact-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; }
+      .footer-contact-item i { color: #ff6b00; margin-top: 3px; width: 16px; text-align: center; }
+      .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+      .footer-copyright { font-size: 0.82rem; }
+      .footer-payments { display: flex; gap: 10px; align-items: center; }
+      .footer-payment { width: 40px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 600; }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 1024px) {
+        .detail-grid { grid-template-columns: 1fr; gap: 24px; }
+        .gallery-main-img { height: 340px; padding: 24px; }
+        .related-grid { grid-template-columns: repeat(2, 1fr); }
+        .footer-grid { grid-template-columns: repeat(2, 1fr); }
       }
-      .detail-card {
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-        background: #fff;
+      @media (max-width: 768px) {
+        .top-bar { display: none; }
+        .header-search { display: none; }
+        .nav-support { display: none; }
+        .detail-page { padding: 16px 12px 32px; }
+        .gallery-main-img { height: 260px; padding: 16px; }
+        .gallery-thumb { width: 52px; height: 52px; }
+        .product-title { font-size: 1.2rem; }
+        .price-current { font-size: 1.6rem; }
+        .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+        .footer-bottom { flex-direction: column; text-align: center; }
       }
-      .product-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 18px;
-      }
-      .product-meta-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 10px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        color: #4b5563;
-        font-size: 0.88rem;
-        background: #fff;
-      }
-      .spec-box {
-        white-space: pre-line;
-        line-height: 1.7;
-        color: #374151;
+      @media (max-width: 480px) {
+        .related-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .action-btns { flex-direction: column; }
+        .btn-ai { justify-content: center; }
       }
     </style>
   </head>
   <body>
-    <!-- Navigation (inline to avoid base.html dependency) -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-      <div class="container">
-        <a class="navbar-brand" href="/">
-          <i class="fas fa-robot"></i> Tech Store AI
-        </a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home"></i> Trang chủ</a></li>
-            <li class="nav-item"><a class="nav-link" href="/Products/"><i class="fas fa-store"></i> Sản phẩm</a></li>
-            <li class="nav-item"><a class="nav-link" href="/Chat/"><i class="fas fa-robot"></i> AI Tư vấn</a></li>
-          </ul>
-          <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" href="/Cart/"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a></li>
-            {% if current_user %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user"></i> {{ current_user.username }}</a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                {% if current_user.role and current_user.role.role_name == 'Admin' %}
-                <li><a class="dropdown-item" href="/Admin/Dashboard"><i class="fas fa-cog"></i> Quản lý</a></li>
-                {% endif %}
-                <li><a class="dropdown-item" href="/Auth/Profile"><i class="fas fa-user-circle"></i> Tài khoản</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="/Auth/Logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
-              </ul>
-            </li>
-            {% else %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user"></i> Tài khoản</a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/Auth/Login"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a></li>
-                <li><a class="dropdown-item" href="/Auth/Register"><i class="fas fa-user-plus"></i> Đăng ký</a></li>
-              </ul>
-            </li>
-            {% endif %}
-          </ul>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="top-bar-inner">
+        <div class="top-bar-left">
+          <a href="tel:18006601" class="top-bar-item"><i class="fas fa-phone"></i> 1800.6601</a>
+          <span class="top-bar-divider">|</span>
+          <a href="mailto:hotro@techstore.com" class="top-bar-item"><i class="fas fa-envelope"></i> hotro@techstore.com</a>
         </div>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="top-bar-right">
+          <span class="top-bar-item"><i class="fas fa-truck"></i> Miễn phí vận chuyển toàn quốc</span>
+          <span class="top-bar-divider">|</span>
+          <span class="top-bar-item"><i class="fas fa-shield-alt"></i> Bảo hành chính hãng</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="main-header">
+      <div class="header-inner">
+        <a href="/" class="header-logo">
+          <div class="header-logo-icon"><i class="fas fa-robot"></i></div>
+          <div class="header-logo-text">
+            <span class="header-logo-name">Tech Store AI</span>
+            <span class="header-logo-sub">Công nghệ thông minh</span>
+          </div>
+        </a>
+        <div class="header-search">
+          <form action="/Products/" method="GET" class="header-search-form">
+            <input type="text" name="search" class="header-search-input" placeholder="Tìm kiếm sản phẩm..." value="" />
+            <button type="submit" class="header-search-btn"><i class="fas fa-search"></i> Tìm kiếm</button>
+          </form>
+        </div>
+        <div class="header-actions">
+          <a href="/Cart/" class="header-action">
+            <div class="header-action-icon">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="header-action-badge">{{ cart_count | default(0) }}</span>
+            </div>
+            <div class="header-action-text">
+              <span class="header-action-label">Giỏ hàng</span>
+            </div>
+          </a>
+          {% if current_user %}
+          <div class="header-user-menu">
+            <div class="header-action header-user-action">
+              <div class="header-action-icon"><i class="fas fa-user-check" style="color:#16a34a"></i></div>
+              <div class="header-action-text">
+                <span class="header-action-label" style="color:#16a34a">{{ current_user.full_name or current_user.username }}</span>
+              </div>
+            </div>
+            <div class="header-user-dropdown">
+              <a href="/Auth/Profile" class="dropdown-item"><i class="fas fa-user"></i> Thông tin cá nhân</a>
+              <a href="/Orders/" class="dropdown-item"><i class="fas fa-shopping-bag"></i> Đơn hàng của tôi</a>
+              {% if current_user.role and current_user.role.role_name == 'Admin' %}
+              <a href="/Admin/Dashboard" class="dropdown-item"><i class="fas fa-cog"></i> Quản lý Admin</a>
+              {% endif %}
+              <div class="dropdown-divider"></div>
+              <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            </div>
+          </div>
+          {% else %}
+          <a href="/Auth/Login" class="header-action">
+            <div class="header-action-icon"><i class="fas fa-user"></i></div>
+            <div class="header-action-text">
+              <span class="header-action-label">Đăng nhập</span>
+            </div>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <!-- NAV BAR -->
+    <nav class="nav-bar">
+      <div class="nav-bar-inner">
+        <ul class="nav-links">
+          <li><a href="/">Trang chủ</a></li>
+          <li><a href="/Products/" class="active">Sản phẩm</a></li>
+          <li><a href="/Cart/">Giỏ hàng</a></li>
+          <li><a href="/Chat/">AI Tư vấn</a></li>
+          <li><a href="/Products/?sort=new" class="nav-new"><i class="fas fa-bolt"></i> Sản phẩm mới</a></li>
+          <li><a href="/Products/?sort=hot" class="nav-hot"><i class="fas fa-fire"></i> Hot</a></li>
+        </ul>
+        <div class="nav-support"><i class="fas fa-headset"></i> Hỗ trợ: 1800.6601</div>
       </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <div class="container py-4">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="mb-3">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="/Products/">Sản phẩm</a></li>
-            <li class="breadcrumb-item active">{{ product.name | default('Sản phẩm mẫu') }}</li>
-          </ol>
-        </nav>
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb-bar">
+      <div class="breadcrumb-bar-inner">
+        <ol class="breadcrumb">
+          <li><a href="/"><i class="fas fa-home"></i> Trang chủ</a></li>
+          <span class="breadcrumb-sep">/</span>
+          <li><a href="/Products/">Sản phẩm</a></li>
+          <span class="breadcrumb-sep">/</span>
+          <li>{{ product.name | default('Sản phẩm') }}</li>
+        </ol>
+      </div>
+    </div>
 
-        <div class="row">
-          <!-- Images -->
-          <div class="col-lg-6 mb-4">
-            <div class="detail-card">
-              {% set all_images = [] %}
-              {% for v in variants %}
-                {% for img in v.images %}
-                  {% set _ = all_images.append({'url': img.image_url, 'variant_id': v.variant_id}) %}
-                {% endfor %}
-              {% endfor %}
-              {% for img in product_images %}
-                {% set _ = all_images.append({'url': img.image_url, 'variant_id': None}) %}
-              {% endfor %}
-              {% if not all_images %}
-                {% set _ = all_images.append({'url': product.image_url, 'variant_id': None}) %}
-              {% endif %}
-              {% set first_img = all_images[0].url if all_images else (product.image_url or '/static/images/no-image.png') %}
-              <img
-                src="{{ first_img }}"
-                class="product-main-image"
-                alt="{{ product.name }}"
-                id="main-image"
-                onerror="this.src='/static/images/no-image.png'"
-              />
+    <!-- PRODUCT DETAIL -->
+    <main class="detail-page">
+      <div class="detail-grid">
+        <!-- LEFT: GALLERY -->
+        <div class="gallery-col">
+          {% set all_images = [] %}
+          {% for v in variants %}
+            {% for img in v.images %}
+              {% set _ = all_images.append({'url': img.image_url, 'variant_id': v.variant_id}) %}
+            {% endfor %}
+          {% endfor %}
+          {% for img in product_images %}
+            {% set _ = all_images.append({'url': img.image_url, 'variant_id': None}) %}
+          {% endfor %}
+          {% if not all_images %}
+            {% set _ = all_images.append({'url': product.image_url, 'variant_id': None}) %}
+          {% endif %}
+          {% set first_img = all_images[0].url if all_images else (product.image_url or '/static/images/no-image.png') %}
+
+          <div class="gallery-main-wrap">
+            <img src="{{ first_img }}" class="gallery-main-img" alt="{{ product.name }}" id="main-image" onerror="this.src='/static/images/no-image.png'" />
+          </div>
+
+          {% if all_images | length > 1 %}
+          <div class="gallery-thumbs">
+            {% for img in all_images %}
+            <img src="{{ img.url }}" class="gallery-thumb {% if loop.first %}active{% endif %}" onclick="changeImage(this, '{{ img.url }}')" onerror="this.style.display='none'" />
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- RIGHT: PRODUCT INFO -->
+        <div class="product-info-card">
+          <!-- Basic Info Block -->
+          <div class="info-block">
+            {% if product.category %}
+            <div class="product-category">{{ product.category.name }}</div>
+            {% endif %}
+            <h1 class="product-title">{{ product.name | default('Sản phẩm mẫu') }}</h1>
+
+            <div class="product-rating-row">
+              <span class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+              </span>
+              <span class="rating-text"><strong>{{ "%.1f"|format(product.rating | default(4.5) | float) }}</strong> ({{ product.review_count | default(0) }} đánh giá)</span>
             </div>
-            {% if all_images | length > 1 %}
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              {% for img in all_images %}
-              <img
-                src="{{ img.url }}"
-                class="img-thumbnail"
-                style="width:70px;height:70px;object-fit:cover;cursor:pointer;border:2px solid #e5e7eb;border-radius:8px;padding:2px;"
-                onclick="document.getElementById('main-image').src='{{ img.url }}'"
-                onerror="this.style.display='none'"
-              />
-              {% endfor %}
+
+            <div class="price-row">
+              <span class="price-current" id="price-display">{{ "{:,.0f}".format(product.price | default(0) | float) }} đ</span>
+              {% if product.original_price and product.original_price > product.price %}
+              {% set discount = ((product.original_price - product.price) / product.original_price * 100) | int %}
+              <span class="price-original">{{ "{:,.0f}".format(product.original_price | default(0) | float) }} đ</span>
+              <span class="price-discount">-{{ discount }}%</span>
+              {% endif %}
+            </div>
+
+            <div class="product-badges">
+              <span class="badge-pill badge-stock {% if not product.stock_quantity or product.stock_quantity <= 0 %}out{% elif product.stock_quantity < 10 %}low{% endif %}">
+                <i class="fas fa-box-open"></i>
+                {% if not product.stock_quantity or product.stock_quantity <= 0 %}Hết hàng{% else %}Còn {{ product.stock_quantity }} sản phẩm{% endif %}
+              </span>
+              {% if product.supplier %}
+              <span class="badge-pill badge-supplier"><i class="fas fa-truck"></i> {{ product.supplier.name }}</span>
+              {% endif %}
+              <span class="badge-pill badge-category"><i class="fas fa-shield-alt"></i> Bảo hành 12 tháng</span>
+            </div>
+          </div>
+
+          <!-- Variant Block -->
+          {% if variants and variants | length > 0 %}
+          <div class="info-block variant-section">
+            {% if variants | selectattr('color') | list | length > 0 %}
+            <div class="variant-group">
+              <div class="variant-label">
+                <i class="fas fa-palette"></i> Màu sắc: <span id="selected-color-label">Chọn màu</span>
+              </div>
+              <div class="variant-options">
+                {% for v in variants %}
+                {% if v.color %}
+                <label class="variant-chip {% if loop.first %}selected{% endif %}" id="chip-color-{{ v.variant_id }}">
+                  <input type="radio" name="color" value="{{ v.variant_id }}" data-color="{{ v.color }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}" onchange="selectVariant(this)" autocomplete="off" />
+                  {% if v.color_hex %}<span class="color-dot" style="background:{{ v.color_hex }}"></span>{% endif %}
+                  {{ v.color }}
+                </label>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+
+            {% if variants | selectattr('storage') | list | length > 0 %}
+            <div class="variant-group">
+              <div class="variant-label">
+                <i class="fas fa-memory"></i> Dung lượng: <span id="selected-storage-label">Chọn dung lượng</span>
+              </div>
+              <div class="variant-options">
+                {% for v in variants %}
+                {% if v.storage %}
+                <label class="variant-chip {% if loop.first %}selected{% endif %}" id="chip-storage-{{ v.variant_id }}">
+                  <input type="radio" name="storage" value="{{ v.variant_id }}" data-storage="{{ v.storage }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" onchange="selectVariant(this)" autocomplete="off" />
+                  {{ v.storage }}
+                </label>
+                {% endif %}
+                {% endfor %}
+              </div>
             </div>
             {% endif %}
           </div>
+          {% endif %}
 
-          <!-- Info -->
-          <div class="col-lg-6">
-            <h1 class="mb-3">{{ product.name | default('Sản phẩm mẫu') }}</h1>
+          <!-- Quantity & Actions -->
+          <div class="info-block">
+            <form action="/Products/{{ product.product_id | default(1) }}/add-to-cart" method="POST" id="add-to-cart-form">
+              <input type="hidden" name="variant_id" id="selected-variant-id" value="" />
 
-            <div class="rating mb-3">
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-warning"></i>
-              <i class="fas fa-star text-secondary"></i>
-              <span class="text-muted">({{ "%.1f" | format(product.rating | default(4.5)) }} sao)</span>
-            </div>
-
-            <div class="price-section mb-4">
-              <span class="current-price text-danger fs-2 fw-bold">{{ "{:,}".format(product.price | default(0) | int) }} đ</span>
-              {% if product.original_price and product.original_price > product.price %}
-              <br />
-              <span class="original-price text-muted text-decoration-line-through fs-5">{{ "{:,}".format(product.original_price | int) }} đ</span>
-              {% set discount = ((product.original_price - product.price) / product.original_price * 100) | int %}
-              <span class="badge bg-warning text-dark ms-2">-{{ discount }}%</span>
-              {% endif %}
-            </div>
-
-            <div class="product-meta">
-              <span class="product-meta-item">
-                <i class="fas fa-box"></i>
-                {% if product.stock_quantity and product.stock_quantity > 0 %}
-                Còn {{ product.stock_quantity }} sản phẩm
-                {% else %}
-                Hết hàng
-                {% endif %}
-              </span>
-              {% if product.category %}
-              <span class="product-meta-item"><i class="fas fa-layer-group"></i> {{ product.category.name }}</span>
-              {% endif %}
-              {% if product.supplier %}
-              <span class="product-meta-item"><i class="fas fa-truck"></i> {{ product.supplier.name }}</span>
-              {% endif %}
-            </div>
-
-            <!-- VARIANT SELECTOR -->
-            {% if variants and variants | length > 0 %}
-            <div class="mb-4 p-3 border rounded" style="background:#fafafa;">
-              <h6 class="mb-3"><i class="fas fa-layer-group me-1"></i> Phân loại sản phẩm</h6>
-
-              {% if variants | selectattr('color') | list | length > 0 %}
-              <div class="mb-3">
-                <div class="mb-2 fw-semibold" style="font-size:0.85rem;color:#374151;">
-                  Màu sắc:
-                  <span id="selected-color" class="text-primary ms-1"></span>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                  {% for v in variants %}
-                  {% if v.color %}
-                  <div class="form-check form-check-inline">
-                    <input class="btn-check" type="radio" name="color" id="color-{{ v.variant_id }}"
-                           value="{{ v.variant_id }}" data-color="{{ v.color }}"
-                           data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}"
-                           data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}"
-                           autocomplete="off"
-                           onchange="selectVariant(this)"/>
-                    <label class="btn btn-outline-secondary" for="color-{{ v.variant_id }}"
-                           style="border-radius:20px;padding:5px 14px;font-size:0.8rem;">
-                      {% if v.color_hex %}
-                      <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{{ v.color_hex }};vertical-align:middle;margin-right:4px;border:1px solid #ccc;"></span>
-                      {% endif %}
-                      {{ v.color }}
-                      {% if v.price %} - {{ "{:,.0f}".format(v.price) }}đ{% endif %}
-                    </label>
-                  </div>
-                  {% endif %}
-                  {% endfor %}
-                </div>
-              </div>
-              {% endif %}
-
-              {% if variants | selectattr('storage') | list | length > 0 %}
-              <div class="mb-3">
-                <div class="mb-2 fw-semibold" style="font-size:0.85rem;color:#374151;">
-                  Dung lượng:
-                  <span id="selected-storage" class="text-primary ms-1"></span>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                  {% for v in variants %}
-                  {% if v.storage %}
-                  <div class="form-check form-check-inline">
-                    <input class="btn-check" type="radio" name="storage" id="storage-{{ v.variant_id }}"
-                           value="{{ v.variant_id }}" data-storage="{{ v.storage }}"
-                           data-price="{% if v.price %}{{ '{:,.0f}'.format(v.price) }}{% endif %}"
-                           autocomplete="off"
-                           onchange="selectVariant(this)"/>
-                    <label class="btn btn-outline-secondary" for="storage-{{ v.variant_id }}"
-                           style="border-radius:20px;padding:5px 14px;font-size:0.8rem;">
-                      {{ v.storage }}
-                    </label>
-                  </div>
-                  {% endif %}
-                  {% endfor %}
-                </div>
-              </div>
-              {% endif %}
-            </div>
-            {% endif %}
-
-            <div class="mb-4">
-              <h5>Mô tả sản phẩm</h5>
-              <p>{{ product.description or 'Chưa có mô tả cho sản phẩm này.' }}</p>
-            </div>
-
-            {% if product.specifications %}
-            <div class="mb-4">
-              <h5>Thông số kỹ thuật</h5>
-              <div class="spec-box">{{ product.specifications }}</div>
-            </div>
-            {% endif %}
-
-            <!-- Add to Cart -->
-            <form action="/Products/{{ product.product_id | default(1) }}/add-to-cart" method="POST" class="mb-4" id="add-to-cart-form">
-              <input type="hidden" name="variant_id" id="selected-variant-id" value=""/>
-              <div class="row g-3 align-items-center mb-3">
-                <div class="col-auto">
-                  <label class="col-form-label">Số lượng:</label>
-                </div>
-                <div class="col-auto">
-                  <div class="input-group" style="width: 130px">
-                    <button type="button" class="btn btn-outline-secondary" onclick="decreaseQty()">-</button>
-                    <input type="number" name="quantity" id="quantity" class="form-control text-center" value="1" min="1" />
-                    <button type="button" class="btn btn-outline-secondary" onclick="increaseQty()">+</button>
-                  </div>
+              <div class="quantity-row">
+                <span class="quantity-label">Số lượng</span>
+                <div class="qty-control">
+                  <button type="button" class="qty-btn" onclick="decreaseQty()"><i class="fas fa-minus"></i></button>
+                  <input type="number" name="quantity" id="quantity" class="qty-input" value="1" min="1" />
+                  <button type="button" class="qty-btn" onclick="increaseQty()"><i class="fas fa-plus"></i></button>
                 </div>
               </div>
 
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-lg flex-grow-1" id="add-cart-btn">
+              <div class="action-btns">
+                <button type="submit" class="btn-add-cart" id="add-cart-btn">
                   <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                 </button>
-                <a href="/Chat/?q=Toi+muon+hoi+ve+{{ product.name | urlencode | default('san pham') }}" class="btn btn-outline-primary btn-lg">
+                <a href="/Chat/?q=Tôi+muốn+hỏi+về+{{ product.name | urlencode | default('sản phẩm') }}" class="btn-ai">
                   <i class="fas fa-robot"></i> Hỏi AI
                 </a>
               </div>
             </form>
+          </div>
 
-            <!-- AI Suggestion -->
-            <div class="card bg-light">
-              <div class="card-body">
-                <h6><i class="fas fa-robot text-primary"></i> Ban co cau hoi ve san pham nay?</h6>
-                <a href="/Chat/?q=So+sanh+san+pham" class="btn btn-sm btn-outline-primary">So sanh san pham</a>
-                <a href="/Chat/?q=Tu+van+mua+san+pham" class="btn btn-sm btn-outline-info">Tu van mua hang</a>
-              </div>
+          <!-- AI Suggestion -->
+          <div class="ai-suggest-card">
+            <div class="ai-suggest-title"><i class="fas fa-robot"></i> Bạn cần tư vấn thêm?</div>
+            <div class="ai-suggest-btns">
+              <a href="/Chat/?q=So+sánh+{{ product.name | urlencode | default('sản phẩm') }}+với+các+sản+phẩm+khác" class="ai-suggest-btn"><i class="fas fa-balance-scale"></i> So sánh sản phẩm</a>
+              <a href="/Chat/?q=Tư+vấn+mua+{{ product.name | urlencode | default('sản phẩm') }}" class="ai-suggest-btn"><i class="fas fa-comments"></i> Tư vấn mua hàng</a>
+              <a href="/Chat/?q={{ product.name | urlencode | default('sản phẩm') }}+có+tốt+không" class="ai-suggest-btn"><i class="fas fa-star"></i> Đánh giá chi tiết</a>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Related Products -->
-        {% if related_products and related_products | length > 0 %}
-        <div class="row mt-5">
-          <div class="col-12">
-            <h3><i class="fas fa-th-large"></i> Sản phẩm liên quan</h3>
-            <div class="row">
-              {% for rp in related_products %}
-              <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card h-100 product-card">
-                  <a href="/Products/{{ rp.product_id }}">
-                    {% set related_image = rp.image_url or (rp.product_images[0].image_url if rp.product_images else none) %}
-                    <img src="{{ related_image if related_image else '/static/images/no-image.png' }}" class="card-img-top product-image" alt="{{ rp.name }}" onerror="this.src='/static/images/no-image.png'" />
-                  </a>
-                  <div class="card-body text-center">
-                    <h6><a href="/Products/{{ rp.product_id }}" class="text-decoration-none text-dark">{{ rp.name }}</a></h6>
-                    <p class="text-danger fw-bold">{{ "{:,}".format(rp.price | int) }} đ</p>
-                    <button class="btn btn-sm btn-primary" onclick="addToCart({{ rp.product_id }})"><i class="fas fa-cart-plus"></i></button>
-                  </div>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
+      <!-- DESCRIPTION & SPECS -->
+      {% if product.description or product.specifications %}
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
+        {% if product.description %}
+        <div class="info-block">
+          <div class="section-title"><i class="fas fa-align-left"></i> Mô tả sản phẩm</div>
+          <div class="product-description">{{ product.description }}</div>
+        </div>
+        {% endif %}
+
+        {% if specifications_dict %}
+        <div class="info-block">
+          <div class="section-title"><i class="fas fa-microchip"></i> Thông số kỹ thuật</div>
+          <table class="specs-table">
+            {% for key, value in specifications_dict.items() %}
+            <tr>
+              <td>{{ key }}</td>
+              <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% else %}
+        <div class="info-block">
+          <div class="section-title"><i class="fas fa-microchip"></i> Thông số kỹ thuật</div>
+          <div class="empty-specifications">
+            <i class="fas fa-info-circle"></i>
+            <span>Chưa có thông số kỹ thuật</span>
           </div>
         </div>
         {% endif %}
       </div>
+      {% endif %}
+
+      <!-- RELATED PRODUCTS -->
+      {% if related_products and related_products | length > 0 %}
+      <div class="related-section">
+        <div class="related-header">
+          <div class="related-title"><i class="fas fa-th-large"></i> Sản phẩm liên quan</div>
+        </div>
+        <div class="related-grid">
+          {% for rp in related_products %}
+          {% set rp_img = rp.first_image_url %}
+          <a href="/Products/{{ rp.product_id }}" class="product-card" style="display:block;background:white;border-radius:12px;border:1px solid #ebedf0;overflow:hidden;transition:all 0.2s;text-decoration:none;">
+            <div style="background:#fafafa;padding:16px;text-align:center;min-height:160px;display:flex;align-items:center;justify-content:center;">
+              <img src="{{ rp_img if rp_img else '/static/images/no-image.png' }}" alt="{{ rp.name }}" style="max-height:120px;max-width:100%;object-fit:contain;" onerror="this.src='/static/images/no-image.png'" />
+            </div>
+            <div style="padding:12px;">
+              <div style="font-size:0.85rem;font-weight:600;color:#1a1a2e;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">{{ rp.name }}</div>
+              <div style="font-size:0.95rem;font-weight:800;color:#dc2626;">{{ "{:,.0f}".format(rp.price | default(0) | float) }} đ</div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </main>
 
-    <!-- Bootstrap JS -->
+    <!-- FOOTER -->
+    <footer class="main-footer">
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div>
+            <a href="/" class="footer-brand">
+              <div class="footer-brand-icon"><i class="fas fa-robot"></i></div>
+              <div>
+                <div class="footer-brand-name">Tech Store AI</div>
+                <div class="footer-brand-sub">Công nghệ thông minh</div>
+              </div>
+            </a>
+            <p class="footer-desc">Cửa hàng công nghệ hàng đầu Việt Nam với trợ lý AI thông minh, giúp bạn tìm kiếm và chọn lựa sản phẩm công nghệ phù hợp nhất.</p>
+            <div class="footer-socials">
+              <a href="#" class="footer-social"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-youtube"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="footer-social"><i class="fab fa-tiktok"></i></a>
+            </div>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Mua hàng</h4>
+            <ul class="footer-links">
+              <li><a href="/Products/"><i class="fas fa-chevron-right"></i> Sản phẩm</a></li>
+              <li><a href="/Products/?sort=new"><i class="fas fa-chevron-right"></i> Sản phẩm mới</a></li>
+              <li><a href="/Products/?sort=hot"><i class="fas fa-chevron-right"></i> Sản phẩm hot</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Hỗ trợ</h4>
+            <ul class="footer-links">
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Trung tâm trợ giúp</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách đổi trả</a></li>
+              <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách bảo hành</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="footer-col-title">Liên hệ</h4>
+            <div class="footer-contact-item"><i class="fas fa-map-marker-alt"></i><span>Tầng 5, Tòa nhà ABC Tower, 123 Nguyễn Huệ, Q.1, TP.HCM</span></div>
+            <div class="footer-contact-item"><i class="fas fa-phone"></i><span>1800.6601</span></div>
+            <div class="footer-contact-item"><i class="fas fa-envelope"></i><span>hotro@techstore.com</span></div>
+            <div class="footer-contact-item"><i class="fas fa-clock"></i><span>Thu 2 - CN: 8:00 - 22:00</span></div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copyright">&copy; 2026 Tech Store AI. Tất cả quyền được bảo lưu.</div>
+          <div class="footer-payments">
+            <div class="footer-payment">VISA</div>
+            <div class="footer-payment">MC</div>
+            <div class="footer-payment">JCB</div>
+            <div class="footer-payment">COD</div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="/static/js/main.js?v=3"></script>
+    <script src="/static/js/main.js?v=8"></script>
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
     <script>
+      // Gallery
+      function changeImage(thumb, url) {
+        document.getElementById('main-image').src = url;
+        document.querySelectorAll('.gallery-thumb').forEach(function(t) { t.classList.remove('active'); });
+        thumb.classList.add('active');
+      }
+
+      // Quantity
       function decreaseQty() {
-        const qty = document.getElementById("quantity");
+        var qty = document.getElementById('quantity');
         if (parseInt(qty.value) > 1) qty.value = parseInt(qty.value) - 1;
       }
       function increaseQty() {
-        const qty = document.getElementById("quantity");
+        var qty = document.getElementById('quantity');
         qty.value = parseInt(qty.value) + 1;
       }
 
-      // ─── Variant Selection ───
-      let selectedVariantId = '';
-
-      function selectVariant(el) {
-        selectedVariantId = el.value;
-        document.getElementById('selected-variant-id').value = selectedVariantId;
-
-        // Update displayed price
-        const priceAttr = el.dataset.price;
-        if (priceAttr) {
-          document.querySelector('.current-price').textContent = priceAttr + ' đ';
-        }
-
-        // Update main image
-        const imgUrl = el.dataset.img;
-        if (imgUrl) {
-          document.getElementById('main-image').src = imgUrl;
-        }
-      }
-
-      // Auto-select first variant on load
-      document.querySelectorAll('input[name="color"], input[name="storage"]').forEach(el => {
+      // Variant selection
+      var selectedVariantId = '';
+      document.querySelectorAll('input[name="color"], input[name="storage"]').forEach(function(el) {
         if (!selectedVariantId) {
           el.checked = true;
           selectVariant(el);
         }
       });
+
+      function selectVariant(el) {
+        selectedVariantId = el.value;
+        document.getElementById('selected-variant-id').value = selectedVariantId;
+
+        var priceAttr = el.dataset.price;
+        if (priceAttr) {
+          document.getElementById('price-display').textContent = priceAttr + ' đ';
+        }
+
+        var imgUrl = el.dataset.img;
+        if (imgUrl) {
+          var mainImg = document.getElementById('main-image');
+          mainImg.src = imgUrl;
+          document.querySelectorAll('.gallery-thumb').forEach(function(t) { t.classList.remove('active'); });
+        }
+
+        // Update selected chip styling
+        var name = el.name;
+        document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
+          var chip = r.closest('.variant-chip');
+          if (chip) chip.classList.remove('selected');
+        });
+        var chip = el.closest('.variant-chip');
+        if (chip) chip.classList.add('selected');
+
+        // Update label
+        if (name === 'color') {
+          document.getElementById('selected-color-label').textContent = el.dataset.color || '';
+        } else if (name === 'storage') {
+          document.getElementById('selected-storage-label').textContent = el.dataset.storage || '';
+        }
+      }
+
+      // User dropdown
+      (function() {
+        var menu = document.querySelector('.header-user-menu');
+        var dropdown = document.querySelector('.header-user-dropdown');
+        if (!menu || !dropdown) return;
+        var isOpen = false;
+        var action = menu.querySelector('.header-user-action');
+        if (action) {
+          action.addEventListener('click', function(e) {
+            e.preventDefault();
+            isOpen = !isOpen;
+            dropdown.style.display = isOpen ? 'block' : 'none';
+          });
+        }
+        document.addEventListener('click', function(e) {
+          if (!menu.contains(e.target)) {
+            isOpen = false;
+            dropdown.style.display = 'none';
+          }
+        });
+      })();
     </script>
   </body>
 </html>

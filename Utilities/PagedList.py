@@ -24,6 +24,11 @@ class PagedList(List[T], Generic[T]):
     def has_next(self) -> bool:
         return self.current_page < self.total_pages
 
+    @property
+    def items(self) -> List[T]:
+        """Return self for template compatibility (allows orders.items and direct iteration)"""
+        return self
+
     @staticmethod
     def create(query, page_number: int, page_size: int) -> "PagedList":
         total_count = query.count()

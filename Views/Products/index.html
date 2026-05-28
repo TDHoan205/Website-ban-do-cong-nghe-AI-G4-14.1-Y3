@@ -21,7 +21,7 @@
       rel="stylesheet"
     />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2" />
+    <link rel="stylesheet" href="/static/css/style.css?v=7" />
 
     <style>
       * {
@@ -623,64 +623,35 @@
       /* ===== PRODUCTS AREA ===== */
       .products-area {
       }
-      .products-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-      }
-      .products-result-count {
+      .products-result-bar {
         font-size: 0.88rem;
         color: #6b7280;
+        margin-bottom: 16px;
       }
-      .products-result-count span {
+      .products-result-bar span {
         color: #ff6b00;
         font-weight: 700;
       }
-      .products-sort {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .sort-select {
-        padding: 8px 12px;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-family: "Be Vietnam Pro", sans-serif;
-        color: #374151;
-        background: white;
-        outline: none;
-        cursor: pointer;
-        appearance: auto;
-      }
-      .sort-label {
-        font-size: 0.85rem;
-        color: #6b7280;
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
-      /* Products grid */
+      /* Products grid - 4 columns on desktop */
       .products-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        align-items: stretch;
       }
       .product-card {
         background: white;
-        border: 1px solid #f0f0f0;
-        border-radius: 12px;
+        border: 1px solid #ececec;
+        border-radius: 16px;
         overflow: hidden;
         transition: all 0.25s;
         display: flex;
         flex-direction: column;
+        height: 100%;
       }
       .product-card:hover {
         border-color: #0d6efd;
-        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.12);
+        box-shadow: 0 8px 30px rgba(13, 110, 253, 0.15);
         transform: translateY(-4px);
       }
       .product-img-wrap {
@@ -689,11 +660,14 @@
         padding: 20px;
         text-align: center;
         min-height: 180px;
+        height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
         color: inherit;
+        overflow: hidden;
+        flex-shrink: 0;
       }
       .product-img-wrap img {
         max-height: 140px;
@@ -708,6 +682,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        z-index: 1;
       }
       .badge-new {
         background: #16a34a;
@@ -737,12 +712,14 @@
         font-weight: 700;
         padding: 3px 8px;
         border-radius: 4px;
+        z-index: 1;
       }
       .product-info {
-        padding: 14px;
         flex: 1;
         display: flex;
         flex-direction: column;
+        padding: 14px 14px 0;
+        min-height: 0;
       }
       .product-name {
         font-size: 0.88rem;
@@ -774,7 +751,11 @@
         color: #9ca3af;
       }
       .product-price-wrap {
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
       }
       .product-price {
         font-size: 1.05rem;
@@ -785,7 +766,6 @@
         font-size: 0.8rem;
         color: #9ca3af;
         text-decoration: line-through;
-        margin-left: 6px;
       }
       .product-add-btn {
         margin-top: auto;
@@ -796,7 +776,7 @@
         background: #0d6efd;
         color: white;
         border: none;
-        padding: 10px;
+        padding: 10px 12px;
         border-radius: 8px;
         font-size: 0.82rem;
         font-weight: 600;
@@ -804,10 +784,17 @@
         cursor: pointer;
         transition: all 0.2s;
         text-decoration: none;
+        width: 100%;
+        box-sizing: border-box;
+        letter-spacing: 0.2px;
       }
       .product-add-btn:hover {
         background: #0a58ca;
         color: white;
+        transform: translateY(-1px);
+      }
+      .product-add-btn:active {
+        transform: translateY(0) scale(0.98);
       }
       .product-empty {
         grid-column: 1 / -1;
@@ -1006,11 +993,16 @@
       }
 
       /* ===== RESPONSIVE ===== */
-      @media (max-width: 1024px) {
+      @media (max-width: 1200px) {
         .products-grid {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
         }
         .footer-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 1024px) {
+        .products-grid {
           grid-template-columns: repeat(2, 1fr);
         }
       }
@@ -1044,8 +1036,8 @@
       }
       @media (max-width: 480px) {
         .products-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
+          grid-template-columns: 1fr;
+          gap: 14px;
         }
         .page-title-inner {
           flex-direction: column;
@@ -1209,20 +1201,20 @@
         <div class="products-layout">
           <!-- ===== SIDEBAR FILTERS ===== -->
           <aside class="filter-sidebar">
-            <form method="GET" action="/Products/" id="filterForm">
-              <div class="filter-header">
-                <div class="filter-title">
-                  <i class="fas fa-filter"></i> Bộ lọc
-                </div>
-                <button
-                  type="button"
-                  class="filter-clear"
-                  onclick="clearFilters()"
-                >
-                  Xóa lọc
-                </button>
+            <div class="filter-header">
+              <div class="filter-title">
+                <i class="fas fa-filter"></i> Bộ lọc
               </div>
+              <button
+                type="button"
+                class="filter-clear"
+                onclick="clearFilters()"
+              >
+                Xóa lọc
+              </button>
+            </div>
 
+            <form method="GET" action="/Products/" id="filterForm">
               <!-- Search by name -->
               <div class="filter-section">
                 <div class="filter-section-title">Tìm kiếm</div>
@@ -1231,8 +1223,9 @@
                   <input
                     type="text"
                     name="search"
+                    id="sidebarSearch"
                     class="filter-search-input"
-                    placeholder="Ten san pham..."
+                    placeholder="Tìm kiếm sản phẩm..."
                     value="{{ search | default('') }}"
                   />
                 </div>
@@ -1244,13 +1237,13 @@
                 <select
                   name="category_id"
                   class="filter-select"
-                  onchange="document.getElementById('filterForm').submit()"
+                  id="categorySelect"
                 >
                   <option value="">Tất cả danh mục</option>
                   {% for cat in categories %}
                   <option
                     value="{{ cat.category_id }}"
-                    {% if category_id|string == cat.category_id|string %}selected{% endif %}
+                    {% if category_id | int == cat.category_id %}selected{% endif %}
                   >
                     {{ cat.name }}
                   </option>
@@ -1258,145 +1251,10 @@
                 </select>
               </div>
 
-              <!-- Price range -->
-              <div class="filter-section">
-                <div class="filter-section-title">Khoang gia</div>
-                <div class="price-range">
-                  <input
-                    type="number"
-                    name="min_price"
-                    class="price-input"
-                    placeholder="Tu"
-                    value="{{ min_price | default('') }}"
-                  />
-                  <span class="price-sep">-</span>
-                  <input
-                    type="number"
-                    name="max_price"
-                    class="price-input"
-                    placeholder="Den"
-                    value="{{ max_price | default('') }}"
-                  />
-                </div>
-              </div>
-
               <!-- Sort -->
               <div class="filter-section">
-                <div class="filter-section-title">Sap xep</div>
-                <select name="sort_by" class="filter-select">
-                  <option
-                    value="name"
-                    {% if sort_by == "name" %}selected{% endif %}
-                  >
-                    Ten A-Z
-                  </option>
-                  <option
-                    value="name_desc"
-                    {% if sort_by == "name_desc" %}selected{% endif %}
-                  >
-                    Ten Z-A
-                  </option>
-                  <option
-                    value="price"
-                    {% if sort_by == "price" %}selected{% endif %}
-                  >
-                    Gia thap-cao
-                  </option>
-                  <option
-                    value="price_desc"
-                    {% if sort_by == "price_desc" %}selected{% endif %}
-                  >
-                    Gia cao-thap
-                  </option>
-                  <option
-                    value="created_at"
-                    {% if sort_by == "created_at" %}selected{% endif %}
-                  >
-                    Mới nhất
-                  </option>
-                  <option
-                    value="rating"
-                    {% if sort_by == "rating" %}selected{% endif %}
-                  >
-                    Danh gia cao nhat
-                  </option>
-                </select>
-              </div>
-
-              <!-- Storage -->
-              <div class="filter-section">
-                <div class="filter-section-title">Bo nho</div>
-                <div class="filter-checkboxes">
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" name="storage" value="64GB" />
-                    <span class="filter-checkbox-label">64GB</span>
-                    <span class="filter-checkbox-count">(12)</span>
-                  </label>
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" name="storage" value="128GB" />
-                    <span class="filter-checkbox-label">128GB</span>
-                    <span class="filter-checkbox-count">(18)</span>
-                  </label>
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" name="storage" value="256GB" />
-                    <span class="filter-checkbox-label">256GB</span>
-                    <span class="filter-checkbox-count">(15)</span>
-                  </label>
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" name="storage" value="512GB" />
-                    <span class="filter-checkbox-label">512GB</span>
-                    <span class="filter-checkbox-count">(8)</span>
-                  </label>
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" name="storage" value="1TB" />
-                    <span class="filter-checkbox-label">1TB</span>
-                    <span class="filter-checkbox-count">(5)</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Quick discovery -->
-              <div class="filter-section">
-                <div class="filter-section-title">Khám phá nhanh</div>
-                <div class="quick-categories">
-                  <a href="/Products/?sort=new" class="quick-cat-item">
-                    <i class="fas fa-bolt"></i> Sản phẩm mới
-                  </a>
-                  <a href="/Products/?sort=hot" class="quick-cat-item">
-                    <i class="fas fa-fire"></i> Sản phẩm hot
-                  </a>
-                  <a href="/Products/?discount=1" class="quick-cat-item">
-                    <i class="fas fa-tag"></i> Giam gia
-                  </a>
-                  <a href="/Products/?category_id=1" class="quick-cat-item">
-                    <i class="fas fa-mobile-alt"></i> Điện thoại
-                  </a>
-                  <a href="/Products/?category_id=2" class="quick-cat-item">
-                    <i class="fas fa-laptop"></i> Laptop
-                  </a>
-                </div>
-              </div>
-
-              <div class="filter-section">
-                <button type="submit" class="filter-btn">
-                  <i class="fas fa-filter"></i> Ap dung bo loc
-                </button>
-              </div>
-            </form>
-          </aside>
-
-          <!-- ===== PRODUCTS GRID ===== -->
-          <div class="products-area">
-            <!-- Toolbar -->
-            <div class="products-toolbar">
-              <div class="products-result-count">
-                Hiển thị
-                <span>{{ products | length if products else 0 }}</span> / {{
-                total_products | default(0) }} sản phẩm
-              </div>
-              <div class="products-sort">
-                <span class="sort-label">Sắp xếp:</span>
-                <select class="sort-select" onchange="applySort(this.value)">
+                <div class="filter-section-title">Sắp xếp</div>
+                <select name="sort_by" class="filter-select" id="sortSelect">
                   <option
                     value="name"
                     {% if sort_by == "name" %}selected{% endif %}
@@ -1413,13 +1271,13 @@
                     value="price"
                     {% if sort_by == "price" %}selected{% endif %}
                   >
-                    Giá thấp-cao
+                    Giá thấp đến cao
                   </option>
                   <option
                     value="price_desc"
                     {% if sort_by == "price_desc" %}selected{% endif %}
                   >
-                    Giá cao-thấp
+                    Giá cao đến thấp
                   </option>
                   <option
                     value="created_at"
@@ -1431,12 +1289,116 @@
                     value="rating"
                     {% if sort_by == "rating" %}selected{% endif %}
                   >
-                    Đánh giá
+                    Đánh giá cao nhất
                   </option>
                 </select>
               </div>
-            </div>
 
+              <!-- Storage -->
+              <div class="filter-section">
+                <div class="filter-section-title">Bộ nhớ</div>
+                <div class="filter-checkboxes" id="storageCheckboxes">
+                  {% if storage_counts %}
+                    {% for storage, count in storage_counts.items() %}
+                    <label class="filter-checkbox-item">
+                      <input
+                        type="checkbox"
+                        name="storage"
+                        value="{{ storage }}"
+                        {% if selected_storages and storage in selected_storages %}checked{% endif %}
+                      />
+                      <span class="filter-checkbox-label">{{ storage }}</span>
+                      <span class="filter-checkbox-count">({{ count }})</span>
+                    </label>
+                    {% endfor %}
+                  {% else %}
+                    <label class="filter-checkbox-item">
+                      <input type="checkbox" name="storage" value="64GB" />
+                      <span class="filter-checkbox-label">64GB</span>
+                      <span class="filter-checkbox-count">(12)</span>
+                    </label>
+                    <label class="filter-checkbox-item">
+                      <input type="checkbox" name="storage" value="128GB" />
+                      <span class="filter-checkbox-label">128GB</span>
+                      <span class="filter-checkbox-count">(18)</span>
+                    </label>
+                    <label class="filter-checkbox-item">
+                      <input type="checkbox" name="storage" value="256GB" />
+                      <span class="filter-checkbox-label">256GB</span>
+                      <span class="filter-checkbox-count">(15)</span>
+                    </label>
+                    <label class="filter-checkbox-item">
+                      <input type="checkbox" name="storage" value="512GB" />
+                      <span class="filter-checkbox-label">512GB</span>
+                      <span class="filter-checkbox-count">(8)</span>
+                    </label>
+                    <label class="filter-checkbox-item">
+                      <input type="checkbox" name="storage" value="1TB" />
+                      <span class="filter-checkbox-label">1TB</span>
+                      <span class="filter-checkbox-count">(5)</span>
+                    </label>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Quick discovery -->
+              <div class="filter-section">
+                <div class="filter-section-title">Khám phá nhanh</div>
+                <div class="quick-categories">
+                  <a href="/Products/?sort=new" class="quick-cat-item">
+                    <i class="fas fa-bolt"></i> Sản phẩm mới
+                  </a>
+                  <a href="/Products/?sort=hot" class="quick-cat-item">
+                    <i class="fas fa-fire"></i> Sản phẩm hot
+                  </a>
+                  <a href="/Products/?discount=1" class="quick-cat-item">
+                    <i class="fas fa-tag"></i> Giảm giá
+                  </a>
+                  <a href="/Products/?category_id=1" class="quick-cat-item">
+                    <i class="fas fa-mobile-alt"></i> Điện thoại
+                  </a>
+                  <a href="/Products/?category_id=2" class="quick-cat-item">
+                    <i class="fas fa-laptop"></i> Laptop
+                  </a>
+                </div>
+              </div>
+            </form>
+
+            <!-- Price range form - separate, only applies on button click -->
+            <form method="GET" action="/Products/" id="priceFilterForm">
+              <div class="filter-section">
+                <div class="filter-section-title">Khoảng giá</div>
+                <div class="price-range">
+                  <input
+                    type="number"
+                    name="min_price"
+                    class="price-input"
+                    placeholder="Từ"
+                    value="{{ min_price | default('') }}"
+                  />
+                  <span class="price-sep">-</span>
+                  <input
+                    type="number"
+                    name="max_price"
+                    class="price-input"
+                    placeholder="Đến"
+                    value="{{ max_price | default('') }}"
+                  />
+                </div>
+                <div style="margin-top: 12px;">
+                  <button type="submit" class="filter-btn">
+                    <i class="fas fa-check"></i> Áp dụng
+                  </button>
+                </div>
+              </div>
+            </form>
+          </aside>
+
+          <!-- ===== PRODUCTS GRID ===== -->
+          <div class="products-area">
+            <div class="products-result-bar">
+              Hiển thị <span>{{ products | length if products else 0 }}</span> / {{ total_products | default(0) }} sản phẩm
+            </div>
             <!-- Grid -->
             <div class="products-grid">
               {% if products %} {% for product in products %}
@@ -1446,7 +1408,7 @@
                   class="product-img-wrap"
                 >
                   {% if product.is_new %}
-                  <span class="product-badge badge-new">Moi</span>
+                  <span class="product-badge badge-new">Mới</span>
                   {% elif product.is_hot %}
                   <span class="product-badge badge-hot">Hot</span>
                   {% endif %} {% if product.discount_percent > 0 %}
@@ -1455,7 +1417,7 @@
                   >
                   {% endif %}
                   <img
-                    src="{{ product.image_url if product.image_url else '/static/images/no-image.png' }}"
+                    src="{{ product.first_image_url }}"
                     alt="{{ product.name }}"
                     onerror="this.src = '/static/images/no-image.png'"
                   />
@@ -1476,7 +1438,7 @@
                       <i class="fas fa-star-half-alt"></i>
                     </span>
                     <span class="product-reviews"
-                      >{{ product.rating | default(4.5) }}</span
+                      >{{ "%.1f"|format(product.rating | default(4.5) | float) }}</span
                     >
                   </div>
                   <div class="product-price-wrap">
@@ -1664,17 +1626,114 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/main.js?v=3"></script>
+    <script src="/static/js/main.js?v=7"></script>
     <script>
-      function applySort(value) {
-        var url = new URL(window.location.href);
-        url.searchParams.set("sort_by", value);
-        url.searchParams.delete("page");
-        window.location.href = url.toString();
+      // ─── Filter Helpers ───
+
+      // Build a clean URL from current state
+      function buildFilterUrl(extraParams) {
+        var url = new URL(window.location.origin + '/Products/');
+
+        var SKIP_EMPTY = ['category_id', 'search', 'min_price', 'max_price'];
+        new URL(window.location.href).searchParams.forEach(function(value, key) {
+          if (SKIP_EMPTY.includes(key) && (value === '' || value === 'None' || value === 'null')) return;
+          if (key === 'sort' || key === 'page') return;
+          url.searchParams.append(key, value);
+        });
+
+        if (extraParams) {
+          for (var key in extraParams) {
+            var val = extraParams[key];
+            if (val === null || val === undefined || val === '' || val === 'None' || val === 'null') continue;
+            url.searchParams.set(key, val);
+          }
+        }
+        url.searchParams.delete('page');
+        return url.toString();
       }
 
+      // Debounce utility
+      function debounce(fn, delay) {
+        var timer = null;
+        return function() {
+          var args = arguments;
+          var ctx = this;
+          clearTimeout(timer);
+          timer = setTimeout(function() { fn.apply(ctx, args); }, delay);
+        };
+      }
+
+      // ─── Search (debounced, never sends empty) ───
+      var doSearch = debounce(function() {
+        var input = document.getElementById('sidebarSearch');
+        if (!input) return;
+        var val = input.value.trim();
+        if (!val) {
+          // Remove search param if empty
+          var url = new URL(window.location.href);
+          url.searchParams.delete('search');
+          url.searchParams.delete('page');
+          window.location.href = url.toString();
+          return;
+        }
+        window.location.href = buildFilterUrl({ search: val });
+      }, 500);
+
+      document.getElementById('sidebarSearch').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          doSearch();
+        }
+      });
+
+      // ─── Category (onchange, never sends empty string) ───
+      document.getElementById('categorySelect').addEventListener('change', function() {
+        var val = this.value;
+        if (!val || val === 'None' || val === '') {
+          var url = new URL(window.location.href);
+          url.searchParams.delete('category_id');
+          url.searchParams.delete('page');
+          window.location.href = url.toString();
+        } else {
+          window.location.href = buildFilterUrl({ category_id: val });
+        }
+      });
+
+      // ─── Sort (onchange, reset page) ───
+      document.getElementById('sortSelect').addEventListener('change', function() {
+        window.location.href = buildFilterUrl({ sort_by: this.value });
+      });
+
+      // ─── Storage checkboxes (immediate, no loop) ───
+      document.querySelectorAll('input[name="storage"]').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+          var checked = [];
+          document.querySelectorAll('input[name="storage"]:checked').forEach(function(cb) {
+            checked.push(cb.value);
+          });
+
+          var url = new URL(window.location.href);
+          url.searchParams.delete('storage');
+          url.searchParams.delete('page');
+          checked.forEach(function(s) { url.searchParams.append('storage', s); });
+          window.location.href = url.toString();
+        });
+      });
+
+      // ─── Price filter form (separate, button submit) ───
+      document.getElementById('priceFilterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var minInput = this.querySelector('[name="min_price"]');
+        var maxInput = this.querySelector('[name="max_price"]');
+        var params = {};
+        if (minInput && minInput.value.trim()) params.min_price = minInput.value.trim();
+        if (maxInput && maxInput.value.trim()) params.max_price = maxInput.value.trim();
+        window.location.href = buildFilterUrl(params);
+      });
+
+      // ─── Clear filters ───
       function clearFilters() {
-        window.location.href = "/Products/";
+        window.location.href = '/Products/';
       }
     </script>
     <script>
@@ -1700,5 +1759,8 @@
         });
       })();
     </script>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>
