@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -82,8 +82,10 @@
           <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
           <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
           <a href="/Admin/Categories"><i class="fas fa-tags me-1"></i> Danh mục</a>
+          <a href="/Admin/Suppliers"><i class="fas fa-truck me-1"></i> NCC</a>
           <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
           <a href="/Admin/Orders" class="active"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
+          <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
         </nav>
       </div>
       <div class="topbar-right">
@@ -107,15 +109,20 @@
           <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
           <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
           <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
+          <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
           <a href="/Admin/Orders" class="sidebar-link active"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
           <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
+          <a href="/Admin/FAQs" class="sidebar-link"><i class="fas fa-question-circle"></i> FAQ</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Phân tích</div>
+          <a href="/Admin/Statistics" class="sidebar-link"><i class="fas fa-chart-line"></i> Thống kê</a>
         </div>
         <div class="sidebar-section">
           <div class="sidebar-section-title">Hệ thống</div>
-          <a href="/Auth/Profile" class="sidebar-link"><i class="fas fa-user-circle"></i> Tài khoản của tôi</a>
-          <a href="/Chat/" target="_blank" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
-    <a href="/Admin/Chats" class="sidebar-link"><i class="fas fa-comments"></i> Lịch sử Chat</a>
-    <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
+          <a href="/Admin/Chatbot" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
+          <a href="/Admin/Chats" class="sidebar-link"><i class="fas fa-comments"></i> Lịch sử Chat</a>
+          <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
         </div>
       </aside>
 
@@ -219,9 +226,9 @@
             <div class="page-card-title" style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Can than</div>
           </div>
           <div style="padding: 16px 20px;">
-            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Xoa don hang se xoa vinh vien tat ca chi tiet don hang. Han dong nay không thể hoàn tác.</p>
+            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Thao tac nay se chuyen don hang sang trang thai Cancelled va hoan kho neu can. He thong khong ho tro xoa cung lich su giao dich.</p>
             <button class="btn btn-danger" onclick="deleteOrder({{ order.order_id }})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:7px 16px;border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;">
-              <i class="fas fa-trash-alt"></i> Xoa don hang nay
+              <i class="fas fa-ban"></i> Chuyen sang Cancelled
             </button>
           </div>
         </div>
@@ -253,13 +260,12 @@
       }
 
       async function deleteOrder(orderId) {
-        if (!confirm('Ban co chan chan muon xoa don hang #' + orderId + '?')) return;
-        if (!confirm('THAO TAC NAY KHONG THE HOAN TAC!\nXac nhan xoa don hang #' + orderId + '?')) return;
+        if (!confirm('Ban co chan chan muon chuyen don hang #' + orderId + ' sang Cancelled?')) return;
         try {
           const res = await fetch('/Admin/API/Orders/' + orderId, { method: 'DELETE' });
           const data = await res.json();
           if (data.success) {
-            alert('Da xoa don hang!');
+            alert(data.message || 'Da cap nhat trang thai don hang!');
             window.location.href = '/Admin/Orders';
           } else {
             alert('Loi: ' + data.error);
@@ -269,5 +275,12 @@
         }
       }
     </script>
-  </body>
+    <script src="/static/js/admin-chat-widget.js"></script>
+  <script src="/static/js/admin-panel.js"></script>
+</body>
 </html>
+
+
+
+
+
