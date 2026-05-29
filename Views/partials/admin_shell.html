@@ -181,9 +181,15 @@
     background: rgba(21,42,69,0.96);
     box-shadow: 0 18px 50px rgba(0,0,0,0.38);
     backdrop-filter: blur(12px);
+    transform-origin: bottom right;
   }
   .admin-ai-launcher.open .admin-ai-menu {
     display: flex;
+    animation: admin-ai-menu-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes admin-ai-menu-in {
+    from { opacity: 0; transform: scale(0.85) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
   .admin-ai-choice {
     width: 172px;
@@ -226,10 +232,10 @@
   }
   .admin-ai-main {
     position: relative;
-    width: 72px;
-    height: 72px;
+    width: 48px;
+    height: 48px;
     border: none;
-    border-radius: 22px;
+    border-radius: 14px;
     background:
       radial-gradient(circle at 30% 20%, rgba(255,255,255,0.75), rgba(255,255,255,0) 24%),
       linear-gradient(135deg, #4DA6FF 0%, #8b5cf6 48%, #facc15 100%);
@@ -237,22 +243,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.7rem;
-    cursor: pointer;
-    box-shadow: 0 18px 46px rgba(77,166,255,0.34), 0 0 0 8px rgba(77,166,255,0.08);
+    font-size: 1.3rem;
+    cursor: grab;
+    box-shadow: 0 10px 28px rgba(77,166,255,0.25), 0 0 0 6px rgba(77,166,255,0.06);
     transition: transform 0.18s, box-shadow 0.18s;
   }
+  .admin-ai-main:active {
+    cursor: grabbing;
+  }
   .admin-ai-main:hover {
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 22px 56px rgba(77,166,255,0.44), 0 0 0 10px rgba(250,204,21,0.08);
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(77,166,255,0.35), 0 0 0 8px rgba(250,204,21,0.08);
   }
   .admin-ai-main-badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 26px;
-    height: 26px;
-    padding: 0 6px;
+    top: -5px;
+    right: -5px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
     border-radius: 999px;
     background: #fff7cc;
     color: #172554;
@@ -260,9 +269,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     font-weight: 900;
   }
+
   @media (max-width: 640px) {
     .admin-main {
       padding-bottom: 104px !important;
@@ -372,6 +382,9 @@
         {% if (nav_stats.total_chats | default(0)) >= 1 %}
         <span class="admin-shell-count">{{ nav_stats.total_chats | default(0) }}</span>
         {% endif %}
+      </a>
+      <a href="/Admin/LiveChat" class="sidebar-link{% if active_page == 'livechat' %} active{% endif %}">
+        <i class="fas fa-headset"></i> Live Chat
       </a>
     </div>
     <div class="admin-sidebar-website">
@@ -534,14 +547,57 @@
 <script>
 (function () {
   if (window.__adminAiLauncherInitialized) return;
-  window.__adminAiLauncherInitialized = true;
-
-  function initLauncher() {
+  window.__adminAiLauncherInitialized = true;  function initLauncher() {
     var launcher = document.getElementById("admin-ai-launcher");
     var main = document.getElementById("admin-ai-main");
     if (!launcher || !main) return;
 
+    var isDragging = false;
+    var hasDragged = false;
+    var offsetX = 0, offsetY = 0;
+
+    main.addEventListener("mousedown", function (e) {
+      isDragging = true;
+      hasDragged = false;
+      var rect = launcher.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      launcher.style.transition = 'none';
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+
+    function onMouseMove(e) {
+      if (!isDragging) return;
+      hasDragged = true;
+      var x = e.clientX - offsetX;
+      var y = e.clientY - offsetY;
+
+      var maxX = window.innerWidth - launcher.offsetWidth;
+      var maxY = window.innerHeight - launcher.offsetHeight;
+      x = Math.max(0, Math.min(x, maxX));
+      y = Math.max(0, Math.min(y, maxY));
+
+      launcher.style.right = 'auto';
+      launcher.style.top = 'auto';
+      launcher.style.left = x + 'px';
+      launcher.style.bottom = (window.innerHeight - (y + launcher.offsetHeight)) + 'px';
+    }
+
+    function onMouseUp() {
+      launcher.style.transition = '';
+      isDragging = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    }
+
     main.addEventListener("click", function (event) {
+      if (hasDragged) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       event.preventDefault();
       launcher.classList.toggle("open");
     });

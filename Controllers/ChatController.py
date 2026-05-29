@@ -1,5 +1,5 @@
 """
-Chat Controller - AI Chatbot
+Chat Controller - AI Chatbot + Live Chat
 """
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 from Data.database import get_db
 from Services.ChatService import ChatService
+from Services.LiveChatService import LiveChatService
 
 router = APIRouter(prefix="/Chat")
 
@@ -15,6 +16,12 @@ router = APIRouter(prefix="/Chat")
 class ChatMessageRequest(BaseModel):
     """JSON request body cho chat API"""
     session_uuid: Optional[str] = None
+    message: str
+
+
+class LiveChatMessageRequest(BaseModel):
+    """JSON request body cho live chat"""
+    conversation_id: int
     message: str
 
 
@@ -82,6 +89,20 @@ async def widget_send_message(
         response = chat_service.process_user_message(
             session_uuid, body.message, account_id
         )
+
+        # Kiểm tra nếu response là live chat request
+        if response.startswith("__LIVECHAT__"):
+            parts = response.split("__", 4)
+            conversation_id = int(parts[2])
+            display_message = parts[3] if len(parts) > 3 else "Đang kết nối nhân viên..."
+            return JSONResponse({
+                "success": True,
+                "response": display_message,
+                "session_uuid": session_uuid,
+                "live_chat": True,
+                "conversation_id": conversation_id,
+            })
+
         return JSONResponse({
             "success": True,
             "response": response,
@@ -135,9 +156,159 @@ async def get_history(session_uuid: str, db: Session = Depends(get_db)):
     })
 
 
+# =====================================================================
+# LIVE CHAT ENDPOINTS (Customer side)
+# =====================================================================
+
+@router.post("/LiveChat/Request")
+async def livechat_request(request: Request, db: Session = Depends(get_db)):
+    """Khách yêu cầu nói chuyện với nhân viên"""
+    live_chat_service = LiveChatService(db)
+    chat_service = ChatService(db)
+
+    account_id = None
+    customer_name = "Khách vãng lai"
+    current_user = getattr(request.state, "current_user", None)
+    if current_user:
+        account_id = current_user.account_id
+        customer_name = current_user.full_name or current_user.username
+
+    # Lấy session_id từ body nếu có
+    try:
+        body = await request.json()
+        session_uuid = body.get("session_uuid")
+    except Exception:
+        session_uuid = None
+
+    session_id = None
+    if session_uuid:
+        session = chat_service.get_session(session_uuid)
+        if session:
+            session_id = session.session_id
+
+    conversation = live_chat_service.request_live_chat(
+        session_id=session_id,
+        customer_account_id=account_id,
+        customer_name=customer_name,
+        subject="Hỗ trợ khách hàng",
+    )
+
+    return JSONResponse({
+        "success": True,
+        "conversation_id": conversation.conversation_id,
+        "status": conversation.status,
+    })
+
+
+@router.post("/LiveChat/Send")
+async def livechat_send(
+    request: Request,
+    body: LiveChatMessageRequest,
+    db: Session = Depends(get_db),
+):
+    """Khách gửi tin nhắn trong live chat"""
+    live_chat_service = LiveChatService(db)
+
+    account_id = None
+    current_user = getattr(request.state, "current_user", None)
+    if current_user:
+        account_id = current_user.account_id
+
+    message = live_chat_service.send_customer_message(
+        conversation_id=body.conversation_id,
+        content=body.message,
+        customer_account_id=account_id,
+    )
+
+    if not message:
+        return JSONResponse({
+            "success": False,
+            "error": "Cuộc hội thoại đã kết thúc hoặc không tồn tại",
+        }, status_code=400)
+
+    return JSONResponse({
+        "success": True,
+        "message_id": message.message_id,
+    })
+
+
+@router.get("/LiveChat/Messages/{conversation_id}")
+async def livechat_messages(
+    conversation_id: int,
+    after_id: int = 0,
+    db: Session = Depends(get_db),
+):
+    """Lấy tin nhắn live chat (polling)"""
+    live_chat_service = LiveChatService(db)
+
+    # Đánh dấu đã đọc tin nhắn từ staff
+    live_chat_service.mark_messages_read(conversation_id, "customer")
+
+    messages = live_chat_service.get_messages(conversation_id, after_id)
+
+    # Lấy status conversation
+    conv = live_chat_service._get_conversation(conversation_id)
+    status = conv.status if conv else "closed"
+
+    return JSONResponse({
+        "success": True,
+        "status": status,
+        "messages": [
+            {
+                "message_id": msg.message_id,
+                "sender_type": msg.sender_type,
+                "content": msg.content,
+                "created_at": msg.created_at.strftime("%H:%M") if msg.created_at else "",
+            }
+            for msg in messages
+        ],
+    })
+
+
+@router.get("/LiveChat/Status")
+async def livechat_status(
+    request: Request,
+    session_uuid: str = None,
+    db: Session = Depends(get_db),
+):
+    """Kiểm tra khách có cuộc live chat đang active không"""
+    live_chat_service = LiveChatService(db)
+    chat_service = ChatService(db)
+
+    account_id = None
+    current_user = getattr(request.state, "current_user", None)
+    if current_user:
+        account_id = current_user.account_id
+
+    session_id = None
+    if session_uuid:
+        session = chat_service.get_session(session_uuid)
+        if session:
+            session_id = session.session_id
+
+    conversation = live_chat_service.get_active_conversation_by_customer(
+        customer_account_id=account_id,
+        session_id=session_id,
+    )
+
+    if conversation:
+        return JSONResponse({
+            "success": True,
+            "active": True,
+            "conversation_id": conversation.conversation_id,
+            "status": conversation.status,
+        })
+
+    return JSONResponse({
+        "success": True,
+        "active": False,
+    })
+
+
 # Templates
 templates = None
 
 def set_templates(t):
     global templates
     templates = t
+

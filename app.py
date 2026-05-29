@@ -758,6 +758,42 @@ def ensure_runtime_schema_compatibility():
             ALTER TABLE KnowledgeChunks ADD metadata_json NVARCHAR(MAX) NULL
         END
         """,
+        """
+        IF OBJECT_ID('LiveChatConversations', 'U') IS NULL
+        BEGIN
+            CREATE TABLE LiveChatConversations (
+                conversation_id INT IDENTITY(1,1) PRIMARY KEY,
+                session_id INT NULL,
+                customer_account_id INT NULL,
+                staff_account_id INT NULL,
+                status NVARCHAR(20) NOT NULL DEFAULT 'waiting',
+                subject NVARCHAR(200) NULL,
+                customer_name NVARCHAR(100) NULL,
+                created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                accepted_at DATETIME2 NULL,
+                closed_at DATETIME2 NULL,
+                CONSTRAINT FK_LiveChat_ChatSessions_RT FOREIGN KEY (session_id) REFERENCES ChatSessions(session_id),
+                CONSTRAINT FK_LiveChat_CustAcct_RT FOREIGN KEY (customer_account_id) REFERENCES Accounts(account_id),
+                CONSTRAINT FK_LiveChat_StaffAcct_RT FOREIGN KEY (staff_account_id) REFERENCES Accounts(account_id)
+            )
+        END
+        """,
+        """
+        IF OBJECT_ID('LiveChatMessages', 'U') IS NULL
+        BEGIN
+            CREATE TABLE LiveChatMessages (
+                message_id INT IDENTITY(1,1) PRIMARY KEY,
+                conversation_id INT NOT NULL,
+                sender_type NVARCHAR(20) NOT NULL,
+                sender_account_id INT NULL,
+                content NVARCHAR(MAX) NOT NULL,
+                is_read BIT NOT NULL DEFAULT 0,
+                created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                CONSTRAINT FK_LCMsg_Conv_RT FOREIGN KEY (conversation_id) REFERENCES LiveChatConversations(conversation_id) ON DELETE CASCADE,
+                CONSTRAINT FK_LCMsg_Acct_RT FOREIGN KEY (sender_account_id) REFERENCES Accounts(account_id)
+            )
+        END
+        """,
     ]
 
     try:
