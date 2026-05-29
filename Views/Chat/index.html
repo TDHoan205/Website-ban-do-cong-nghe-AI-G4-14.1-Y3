@@ -17,7 +17,7 @@
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         font-family: 'Be Vietnam Pro', sans-serif;
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        background: linear-gradient(135deg, #1E3A5F 0%, #1E3A5F 50%, #1E3A5F 100%);
         min-height: 100vh;
         display: flex; flex-direction: column;
       }
@@ -35,7 +35,7 @@
         font-weight: 700; font-size: 1.1rem; color: #fff;
         display: flex; align-items: center; gap: 8px;
       }
-      .chat-topbar .brand i { color: #667eea; }
+      .chat-topbar .brand i { color: #4DA6FF; }
       /* Main container */
       .chat-container {
         flex: 1; display: flex; flex-direction: column;
@@ -48,9 +48,9 @@
       }
       .chat-hero-icon {
         width: 72px; height: 72px; margin: 0 auto 12px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 1.8rem; box-shadow: 0 8px 32px rgba(102,126,234,0.4);
+        font-size: 1.8rem; box-shadow: 0 8px 32px rgba(77, 166, 255, 0.4);
         animation: float 3s ease-in-out infinite;
       }
       @keyframes float {
@@ -84,20 +84,20 @@
         display: flex; align-items: center; justify-content: center;
         margin-right: 12px; flex-shrink: 0; font-size: 0.9rem;
       }
-      .bot-message .message-avatar { background: rgba(102,126,234,0.2); color: #667eea; }
-      .user-message .message-avatar { background: #667eea; color: #fff; }
+      .bot-message .message-avatar { background: rgba(77, 166, 255, 0.2); color: #4DA6FF; }
+      .user-message .message-avatar { background: #4DA6FF; color: #fff; }
       .message-content { max-width: 75%; }
       .message-bubble {
         padding: 12px 18px; border-radius: 18px;
         display: inline-block; line-height: 1.65; font-size: 0.92rem;
       }
       .bot-message .message-bubble {
-        background: rgba(255,255,255,0.08); color: #e5e7eb;
+        background: rgba(255,255,255,0.08); color: #5C6F82;
         border: 1px solid rgba(255,255,255,0.1);
         border-bottom-left-radius: 4px;
       }
       .user-message .message-bubble {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         color: #fff; border-bottom-right-radius: 4px;
       }
       .user-message { flex-direction: row-reverse; }
@@ -134,11 +134,11 @@
       }
       .quick-btn {
         padding: 7px 16px; font-size: 0.82rem; border-radius: 20px;
-        border: 1px solid rgba(102,126,234,0.5); color: #a5b4fc;
+        border: 1px solid rgba(77, 166, 255, 0.5); color: #5C6F82;
         background: transparent; cursor: pointer; transition: all 0.2s;
         font-family: 'Be Vietnam Pro', sans-serif;
       }
-      .quick-btn:hover { background: rgba(102,126,234,0.2); color: #fff; border-color: #667eea; }
+      .quick-btn:hover { background: rgba(77, 166, 255, 0.2); color: #fff; border-color: #4DA6FF; }
       /* Input */
       .chat-input-area {
         padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08);
@@ -152,25 +152,25 @@
       }
       .chat-input-area input::placeholder { color: rgba(255,255,255,0.35); }
       .chat-input-area input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        border-color: #4DA6FF;
+        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
         background: rgba(255,255,255,0.12);
       }
       .chat-input-area .send-btn {
         width: 48px; height: 48px; border-radius: 50%; border: none;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         color: #fff; font-size: 1rem; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.3);
+        transition: all 0.2s; box-shadow: 0 4px 16px rgba(77, 166, 255, 0.3);
       }
-      .chat-input-area .send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(102,126,234,0.5); }
+      .chat-input-area .send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(77, 166, 255, 0.5); }
       .chat-input-area .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
       /* Feature cards */
       .features-row { margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; }
       .feature-card {
         flex: 1; min-width: 200px;
         background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 16px; padding: 20px; text-align: center; color: #e5e7eb;
+        border-radius: 16px; padding: 20px; text-align: center; color: #5C6F82;
         transition: all 0.2s;
       }
       .feature-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
@@ -398,5 +398,6 @@
         loadChatHistory();
       });
     </script>
+    {% include "partials/chatbot.html" %}
   </body>
 </html>

@@ -31,7 +31,7 @@
       body {
         font-family: 'Be Vietnam Pro', sans-serif;
         min-height: 100vh;
-        background: linear-gradient(135deg, #1a6fc4 0%, #0d47a1 50%, #1565c0 100%);
+        background: linear-gradient(135deg, #4DA6FF 0%, #2196F3 50%, #1565c0 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -90,13 +90,13 @@
       .auth-icon {
         width: 64px;
         height: 64px;
-        background: linear-gradient(135deg, #1a6fc4, #0d47a1);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
-        box-shadow: 0 4px 15px rgba(26, 111, 196, 0.35);
+        box-shadow: 0 4px 15px rgba(77, 166, 255, 0.35);
       }
 
       .auth-icon i {
@@ -109,14 +109,14 @@
         text-align: center;
         font-size: 1.45rem;
         font-weight: 700;
-        color: #1a1a2e;
+        color: #1E3A5F;
         margin-bottom: 6px;
       }
 
       .auth-subtitle {
         text-align: center;
         font-size: 0.9rem;
-        color: #6b7280;
+        color: #5C6F82;
         margin-bottom: 28px;
       }
 
@@ -165,7 +165,7 @@
         left: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9ca3af;
+        color: #5C6F82;
         font-size: 0.9rem;
         pointer-events: none;
         transition: color 0.2s;
@@ -174,28 +174,28 @@
       .auth-form-input {
         width: 100%;
         padding: 12px 42px 12px 42px;
-        border: 1.5px solid #e5e7eb;
+        border: 1.5px solid #D6EAFB;
         border-radius: 10px;
         font-size: 0.9rem;
         color: #1f2937;
-        background: #f9fafb;
+        background: #F5FAFF;
         transition: all 0.2s;
         outline: none;
         font-family: 'Be Vietnam Pro', sans-serif;
       }
 
       .auth-form-input:focus {
-        border-color: #1a6fc4;
+        border-color: #4DA6FF;
         background: white;
         box-shadow: 0 0 0 3px rgba(26, 111, 196, 0.1);
       }
 
       .auth-form-input:focus ~ .auth-input-icon {
-        color: #1a6fc4;
+        color: #4DA6FF;
       }
 
       .auth-form-input::placeholder {
-        color: #9ca3af;
+        color: #5C6F82;
       }
 
       /* Toggle password */
@@ -204,7 +204,7 @@
         right: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9ca3af;
+        color: #5C6F82;
         cursor: pointer;
         font-size: 0.85rem;
         transition: color 0.2s;
@@ -214,7 +214,7 @@
       }
 
       .toggle-pw:hover {
-        color: #1a6fc4;
+        color: #4DA6FF;
       }
 
       /* Options row */
@@ -230,20 +230,20 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        color: #6b7280;
+        color: #5C6F82;
         cursor: pointer;
         user-select: none;
       }
 
       .auth-remember input[type="checkbox"] {
-        accent-color: #1a6fc4;
+        accent-color: #4DA6FF;
         width: 16px;
         height: 16px;
         cursor: pointer;
       }
 
       .auth-forgot-link {
-        color: #1a6fc4;
+        color: #4DA6FF;
         text-decoration: none;
         font-weight: 500;
       }
@@ -256,7 +256,7 @@
       .auth-submit-btn {
         width: 100%;
         padding: 13px;
-        background: linear-gradient(135deg, #1a6fc4, #0d47a1);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         color: white;
         border: none;
         border-radius: 10px;
@@ -285,7 +285,7 @@
       /* Divider */
       .auth-divider {
         text-align: center;
-        color: #9ca3af;
+        color: #5C6F82;
         font-size: 0.85rem;
         margin-bottom: 16px;
         position: relative;
@@ -298,7 +298,7 @@
         top: 50%;
         width: calc(50% - 60px);
         height: 1px;
-        background: #e5e7eb;
+        background: #D6EAFB;
       }
 
       .auth-divider::before { left: 0; }
@@ -307,12 +307,12 @@
       /* Register link */
       .auth-switch-prompt {
         text-align: center;
-        color: #6b7280;
+        color: #5C6F82;
         font-size: 0.9rem;
       }
 
       .auth-switch-prompt a {
-        color: #1a6fc4;
+        color: #4DA6FF;
         text-decoration: none;
         font-weight: 600;
       }
@@ -326,16 +326,16 @@
         text-align: center;
         margin-top: 28px;
         padding-top: 20px;
-        border-top: 1px solid #f3f4f6;
+        border-top: 1px solid #F5FAFF;
       }
 
       .auth-brand-text {
         font-size: 0.8rem;
-        color: #9ca3af;
+        color: #5C6F82;
       }
 
       .auth-brand-text i {
-        color: #1a6fc4;
+        color: #4DA6FF;
         margin-right: 4px;
       }
 
@@ -471,5 +471,6 @@
         }
       }
     </script>
+    {% include "partials/chatbot.html" %}
   </body>
 </html>

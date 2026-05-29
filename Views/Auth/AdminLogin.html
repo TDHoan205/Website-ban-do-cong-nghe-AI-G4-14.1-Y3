@@ -26,7 +26,7 @@
       body {
         font-family: 'Be Vietnam Pro', sans-serif;
         min-height: 100vh;
-        background: #0f1923;
+        background: #152A45;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -79,8 +79,8 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #0f1923;
-        color: #ffd700;
+        background: #1E3A5F;
+        color: #4DA6FF;
         font-size: 0.7rem;
         font-weight: 700;
         padding: 4px 12px;
@@ -94,22 +94,22 @@
       .admin-icon {
         width: 64px;
         height: 64px;
-        background: linear-gradient(135deg, #0f1923, #1a2332);
+        background: linear-gradient(135deg, #1E3A5F, #2196F3);
         border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
-        box-shadow: 0 4px 15px rgba(15, 25, 35, 0.3);
+        box-shadow: 0 4px 15px rgba(77, 166, 255, 0.3);
       }
-      .admin-icon i { font-size: 1.8rem; color: #ffd700; }
+      .admin-icon i { font-size: 1.8rem; color: #4DA6FF; }
 
       /* Title */
       .admin-title {
         text-align: center;
         font-size: 1.45rem;
         font-weight: 700;
-        color: #1a1a2e;
+        color: #1E3A5F;
         margin-bottom: 6px;
       }
       .admin-subtitle {
@@ -173,9 +173,9 @@
         font-family: 'Be Vietnam Pro', sans-serif;
       }
       .admin-form-input:focus {
-        border-color: #0f1923;
+        border-color: #4DA6FF;
         background: white;
-        box-shadow: 0 0 0 3px rgba(15, 25, 35, 0.1);
+        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.15);
       }
       .admin-form-input::placeholder { color: #9ca3af; }
 
@@ -183,7 +183,7 @@
       .admin-submit-btn {
         width: 100%;
         padding: 13px;
-        background: linear-gradient(135deg, #0f1923, #1a2332);
+        background: linear-gradient(135deg, #1E3A5F, #2196F3);
         color: white;
         border: none;
         border-radius: 10px;
@@ -199,9 +199,9 @@
         margin-bottom: 20px;
       }
       .admin-submit-btn:hover {
-        background: linear-gradient(135deg, #1a2332, #0f1923);
+        background: linear-gradient(135deg, #2196F3, #4DA6FF);
         transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(15, 25, 35, 0.4);
+        box-shadow: 0 4px 15px rgba(77, 166, 255, 0.4);
         color: white;
       }
 
@@ -212,7 +212,7 @@
         font-size: 0.88rem;
       }
       .admin-back-link a {
-        color: #0f1923;
+        color: #4DA6FF;
         font-weight: 600;
         text-decoration: none;
       }
@@ -229,7 +229,7 @@
         font-size: 0.78rem;
         color: #9ca3af;
       }
-      .admin-brand-text i { color: #ffd700; margin-right: 4px; }
+      .admin-brand-text i { color: #4DA6FF; margin-right: 4px; }
 
       @media (max-width: 480px) {
         body { padding: 16px; align-items: flex-start; padding-top: 70px; }
@@ -333,5 +333,6 @@
         </span>
       </div>
     </div>
+    {% include "partials/chatbot.html" %}
   </body>
 </html>
