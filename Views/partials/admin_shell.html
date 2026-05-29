@@ -1,0 +1,575 @@
+{% set nav_stats = admin_nav_stats if admin_nav_stats is defined else stats if stats is defined else {} %}
+{% set active_page = active_admin_page if active_admin_page is defined else '' %}
+
+<style>
+  .admin-topbar .admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #FFFFFF;
+  }
+  .admin-topbar .admin-logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #4DA6FF, #2196F3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #152A45;
+    flex-shrink: 0;
+  }
+  .admin-topbar .admin-logo-text {
+    line-height: 1.2;
+  }
+  .admin-topbar .admin-logo-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    white-space: nowrap;
+  }
+  .admin-topbar .admin-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 18px;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: #4DA6FF;
+    color: #152A45;
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .admin-sidebar {
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-sidebar .admin-shell-count {
+    margin-left: auto;
+    min-width: 32px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(239,68,68,0.18);
+    color: #ef4444;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .admin-sidebar .sidebar-link.active .admin-shell-count {
+    background: rgba(239,68,68,0.22);
+    color: #ef4444;
+  }
+  .admin-sidebar-website {
+    margin-top: auto;
+    padding: 16px 20px 20px;
+  }
+  .admin-sidebar-website-btn {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid rgba(77,166,255,0.36);
+    border-radius: 10px;
+    background: rgba(77,166,255,0.08);
+    color: #4DA6FF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 800;
+    transition: all 0.18s ease;
+  }
+  .admin-sidebar-website-btn:hover {
+    background: rgba(77,166,255,0.16);
+    border-color: rgba(77,166,255,0.62);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+  }
+  .admin-main {
+    padding-bottom: 92px !important;
+  }
+  .admin-main > .page-card:last-of-type,
+  .admin-main > .admin-table-card:last-of-type {
+    margin-bottom: 16px;
+  }
+  .admin-table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.015);
+    color: #80C7FF;
+    font-size: 0.78rem;
+    min-height: 58px;
+  }
+  .admin-table-page-info {
+    color: #80C7FF;
+    font-weight: 600;
+  }
+  .admin-table-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .admin-table-page-btn {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #2D4A6F;
+    background: rgba(255,255,255,0.04);
+    color: #80C7FF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Be Vietnam Pro', sans-serif;
+  }
+  .admin-table-page-btn:hover:not(:disabled) {
+    background: rgba(77,166,255,0.12);
+    border-color: rgba(77,166,255,0.45);
+    color: #FFFFFF;
+  }
+  .admin-table-page-btn.active {
+    background: #4DA6FF;
+    border-color: #4DA6FF;
+    color: #152A45;
+  }
+  .admin-table-page-btn.page-indicator {
+    min-width: 56px;
+    cursor: default;
+    pointer-events: none;
+  }
+  .admin-table-page-btn:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+  .admin-ai-launcher {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 10020;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+  }
+  .admin-ai-menu {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid rgba(77,166,255,0.22);
+    border-radius: 18px;
+    background: rgba(21,42,69,0.96);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.38);
+    backdrop-filter: blur(12px);
+  }
+  .admin-ai-launcher.open .admin-ai-menu {
+    display: flex;
+  }
+  .admin-ai-choice {
+    width: 172px;
+    height: 48px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.045);
+    color: #E6F2FF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.16s, background 0.16s, border-color 0.16s;
+  }
+  .admin-ai-choice:hover {
+    transform: translateY(-1px);
+    background: rgba(77,166,255,0.12);
+    border-color: rgba(77,166,255,0.4);
+  }
+  .admin-ai-choice-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .admin-ai-choice.finance .admin-ai-choice-icon {
+    background: rgba(250,204,21,0.16);
+    color: #facc15;
+  }
+  .admin-ai-choice.chat .admin-ai-choice-icon {
+    background: rgba(77,166,255,0.16);
+    color: #4DA6FF;
+  }
+  .admin-ai-main {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border: none;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.75), rgba(255,255,255,0) 24%),
+      linear-gradient(135deg, #4DA6FF 0%, #8b5cf6 48%, #facc15 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    cursor: pointer;
+    box-shadow: 0 18px 46px rgba(77,166,255,0.34), 0 0 0 8px rgba(77,166,255,0.08);
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .admin-ai-main:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 22px 56px rgba(77,166,255,0.44), 0 0 0 10px rgba(250,204,21,0.08);
+  }
+  .admin-ai-main-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #fff7cc;
+    color: #172554;
+    border: 2px solid #152A45;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 900;
+  }
+  @media (max-width: 640px) {
+    .admin-main {
+      padding-bottom: 104px !important;
+    }
+    .admin-table-pagination {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .admin-table-page-actions {
+      justify-content: flex-start;
+    }
+    .admin-ai-launcher {
+      right: 16px;
+      bottom: 16px;
+    }
+    .admin-ai-main {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+    }
+  }
+</style>
+
+<div class="admin-topbar">
+  <div class="topbar-left">
+    <a href="/Admin/Dashboard" class="admin-logo">
+      <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
+      <div class="admin-logo-text">
+        <div class="admin-logo-name">Tech Store <span class="admin-logo-badge">Admin</span></div>
+      </div>
+    </a>
+  </div>
+  <div class="topbar-right">
+    <a href="/" target="_blank" class="topbar-btn btn-gold">
+      <i class="fas fa-external-link-alt"></i> Xem website
+    </a>
+    <div class="topbar-user">
+      <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+      <div class="user-info">
+        <div class="user-name">{{ admin.username }}</div>
+        <div class="user-role">Quản trị viên</div>
+      </div>
+    </div>
+    <a href="/Auth/Logout" class="topbar-btn btn-red">
+      <i class="fas fa-sign-out-alt"></i> Đăng xuất
+    </a>
+  </div>
+</div>
+
+<div class="admin-body">
+  <aside class="admin-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quản lý</div>
+      <a href="/Admin/Dashboard" class="sidebar-link{% if active_page == 'dashboard' %} active{% endif %}">
+        <i class="fas fa-chart-pie"></i> Trang chủ
+      </a>
+      <a href="/Admin/Products" class="sidebar-link{% if active_page in ['products', 'product_edit'] %} active{% endif %}">
+        <i class="fas fa-box"></i> Sản phẩm
+        {% if (nav_stats.total_products | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_products | default(0) }}</span>
+        {% endif %}
+      </a>
+      <a href="/Admin/Categories" class="sidebar-link{% if active_page == 'categories' %} active{% endif %}">
+        <i class="fas fa-tags"></i> Danh mục
+        {% if (nav_stats.total_categories | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_categories | default(0) }}</span>
+        {% endif %}
+      </a>
+      <a href="/Admin/Suppliers" class="sidebar-link{% if active_page == 'suppliers' %} active{% endif %}">
+        <i class="fas fa-truck"></i> Nhà cung cấp
+        {% if (nav_stats.total_suppliers | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_suppliers | default(0) }}</span>
+        {% endif %}
+      </a>
+      <a href="/Admin/Orders" class="sidebar-link{% if active_page in ['orders', 'order_detail'] %} active{% endif %}">
+        <i class="fas fa-shopping-bag"></i> Đơn hàng
+        {% if (nav_stats.total_orders | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_orders | default(0) }}</span>
+        {% endif %}
+      </a>
+      <a href="/Admin/Accounts" class="sidebar-link{% if active_page == 'accounts' %} active{% endif %}">
+        <i class="fas fa-users"></i> Tài khoản
+        {% if (nav_stats.total_accounts | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_accounts | default(0) }}</span>
+        {% endif %}
+      </a>
+      <a href="/Admin/FAQs" class="sidebar-link{% if active_page == 'faqs' %} active{% endif %}">
+        <i class="fas fa-question-circle"></i> FAQ
+        {% if (nav_stats.total_faqs | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_faqs | default(0) }}</span>
+        {% endif %}
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Phân tích</div>
+      <a href="/Admin/Statistics" class="sidebar-link{% if active_page == 'statistics' %} active{% endif %}">
+        <i class="fas fa-chart-line"></i> Thống kê
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Hệ thống</div>
+      <a href="/Admin/Chatbot" class="sidebar-link{% if active_page == 'chatbot' %} active{% endif %}">
+        <i class="fas fa-robot"></i> AI Chatbot
+      </a>
+      <a href="/Admin/Chats" class="sidebar-link{% if active_page == 'chats' %} active{% endif %}">
+        <i class="fas fa-comments"></i> Lịch sử Chat
+        {% if (nav_stats.total_chats | default(0)) >= 1 %}
+        <span class="admin-shell-count">{{ nav_stats.total_chats | default(0) }}</span>
+        {% endif %}
+      </a>
+    </div>
+    <div class="admin-sidebar-website">
+      <a href="/" target="_blank" class="admin-sidebar-website-btn">
+        <i class="fas fa-external-link-alt"></i> Xem website
+      </a>
+    </div>
+  </aside>
+
+<div class="admin-ai-launcher" id="admin-ai-launcher">
+  <div class="admin-ai-menu" id="admin-ai-menu">
+    <button type="button" class="admin-ai-choice finance" data-ai-target="finance">
+      <span class="admin-ai-choice-icon"><i class="fas fa-chart-line"></i></span>
+      <span>Báo cáo AI</span>
+    </button>
+    <button type="button" class="admin-ai-choice chat" data-ai-target="chat">
+      <span class="admin-ai-choice-icon"><i class="fas fa-comments"></i></span>
+      <span>Chatbot AI</span>
+    </button>
+  </div>
+  <button type="button" class="admin-ai-main" id="admin-ai-main" title="Trợ lý AI">
+    <i class="fas fa-wand-magic-sparkles"></i>
+    <span class="admin-ai-main-badge">AI</span>
+  </button>
+</div>
+
+<script>
+(function () {
+  var PAGE_SIZE = 5;
+
+  function isDataRow(row) {
+    return row && row.children && row.children.length && row.querySelector("td");
+  }
+
+  function isFilteredOut(row) {
+    return row.style.display === "none" && row.dataset.adminPageHidden !== "1";
+  }
+
+  function setRowVisible(row, visible) {
+    if (visible) {
+      delete row.dataset.adminPageHidden;
+      row.style.display = "";
+    } else {
+      row.dataset.adminPageHidden = "1";
+      row.style.display = "none";
+    }
+  }
+
+  function ensurePager(table) {
+    var next = table.nextElementSibling;
+    if (next && next.classList && next.classList.contains("admin-table-pagination")) {
+      return next;
+    }
+    var pager = document.createElement("div");
+    pager.className = "admin-table-pagination";
+    pager.innerHTML = '<div class="admin-table-page-info"></div><div class="admin-table-page-actions"></div>';
+    table.parentNode.insertBefore(pager, table.nextSibling);
+    return pager;
+  }
+
+  function button(label, disabled, active, onClick) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "admin-table-page-btn" + (active ? " active" : "");
+    btn.innerHTML = label;
+    btn.disabled = disabled;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
+  function paginateTable(table) {
+    if (!table || table.dataset.adminPaginationDisabled === "1") return;
+    var tbody = table.tBodies && table.tBodies[0];
+    if (!tbody) return;
+
+    var rows = Array.prototype.slice.call(tbody.rows).filter(isDataRow);
+    if (!rows.length) return;
+
+    rows.forEach(function (row) {
+      if (row.dataset.adminPageHidden === "1") {
+        delete row.dataset.adminPageHidden;
+        row.style.display = "";
+      }
+    });
+
+    var eligible = rows.filter(function (row) {
+      return !isFilteredOut(row);
+    });
+    var total = eligible.length;
+    var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    var current = parseInt(table.dataset.adminPage || "1", 10);
+    if (!current || current < 1) current = 1;
+    if (current > pages) current = pages;
+    table.dataset.adminPage = String(current);
+
+    eligible.forEach(function (row, index) {
+      var page = Math.floor(index / PAGE_SIZE) + 1;
+      setRowVisible(row, page === current);
+    });
+
+    var pager = ensurePager(table);
+    var info = pager.querySelector(".admin-table-page-info");
+    var actions = pager.querySelector(".admin-table-page-actions");
+    var start = total ? ((current - 1) * PAGE_SIZE + 1) : 0;
+    var end = Math.min(current * PAGE_SIZE, total);
+
+    info.textContent = total <= PAGE_SIZE
+      ? "Hiển thị " + total + " dòng"
+      : "Hiển thị " + start + "-" + end + " / " + total + " dòng";
+
+    actions.innerHTML = "";
+    if (total <= PAGE_SIZE) {
+      pager.style.display = total ? "flex" : "none";
+      return;
+    }
+    pager.style.display = "flex";
+
+    actions.appendChild(button('<i class="fas fa-chevron-left"></i>', current === 1, false, function () {
+      table.dataset.adminPage = String(current - 1);
+      paginateTable(table);
+    }));
+
+    var indicator = button(String(current) + " / " + String(pages), true, true, function () {});
+    indicator.classList.add("page-indicator");
+    indicator.disabled = false;
+    actions.appendChild(indicator);
+
+    actions.appendChild(button('<i class="fas fa-chevron-right"></i>', current === pages, false, function () {
+      table.dataset.adminPage = String(current + 1);
+      paginateTable(table);
+    }));
+  }
+
+  function applyPagination(resetPage) {
+    document.querySelectorAll("table.admin-table").forEach(function (table) {
+      if (resetPage) table.dataset.adminPage = "1";
+      paginateTable(table);
+    });
+  }
+
+  window.refreshAdminTablePagination = function () {
+    applyPagination(true);
+  };
+
+  document.addEventListener("DOMContentLoaded", function () {
+    applyPagination(true);
+  });
+
+  document.addEventListener("input", function () {
+    window.setTimeout(function () { applyPagination(true); }, 0);
+  });
+
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".admin-table-page-btn")) return;
+    window.setTimeout(function () { applyPagination(true); }, 0);
+  });
+})();
+</script>
+
+<script>
+(function () {
+  if (window.__adminAiLauncherInitialized) return;
+  window.__adminAiLauncherInitialized = true;
+
+  function initLauncher() {
+    var launcher = document.getElementById("admin-ai-launcher");
+    var main = document.getElementById("admin-ai-main");
+    if (!launcher || !main) return;
+
+    main.addEventListener("click", function (event) {
+      event.preventDefault();
+      launcher.classList.toggle("open");
+    });
+
+    launcher.addEventListener("click", function (event) {
+      var choice = event.target.closest("[data-ai-target]");
+      if (!choice) return;
+      var target = choice.getAttribute("data-ai-target");
+      launcher.classList.remove("open");
+      if (target === "finance" && typeof window.openAdminFinanceWidget === "function") {
+        window.openAdminFinanceWidget();
+      }
+      if (target === "chat" && typeof window.openMainChatWidget === "function") {
+        window.openMainChatWidget();
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!launcher.contains(event.target)) {
+        launcher.classList.remove("open");
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLauncher);
+  } else {
+    initLauncher();
+  }
+})();
+</script>

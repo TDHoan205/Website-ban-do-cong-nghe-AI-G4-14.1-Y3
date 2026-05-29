@@ -34,6 +34,7 @@ def build_connection_string() -> str:
             f"SERVER={SQL_SERVER_CONFIG['server']};"
             f"DATABASE={SQL_SERVER_CONFIG['database']};"
             f"Trusted_Connection=yes;"
+            f"Encrypt=no;"
             f"TrustServerCertificate=yes;"
         )
     else:
@@ -45,6 +46,7 @@ def build_connection_string() -> str:
             f"DATABASE={SQL_SERVER_CONFIG['database']};"
             f"UID={username};"
             f"PWD={password};"
+            f"Encrypt=no;"
             f"TrustServerCertificate=yes;"
         )
     return f"mssql+pyodbc:///?odbc_connect={params}"

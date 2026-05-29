@@ -63,22 +63,18 @@
         border-radius: 4px;
         font-weight: 700;
       }
-      .topbar-nav { display: flex; gap: 4px; align-items: center; }
-      .topbar-nav a {
-        padding: 6px 12px;
-        border-radius: 6px;
-        color: rgba(255,255,255,0.55);
-        font-size: 0.85rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.2s;
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-wrap: nowrap;
+        min-width: 0;
       }
-      .topbar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
-      .topbar-nav a.active { background: rgba(255,255,255,0.1); color: white; }
-      .topbar-right { display: flex; align-items: center; gap: 12px; }
       .topbar-btn {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
         padding: 7px 14px;
         border-radius: 8px;
@@ -88,6 +84,8 @@
         transition: all 0.2s;
         text-decoration: none;
         font-family: 'Be Vietnam Pro', sans-serif;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
       .btn-gold {
         background: rgba(77,166,255,0.1);
@@ -108,6 +106,7 @@
         padding: 6px 12px;
         background: rgba(255,255,255,0.06);
         border-radius: 8px;
+        flex-shrink: 0;
       }
       .user-avatar {
         width: 34px;
@@ -504,58 +503,6 @@
       .low-stock-name { font-size: 0.84rem; color: #E6F2FF; font-weight: 500; }
       .low-stock-qty { font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: rgba(239,68,68,0.12); color: #f87171; }
 
-      /* ===== CHAT BUBBLE ===== */
-      .chat-fab {
-        position: fixed; bottom: 28px; right: 28px; z-index: 9999;
-        width: 60px; height: 60px; border-radius: 50%;
-        background: linear-gradient(135deg, #4DA6FF, #2196F3);
-        color: #152A45; border: none; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem; box-shadow: 0 6px 24px rgba(77,166,255,0.35);
-        transition: transform 0.3s, box-shadow 0.3s;
-        animation: fabPulse 2s infinite;
-      }
-      .chat-fab:hover { transform: scale(1.1); box-shadow: 0 8px 32px rgba(77,166,255,0.5); }
-      @keyframes fabPulse {
-        0%,100% { box-shadow: 0 6px 24px rgba(77,166,255,0.35); }
-        50% { box-shadow: 0 6px 32px rgba(77,166,255,0.55); }
-      }
-      .chat-fab .fab-badge {
-        position: absolute; top: -2px; right: -2px; width: 18px; height: 18px;
-        background: #ef4444; border-radius: 50%; border: 2px solid #152A45;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.55rem; font-weight: 800; color: white;
-      }
-      .chat-panel {
-        position: fixed; bottom: 100px; right: 28px; z-index: 9998;
-        width: 380px; max-height: 520px; background: #1E3A5F;
-        border: 1px solid #2D4A6F; border-radius: 18px;
-        box-shadow: 0 12px 48px rgba(0,0,0,0.5);
-        display: none; flex-direction: column; overflow: hidden;
-        animation: chatSlideUp 0.3s ease;
-      }
-      .chat-panel.open { display: flex; }
-      @keyframes chatSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-      .chat-panel-header {
-        background: linear-gradient(135deg, #4DA6FF, #2196F3);
-        padding: 16px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-      }
-      .chat-panel-header .cp-avatar { width: 38px; height: 38px; background: rgba(0,0,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #152A45; }
-      .chat-panel-header .cp-info h4 { font-size: 0.92rem; font-weight: 700; color: #152A45; margin: 0; }
-      .chat-panel-header .cp-info p { font-size: 0.7rem; color: rgba(0,0,0,0.5); margin: 0; }
-      .chat-panel-header .cp-close { margin-left: auto; background: rgba(0,0,0,0.1); border: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #152A45; font-size: 0.85rem; }
-      .chat-panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 360px; }
-      .chat-msg { max-width: 88%; padding: 12px 16px; border-radius: 14px; font-size: 0.82rem; line-height: 1.55; }
-      .chat-msg.bot { background: rgba(77,166,255,0.08); border: 1px solid rgba(77,166,255,0.15); color: #FFFFFF; align-self: flex-start; border-bottom-left-radius: 4px; }
-      .chat-msg.bot strong { color: #4DA6FF; }
-      .chat-actions { padding: 12px 16px; border-top: 1px solid #2D4A6F; display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
-      .chat-action-btn {
-        padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(77,166,255,0.25);
-        background: rgba(77,166,255,0.06); color: #4DA6FF; font-size: 0.75rem; font-weight: 600;
-        cursor: pointer; transition: all 0.2s; font-family: 'Be Vietnam Pro', sans-serif;
-      }
-      .chat-action-btn:hover { background: rgba(77,166,255,0.15); border-color: #4DA6FF; }
-
       /* Responsive */
       @media (max-width: 1200px) {
         .stats-grid { grid-template-columns: repeat(3, 1fr); }
@@ -578,99 +525,15 @@
         .quick-actions-grid { grid-template-columns: 1fr; }
         .finance-grid { grid-template-columns: 1fr; }
         .sales-grid { grid-template-columns: 1fr; }
-        .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 90px; }
+        .admin-topbar { padding: 0 12px; }
+        .topbar-right { gap: 8px; }
+        .topbar-btn { padding: 7px 10px; font-size: 0.76rem; }
+        .topbar-user { padding: 6px 8px; }
       }
     </style>
   </head>
-  <body>
-    <!-- ===== TOPBAR ===== -->
-    <div class="admin-topbar">
-      <div class="topbar-left">
-        <a href="/Admin/Dashboard" class="admin-logo">
-          <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
-          <div class="admin-logo-text">
-            <div class="admin-logo-name">Tech Store <span class="admin-logo-badge">Admin</span></div>
-          </div>
-        </a>
-        <nav class="topbar-nav">
-          <a href="/Admin/Dashboard" class="active"><i class="fas fa-home me-1"></i> Trang chủ</a>
-          <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
-          <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
-          <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
-          <a href="/"><i class="fas fa-external-link-alt me-1"></i> Website</a>
-        </nav>
-      </div>
-      <div class="topbar-right">
-        <a href="/" target="_blank" class="topbar-btn btn-gold">
-          <i class="fas fa-external-link-alt"></i> Xem website
-        </a>
-        <div class="topbar-user">
-          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
-          <div class="user-info">
-            <div class="user-name">{{ admin.username }}</div>
-            <div class="user-role">Quản trị viên</div>
-          </div>
-        </div>
-        <a href="/Auth/Profile" class="topbar-btn btn-gold" title="Tài khoản của tôi">
-          <i class="fas fa-user-circle"></i> Tài khoản của tôi
-        </a>
-        <a href="/Auth/Logout" class="topbar-btn btn-red">
-          <i class="fas fa-sign-out-alt"></i> Đăng xuất
-        </a>
-      </div>
-    </div>
-
-    <!-- ===== BODY ===== -->
-    <div class="admin-body">
-      <!-- ===== SIDEBAR ===== -->
-      <aside class="admin-sidebar">
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Quản lý</div>
-          <a href="/Admin/Dashboard" class="sidebar-link active">
-            <i class="fas fa-chart-pie"></i> Trang chủ
-          </a>
-          <a href="/Admin/Products" class="sidebar-link">
-            <i class="fas fa-box"></i> Sản phẩm
-            <span class="count">{{ stats.total_products }}</span>
-          </a>
-          <a href="/Admin/Categories" class="sidebar-link">
-            <i class="fas fa-tags"></i> Danh mục
-          </a>
-          <a href="/Admin/Suppliers" class="sidebar-link">
-            <i class="fas fa-truck"></i> Nhà cung cấp
-          </a>
-          <a href="/Admin/Orders" class="sidebar-link">
-            <i class="fas fa-shopping-bag"></i> Đơn hàng
-            {% if stats.pending_orders > 0 %}
-            <span class="count">{{ stats.pending_orders }}</span>
-            {% endif %}
-          </a>
-          <a href="/Admin/Accounts" class="sidebar-link">
-            <i class="fas fa-users"></i> Tài khoản
-          </a>
-          <a href="/Admin/FAQs" class="sidebar-link">
-            <i class="fas fa-question-circle"></i> FAQ
-          </a>
-        </div>
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Phân tích</div>
-          <a href="/Admin/Statistics" class="sidebar-link">
-            <i class="fas fa-chart-line"></i> Thống kê
-          </a>
-        </div>
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Hệ thống</div>
-          <a href="/Admin/Chatbot" class="sidebar-link">
-            <i class="fas fa-robot"></i> AI Chatbot
-          </a>
-          <a href="/Admin/Chats" class="sidebar-link">
-            <i class="fas fa-comments"></i> Lịch sử Chat
-          </a>
-          <a href="/" class="sidebar-link">
-            <i class="fas fa-globe"></i> Xem website
-          </a>
-        </div>
-      </aside>
+  <body class="admin-page">
+    {% include "partials/admin_shell.html" %}
 
       <!-- ===== MAIN CONTENT ===== -->
       <main class="admin-main">
@@ -976,35 +839,6 @@
 
       </main>
     </div>
-    <!-- ===== CHAT BUBBLE: TRỢ THỦ TÀI CHÍNH ===== -->
-    <button class="chat-fab" id="chatFab" title="Trợ thủ Tài chính AI">
-      <i class="fas fa-robot"></i>
-      <span class="fab-badge">AI</span>
-    </button>
-
-    <div class="chat-panel" id="chatPanel">
-      <div class="chat-panel-header">
-        <div class="cp-avatar"><i class="fas fa-robot"></i></div>
-        <div class="cp-info">
-          <h4>Trợ thủ Tài chính AI</h4>
-          <p>Dữ liệu realtime từ hệ thống</p>
-        </div>
-        <button class="cp-close" id="chatClose"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="chat-panel-body" id="chatBody">
-        <div class="chat-msg bot">
-          👋 Xin chào <strong>{{ admin.username }}</strong>! Tôi là trợ thủ tài chính AI. Chọn một mục bên dưới để xem báo cáo nhanh!
-        </div>
-      </div>
-      <div class="chat-actions" id="chatActions">
-        <button class="chat-action-btn" data-action="overview">📊 Tổng quan</button>
-        <button class="chat-action-btn" data-action="today">☀️ Hôm nay</button>
-        <button class="chat-action-btn" data-action="month">📅 Tháng này</button>
-        <button class="chat-action-btn" data-action="alerts">⚠️ Cảnh báo</button>
-        <button class="chat-action-btn" data-action="top">🏆 Bán chạy</button>
-      </div>
-    </div>
-
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Bootstrap JS -->
@@ -1073,104 +907,10 @@
           }
         });
       }
-
-      // ===== CHAT BUBBLE =====
-      const fab = document.getElementById('chatFab');
-      const panel = document.getElementById('chatPanel');
-      const closeBtn = document.getElementById('chatClose');
-      const body = document.getElementById('chatBody');
-      const actions = document.getElementById('chatActions');
-
-      // Pre-loaded financial data
-      const finData = {
-        revenue_today: '{{ "{:,.0f}".format(finance.revenue_today) }}',
-        revenue_week: '{{ "{:,.0f}".format(finance.revenue_week) }}',
-        revenue_month: '{{ "{:,.0f}".format(finance.revenue_month) }}',
-        revenue_year: '{{ "{:,.0f}".format(finance.revenue_year) }}',
-        products_sold_today: '{{ finance.products_sold_today }}',
-        products_sold_month: '{{ finance.products_sold_month }}',
-        orders_today: '{{ finance.orders_today }}',
-        avg_order_value: '{{ "{:,.0f}".format(finance.avg_order_value) }}',
-        cancel_rate: '{{ finance.cancel_rate }}',
-        cancelled_orders: '{{ finance.cancelled_orders }}',
-        new_customers_month: '{{ finance.new_customers_month }}',
-        total_products: '{{ stats.total_products }}',
-        total_orders: '{{ stats.total_orders }}',
-        pending_orders: '{{ stats.pending_orders }}',
-        total_customers: '{{ stats.total_customers }}',
-      };
-
-      const topSellingData = [
-        {% for item in top_selling %}
-        { name: "{{ item.product_name[:35] }}", qty: {{ item.total_qty }}, rev: '{{ "{:,.0f}".format(item.total_revenue) }}' },
-        {% endfor %}
-      ];
-
-      const lowStockData = [
-        {% for p in low_stock_products %}
-        { name: "{{ p.name[:35] }}", qty: {{ p.stock_quantity }} },
-        {% endfor %}
-      ];
-
-      const responses = {
-        overview: `📊 <strong>Tổng quan hệ thống</strong>\n\n` +
-          `🛍️ Tổng sản phẩm: <strong>${finData.total_products}</strong>\n` +
-          `📦 Tổng đơn hàng: <strong>${finData.total_orders}</strong>\n` +
-          `⏳ Đơn chờ xử lý: <strong>${finData.pending_orders}</strong>\n` +
-          `👥 Tổng khách hàng: <strong>${finData.total_customers}</strong>\n` +
-          `💰 Giá trị TB/đơn: <strong>${finData.avg_order_value} đ</strong>\n` +
-          `❌ Tỷ lệ hủy: <strong>${finData.cancel_rate}%</strong> (${finData.cancelled_orders} đơn)`,
-
-        today: `☀️ <strong>Báo cáo hôm nay</strong>\n\n` +
-          `💰 Doanh thu: <strong>${finData.revenue_today} đ</strong>\n` +
-          `📦 Đơn hàng mới: <strong>${finData.orders_today}</strong>\n` +
-          `🛒 SP đã bán: <strong>${finData.products_sold_today}</strong>`,
-
-        month: `📅 <strong>Báo cáo tháng này</strong>\n\n` +
-          `💰 Doanh thu tháng: <strong>${finData.revenue_month} đ</strong>\n` +
-          `📊 Doanh thu tuần: <strong>${finData.revenue_week} đ</strong>\n` +
-          `🛒 SP đã bán: <strong>${finData.products_sold_month}</strong>\n` +
-          `👤 Khách hàng mới: <strong>${finData.new_customers_month}</strong>\n` +
-          `🏆 Doanh thu năm: <strong>${finData.revenue_year} đ</strong>`,
-
-        alerts: (() => {
-          let msg = `⚠️ <strong>Cảnh báo hệ thống</strong>\n\n`;
-          if (parseInt(finData.pending_orders) > 0) msg += `⏳ Có <strong>${finData.pending_orders}</strong> đơn đang chờ xử lý!\n`;
-          if (lowStockData.length > 0) {
-            msg += `📦 <strong>${lowStockData.length}</strong> SP sắp hết hàng:\n`;
-            lowStockData.slice(0, 5).forEach(p => { msg += `  • ${p.name}: còn <strong>${p.qty}</strong> SP\n`; });
-          }
-          if (parseFloat(finData.cancel_rate) > 10) msg += `❌ Tỷ lệ hủy đơn cao: <strong>${finData.cancel_rate}%</strong>\n`;
-          if (lowStockData.length === 0 && parseInt(finData.pending_orders) === 0) msg += `✅ Không có cảnh báo nào. Mọi thứ đều ổn!`;
-          return msg;
-        })(),
-
-        top: (() => {
-          let msg = `🏆 <strong>Top SP bán chạy tháng này</strong>\n\n`;
-          if (topSellingData.length === 0) return msg + `Chưa có dữ liệu bán hàng tháng này.`;
-          topSellingData.forEach((p, i) => { msg += `${i+1}. <strong>${p.name}</strong> — ${p.qty} SP — ${p.rev} đ\n`; });
-          return msg;
-        })(),
-      };
-
-      fab.addEventListener('click', () => { panel.classList.toggle('open'); });
-      closeBtn.addEventListener('click', () => { panel.classList.remove('open'); });
-
-      actions.addEventListener('click', (e) => {
-        const btn = e.target.closest('.chat-action-btn');
-        if (!btn) return;
-        const action = btn.dataset.action;
-        const text = responses[action];
-        if (!text) return;
-        const msg = document.createElement('div');
-        msg.className = 'chat-msg bot';
-        msg.innerHTML = text.replace(/\n/g, '<br>');
-        body.appendChild(msg);
-        body.scrollTop = body.scrollHeight;
-      });
     });
     </script>
     <script src="/static/js/admin-chat-widget.js"></script>
+    {% include "partials/admin_finance_widget.html" %}
     {% include "partials/chatbot.html" %}
   </body>
 </html>

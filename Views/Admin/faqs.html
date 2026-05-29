@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -15,10 +15,6 @@
       .admin-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
       .admin-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #4DA6FF, #2196F3); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #152A45; }
       .admin-logo-name { font-size: 1.05rem; font-weight: 700; }
-      .topbar-nav { display: flex; gap: 4px; }
-      .topbar-nav a { padding: 6px 12px; border-radius: 6px; color: rgba(255,255,255,0.55); font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: all 0.2s; }
-      .topbar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
-      .topbar-nav a.active { background: rgba(255,255,255,0.1); color: white; }
       .topbar-right { display: flex; align-items: center; gap: 12px; }
       .topbar-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; transition: all 0.2s; font-family: 'Be Vietnam Pro', sans-serif; }
       .btn-gold { background: rgba(77,166,255,0.1); border: 1px solid rgba(77,166,255,0.3); color: #4DA6FF; }
@@ -101,6 +97,7 @@
       .alert-msg { padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 12px; display: none; }
       .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
       .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #34d399; }
+      .page-alert { padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 14px; display: none; }
       .form-check { display: flex; align-items: center; gap: 8px; }
       .form-check input { accent-color: #4DA6FF; width: 16px; height: 16px; cursor: pointer; }
       .form-check label { color: #80C7FF; font-size: 0.82rem; cursor: pointer; }
@@ -108,59 +105,9 @@
       @media (max-width: 640px) { .admin-sidebar { display: none; } .admin-main { padding: 16px; } }
     </style>
   </head>
-  <body>
+  <body class="admin-page">
     <!-- Topbar -->
-    <div class="admin-topbar">
-      <div class="topbar-left">
-        <a href="/Admin/Dashboard" class="admin-logo">
-          <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
-          <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#4DA6FF;color:#152A45;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
-        </a>
-        <nav class="topbar-nav">
-          <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
-          <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
-          <a href="/Admin/Categories"><i class="fas fa-tags me-1"></i> Danh mục</a>
-          <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
-          <a href="/Admin/Orders"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
-        </nav>
-      </div>
-      <div class="topbar-right">
-        <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Xem website</a>
-        <div class="topbar-user">
-          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
-          <div>
-            <div class="user-name">{{ admin.username }}</div>
-            <div class="user-role">Quản trị viên</div>
-          </div>
-        </div>
-        <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
-      </div>
-    </div>
-
-    <!-- Body -->
-    <div class="admin-body">
-      <aside class="admin-sidebar">
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Quản lý</div>
-          <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
-          <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
-          <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
-          <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
-          <a href="/Admin/Orders" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
-          <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
-          <a href="/Admin/FAQs" class="sidebar-link active"><i class="fas fa-question-circle"></i> FAQ</a>
-        </div>
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Phân tích</div>
-          <a href="/Admin/Statistics" class="sidebar-link"><i class="fas fa-chart-line"></i> Thống kê</a>
-        </div>
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Hệ thống</div>
-          <a href="/Admin/Chatbot" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
-          <a href="/Admin/Chats" class="sidebar-link"><i class="fas fa-comments"></i> Lịch sử Chat</a>
-          <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
-        </div>
-      </aside>
+    {% include "partials/admin_shell.html" %}
 
       <main class="admin-main">
         <h1 class="page-title"><i class="fas fa-question-circle me-2" style="color:#4DA6FF;"></i>Quản lý FAQ</h1>
@@ -171,6 +118,7 @@
           <button class="filter-tab" onclick="filterCategory('{{ cat }}')">{{ cat }}</button>
           {% endfor %}
         </div>
+        <div id="pageAlert" class="page-alert"></div>
 
         <div class="page-card">
           <div class="page-card-header">
@@ -194,27 +142,30 @@
               </thead>
               <tbody>
                 {% for faq in faqs %}
-                <tr data-question="{{ faq.question | lower }}" data-category="{{ faq.category or 'Khác' }}">
+                {% set faq_question = faq.question | vi_text %}
+                {% set faq_answer = faq.answer | vi_text %}
+                {% set faq_category = (faq.category or 'Khác') | vi_text %}
+                <tr data-question="{{ faq_question | lower }}" data-category="{{ faq_category }}">
                   <td style="color:#4DA6FF;font-weight:700; text-align:center;">{{ faq.display_order }}</td>
                   <td>
-                    <div style="font-weight: 600; color: white;">{{ faq.question }}</div>
+                    <div style="font-weight: 600; color: white;">{{ faq_question }}</div>
                     <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px; max-width: 600px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                      {{ faq.answer }}
+                      {{ faq_answer }}
                     </div>
                   </td>
                   <td>
-                    {% if faq.category == 'Vận chuyển' %}
+                    {% if faq_category == 'Vận chuyển' %}
                       <span class="badge badge-shipping">Vận chuyển</span>
-                    {% elif faq.category == 'Thanh toán' %}
+                    {% elif faq_category == 'Thanh toán' %}
                       <span class="badge badge-payment">Thanh toán</span>
-                    {% elif faq.category == 'Bảo hành' %}
+                    {% elif faq_category == 'Bảo hành' %}
                       <span class="badge badge-warranty">Bảo hành</span>
-                    {% elif faq.category == 'Đổi trả' %}
+                    {% elif faq_category == 'Đổi trả' %}
                       <span class="badge badge-refund">Đổi trả</span>
-                    {% elif faq.category == 'Tài khoản' %}
+                    {% elif faq_category == 'Tài khoản' %}
                       <span class="badge badge-account">Tài khoản</span>
                     {% else %}
-                      <span class="badge badge-other">{{ faq.category or 'Khác' }}</span>
+                      <span class="badge badge-other">{{ faq_category }}</span>
                     {% endif %}
                   </td>
                   <td>
@@ -226,7 +177,7 @@
                   </td>
                   <td>
                     <button class="action-btn edit" title="Sửa" onclick="openEditModal({{ faq.faq_id }})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn danger" title="Xóa" onclick="deleteFAQ({{ faq.faq_id }}, '{{ faq.question | e }}')"><i class="fas fa-trash-alt"></i></button>
+                    <button class="action-btn danger" title="Xóa" onclick="deleteFAQ({{ faq.faq_id }}, '{{ faq_question | e }}')"><i class="fas fa-trash-alt"></i></button>
                   </td>
                 </tr>
                 {% else %}
@@ -353,6 +304,13 @@
         el.style.display = 'block';
       }
 
+      function showPageAlert(msg, type) {
+        const el = document.getElementById('pageAlert');
+        el.textContent = msg;
+        el.className = 'page-alert ' + (type === 'error' ? 'alert-error' : 'alert-success');
+        el.style.display = 'block';
+      }
+
       async function saveFAQ(e) {
         e.preventDefault();
         const id = document.getElementById('faq_id').value;
@@ -396,26 +354,33 @@
       async function syncAI() {
         const btn = document.querySelector('.btn-sync');
         const oldHtml = btn.innerHTML;
+        showPageAlert('Đang đồng bộ FAQ vào AI, vui lòng đợi...', 'success');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang đồng bộ...';
         
         try {
           const res = await fetch(API + '/sync-ai', { method: 'POST' });
-          const data = await res.json();
-          if (data.success) {
-            alert(data.message || 'Đồng bộ AI thành công!');
-          } else {
-            alert('Lỗi: ' + (data.error || 'Không rõ nguyên nhân'));
+          let data = {};
+          try {
+            data = await res.json();
+          } catch (_) {
+            throw new Error('Máy chủ trả về dữ liệu không hợp lệ.');
           }
-        } catch(e) { 
-          alert('Lỗi kết nối đến máy chủ!'); 
+          if (data.success) {
+            showPageAlert(data.message || 'Đồng bộ AI thành công!', 'success');
+          } else {
+            showPageAlert('Lỗi: ' + (data.error || 'Không rõ nguyên nhân'), 'error');
+          }
+        } catch(e) {
+          showPageAlert('Lỗi kết nối đến máy chủ: ' + (e.message || 'Không rõ nguyên nhân'), 'error');
         } finally {
           btn.disabled = false;
           btn.innerHTML = oldHtml;
         }
       }
-    </script>
+</script>
     <script src="/static/js/admin-chat-widget.js"></script>
+    {% include "partials/admin_finance_widget.html" %}
     {% include "partials/chatbot.html" %}
 </body>
 </html>

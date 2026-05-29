@@ -10,6 +10,7 @@
   transition: all .3s cubic-bezier(.4,0,.2,1);
   animation: cb-glow 3s ease-in-out infinite;
 }
+body.admin-page .cb-toggle { display: none; }
 @keyframes cb-glow {
   0%,100%{box-shadow:0 6px 24px rgba(77,166,255,.45),0 0 0 0 rgba(77,166,255,.25);}
   50%{box-shadow:0 10px 40px rgba(77,166,255,.65),0 0 0 14px rgba(77,166,255,0);}
@@ -215,6 +216,10 @@
   var sessionUuid=localStorage.getItem('cb_session')||'',sending=false;
 
   toggle.addEventListener('click',function(){
+    var willOpen=!popup.classList.contains('active');
+    if(willOpen&&typeof window.closeAdminFinanceWidget==='function'){
+      window.closeAdminFinanceWidget();
+    }
     popup.classList.toggle('active');
     if(popup.classList.contains('active')){
       toggle.innerHTML='<i class="fas fa-times"></i>';
@@ -228,6 +233,21 @@
   window.cbClose=function(){
     popup.classList.remove('active');
     toggle.innerHTML='<i class="fas fa-comments"></i><span class="badge-dot"></span>';
+  };
+
+  window.closeMainChatWidget=function(){
+    popup.classList.remove('active');
+    toggle.innerHTML='<i class="fas fa-comments"></i><span class="badge-dot"></span>';
+  };
+
+  window.openMainChatWidget=function(){
+    if(typeof window.closeAdminFinanceWidget==='function'){
+      window.closeAdminFinanceWidget();
+    }
+    popup.classList.add('active');
+    toggle.innerHTML='<i class="fas fa-times"></i>';
+    input.focus();
+    if(!sessionUuid)initSession();
   };
 
   input.addEventListener('keydown',function(e){

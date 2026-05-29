@@ -15,10 +15,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 .admin-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:white;}
 .admin-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#4DA6FF,#2196F3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#152A45;}
 .admin-logo-name{font-size:1.05rem;font-weight:700;}
-.topbar-nav{display:flex;gap:4px;}
-.topbar-nav a{padding:6px 12px;border-radius:6px;color:rgba(255,255,255,0.55);font-size:0.85rem;font-weight:500;text-decoration:none;transition:all 0.2s;}
-.topbar-nav a:hover{background:rgba(255,255,255,0.08);color:white;}
-.topbar-nav a.active{background:rgba(255,255,255,0.1);color:white;}
 .topbar-right{display:flex;align-items:center;gap:12px;}
 .topbar-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all 0.2s;font-family:'Be Vietnam Pro',sans-serif;}
 .btn-gold{background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);color:#4DA6FF;}
@@ -77,56 +73,8 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 @media(max-width:640px){.admin-sidebar{display:none;}.admin-main{padding:16px;}}
 </style>
 </head>
-<body>
-<div class="admin-topbar">
-  <div class="topbar-left">
-    <a href="/Admin/Dashboard" class="admin-logo">
-      <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
-      <div class="admin-logo-name">Tech Store <span style="font-size:0.6rem;background:#4DA6FF;color:#152A45;padding:1px 6px;border-radius:4px;font-weight:700;">Admin</span></div>
-    </a>
-    <nav class="topbar-nav">
-      <a href="/Admin/Dashboard"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
-      <a href="/Admin/Products"><i class="fas fa-box me-1"></i> Sản phẩm</a>
-      <a href="/Admin/Categories"><i class="fas fa-tags me-1"></i> Danh mục</a>
-      <a href="/Admin/Suppliers"><i class="fas fa-truck me-1"></i> NCC</a>
-      <a href="/Admin/Accounts"><i class="fas fa-users me-1"></i> Tài khoản</a>
-      <a href="/Admin/Orders" class="active"><i class="fas fa-shopping-bag me-1"></i> Đơn hàng</a>
-      <a href="/Admin/FAQs"><i class="fas fa-question-circle me-1"></i> FAQ</a>
-    </nav>
-  </div>
-  <div class="topbar-right">
-    <a href="/" target="_blank" class="topbar-btn btn-gold"><i class="fas fa-external-link-alt"></i> Website</a>
-    <div class="topbar-user">
-      <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
-      <div><div class="user-name">{{ admin.username }}</div><div class="user-role">Quản trị</div></div>
-    </div>
-    <a href="/Auth/Logout" class="topbar-btn btn-red"><i class="fas fa-sign-out-alt"></i></a>
-  </div>
-</div>
-
-<div class="admin-body">
-<aside class="admin-sidebar">
-  <div class="sidebar-section">
-    <div class="sidebar-section-title">Quản lý</div>
-    <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
-    <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
-    <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
-    <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
-    <a href="/Admin/Orders" class="sidebar-link active"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
-    <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
-    <a href="/Admin/FAQs" class="sidebar-link"><i class="fas fa-question-circle"></i> FAQ</a>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-section-title">Phân tích</div>
-    <a href="/Admin/Statistics" class="sidebar-link"><i class="fas fa-chart-line"></i> Thống kê</a>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-section-title">Hệ thống</div>
-    <a href="/Admin/Chatbot" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
-    <a href="/Admin/Chats" class="sidebar-link"><i class="fas fa-comments"></i> Lịch sử Chat</a>
-    <a href="/" target="_blank" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
-  </div>
-</aside>
+<body class="admin-page">
+    {% include "partials/admin_shell.html" %}
 
 <main class="admin-main">
 <h1 class="page-title"><i class="fas fa-shopping-bag me-2" style="color:#4DA6FF;"></i>Quản lý đơn hàng</h1>
@@ -162,9 +110,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
       </thead>
       <tbody>
         {% for order in orders %}
-        <tr data-status="{{ order.status }}" data-id="{{ order.order_id }}" data-customer="{{ (order.account.username if order.account else (order.customer_name or '')) | lower }}">
+        {% set order_customer = (order.account.username if order.account else (order.customer_name or 'Khách vãng lai')) | vi_text %}
+        <tr data-status="{{ order.status }}" data-id="{{ order.order_id }}" data-customer="{{ order_customer | lower }}">
           <td><span class="order-id">#{{ order.order_id }}</span></td>
-          <td>{{ order.account.username if order.account else (order.customer_name or '<span style="color:#64748b;">Khách vãng lai</span>') | safe }}</td>
+          <td>{{ order_customer }}</td>
           <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') if order.created_at else '-' }}</td>
           <td><span class="order-total">{{ "{:,.0f}".format(order.total_amount) }} đ</span></td>
           <td>
@@ -284,6 +233,7 @@ async function deleteOrder(orderId) {
 }
 </script>
   <script src="/static/js/admin-chat-widget.js"></script>
+  {% include "partials/admin_finance_widget.html" %}
   {% include "partials/chatbot.html" %}
 </body>
 </html>

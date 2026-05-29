@@ -4,7 +4,7 @@ Admin Controller - Trang quan tri he thong (Full CRUD)
 from fastapi import APIRouter, Request, Depends, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from decimal import Decimal
@@ -75,6 +75,32 @@ def _admin_json(request: Request, db: Session):
         return None
 
 
+def _admin_nav_context(db: Session, active_page: str):
+    total_products = db.query(Product).count()
+    total_categories = db.query(Category).count()
+    total_suppliers = db.query(Supplier).count()
+    total_orders = db.query(Order).count()
+    total_accounts = db.query(Account).count()
+    total_faqs = db.query(FAQ).count()
+    total_chats = db.query(ChatSession).count()
+    pending_orders = db.query(Order).filter(
+        or_(Order.status == "Pending", Order.status == "cho_xu_ly")
+    ).count()
+    return {
+        "active_admin_page": active_page,
+        "admin_nav_stats": {
+            "total_products": total_products,
+            "total_categories": total_categories,
+            "total_suppliers": total_suppliers,
+            "total_orders": total_orders,
+            "total_accounts": total_accounts,
+            "total_faqs": total_faqs,
+            "total_chats": total_chats,
+            "pending_orders": pending_orders,
+        },
+    }
+
+
 def _to_int(value, default=None, minimum=None, maximum=None):
     if value is None or value == "":
         return default
@@ -116,6 +142,21 @@ def _sync_product_inventory(db: Session, product: Product, stock_quantity: int):
         if inventory.max_stock_level is not None and stock_quantity > inventory.max_stock_level:
             inventory.max_stock_level = stock_quantity
     product.stock_quantity = stock_quantity
+
+
+def _ensure_knowledge_chunks_metadata_column(db: Session):
+    """Bo sung cot metadata_json cho DB cu de dong bo AI khong bi loi 500."""
+    try:
+        db.execute(text("""
+            IF COL_LENGTH('KnowledgeChunks', 'metadata_json') IS NULL
+            BEGIN
+                ALTER TABLE KnowledgeChunks ADD metadata_json NVARCHAR(MAX) NULL
+            END
+        """))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def _validate_role(db: Session, role_id: int):
@@ -326,6 +367,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "chart_data": json.dumps(chart_data),
             "top_selling": top_selling_list,
             "low_stock_products": low_stock_products,
+            **_admin_nav_context(db, "dashboard"),
         }
     )
 
@@ -391,6 +433,7 @@ async def admin_statistics(request: Request, db: Session = Depends(get_db)):
             },
             "top_products": top_products,
             "low_stock_items": low_stock_items,
+            **_admin_nav_context(db, "statistics"),
         }
     )
 
@@ -410,6 +453,7 @@ async def admin_chatbot(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "page_title": "AI Chatbot",
             "admin": admin,
+            **_admin_nav_context(db, "chatbot"),
         }
     )
 
@@ -436,6 +480,7 @@ async def admin_products(request: Request, db: Session = Depends(get_db)):
             "products": products,
             "categories": categories,
             "suppliers": suppliers,
+            **_admin_nav_context(db, "products"),
         }
     )
 
@@ -460,6 +505,7 @@ async def admin_accounts(request: Request, db: Session = Depends(get_db)):
             "admin": admin,
             "accounts": accounts,
             "roles": roles,
+            **_admin_nav_context(db, "accounts"),
         }
     )
 
@@ -483,6 +529,7 @@ async def admin_orders(request: Request, db: Session = Depends(get_db)):
             "admin": admin,
             "orders": orders,
             "order_statuses": OrderStatus.STATUSES,
+            **_admin_nav_context(db, "orders"),
         }
     )
 
@@ -505,6 +552,7 @@ async def admin_categories(request: Request, db: Session = Depends(get_db)):
             "page_title": "Quản lý Danh mục",
             "admin": admin,
             "categories": categories,
+            **_admin_nav_context(db, "categories"),
         }
     )
 
@@ -527,6 +575,7 @@ async def admin_suppliers(request: Request, db: Session = Depends(get_db)):
             "page_title": "Quan ly Nha cung cap",
             "admin": admin,
             "suppliers": suppliers,
+            **_admin_nav_context(db, "suppliers"),
         }
     )
 
@@ -553,6 +602,7 @@ async def admin_chats(request: Request, db: Session = Depends(get_db)):
             "page_title": "Lịch sử Chat",
             "admin": admin,
             "sessions": sessions,
+            **_admin_nav_context(db, "chats"),
         }
     )
 
@@ -613,6 +663,7 @@ async def order_detail(request: Request, order_id: int, db: Session = Depends(ge
             "order": order,
             "items": items,
             "order_statuses": OrderStatus.STATUSES,
+            **_admin_nav_context(db, "order_detail"),
         }
     )
 
@@ -1276,6 +1327,7 @@ async def edit_product_page(request: Request, product_id: int, db: Session = Dep
             "suppliers": suppliers,
             "variants": variants_data,
             "product_images": product_images,
+            **_admin_nav_context(db, "product_edit"),
         }
     )
 
@@ -1877,6 +1929,7 @@ async def admin_faqs(request: Request, db: Session = Depends(get_db)):
             "admin": admin,
             "faqs": faqs,
             "faq_categories": faq_categories,
+            **_admin_nav_context(db, "faqs"),
         },
     )
 
@@ -1968,6 +2021,79 @@ async def api_delete_faq(request: Request, faq_id: int, db: Session = Depends(ge
     return JSONResponse({"success": True})
 
 
+@router.post("/API/FAQs/sync-ai")
+async def api_sync_faq_ai(request: Request, db: Session = Depends(get_db)):
+    """Đồng bộ FAQ vào Vector Store cho AI Chatbot."""
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    try:
+        from Services.AI.EmbeddingService import get_embedding_service
+        from Services.AI.VectorStore import VectorStore
+
+        _ensure_knowledge_chunks_metadata_column(db)
+
+        embed_svc = get_embedding_service()
+        if not embed_svc.is_available():
+            return JSONResponse({
+                "success": False,
+                "error": "Dịch vụ Embedding không khả dụng. Kiểm tra GEMINI_API_KEY trong file .env."
+            }, status_code=503)
+
+        faqs = db.query(FAQ).filter(FAQ.is_active == True).all()
+        if not faqs:
+            return JSONResponse({
+                "success": True,
+                "message": "Không có FAQ đang hiển thị để đồng bộ.",
+                "synced_count": 0,
+            })
+
+        store = VectorStore(db)
+        store.delete_by_source("FAQs")
+
+        synced = 0
+        failed = 0
+        for faq in faqs:
+            chunk_text = f"Câu hỏi: {faq.question}\nTrả lời: {faq.answer}"
+            vec = embed_svc.embed_text(chunk_text)
+            if not vec:
+                failed += 1
+                continue
+
+            store.upsert_chunk(
+                content=chunk_text,
+                content_type="faq",
+                source_id=faq.faq_id,
+                source_table="FAQs",
+                embedding=vec,
+                metadata={"question": (faq.question or "")[:100]},
+            )
+            synced += 1
+
+        db.commit()
+
+        return JSONResponse({
+            "success": True,
+            "message": f"Đã đồng bộ {synced}/{len(faqs)} câu hỏi FAQ vào AI." + (f" Bỏ qua {failed} câu lỗi embedding." if failed else ""),
+            "synced_count": synced,
+            "failed_count": failed,
+        })
+    except ImportError:
+        db.rollback()
+        return JSONResponse({
+            "success": False,
+            "error": "Module AI chưa được cài đặt hoặc thiếu dependency."
+        }, status_code=500)
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({
+            "success": False,
+            "error": f"Lỗi đồng bộ: {str(e)}"
+        }, status_code=500)
+
+
 @router.get("/API/FAQs/{faq_id}")
 async def api_get_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
     try:
@@ -1990,62 +2116,6 @@ async def api_get_faq(request: Request, faq_id: int, db: Session = Depends(get_d
             "is_active": faq.is_active,
         }
     })
-
-
-@router.post("/API/FAQs/sync-ai")
-async def api_sync_faq_ai(request: Request, db: Session = Depends(get_db)):
-    """Đồng bộ FAQ vào Vector Store cho AI Chatbot."""
-    try:
-        admin = _check_admin(request, db)
-    except HTTPException:
-        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
-
-    try:
-        from Services.AI.EmbeddingService import get_embedding_service
-        from Services.AI.VectorStore import VectorStore
-
-        embed_svc = get_embedding_service()
-        if not embed_svc.is_available():
-            return JSONResponse({
-                "success": False,
-                "error": "Dịch vụ Embedding không khả dụng. Kiểm tra GEMINI_API_KEY."
-            }, status_code=500)
-
-        store = VectorStore(db)
-        faqs = db.query(FAQ).filter(FAQ.is_active == True).all()
-
-        store.delete_by_source("FAQs")
-        synced = 0
-        for faq in faqs:
-            chunk_text = f"Câu hỏi: {faq.question}\nTrả lời: {faq.answer}"
-            vec = embed_svc.embed_text(chunk_text)
-            if vec:
-                store.upsert_chunk(
-                    content=chunk_text,
-                    content_type="faq",
-                    source_id=faq.faq_id,
-                    source_table="FAQs",
-                    embedding=vec,
-                    metadata={"question": faq.question[:100]},
-                )
-                synced += 1
-        db.commit()
-
-        return JSONResponse({
-            "success": True,
-            "message": f"Đã đồng bộ {synced}/{len(faqs)} câu hỏi FAQ vào AI.",
-            "synced_count": synced,
-        })
-    except ImportError:
-        return JSONResponse({
-            "success": False,
-            "error": "Module AI chưa được cài đặt."
-        }, status_code=500)
-    except Exception as e:
-        return JSONResponse({
-            "success": False,
-            "error": f"Lỗi đồng bộ: {str(e)}"
-        }, status_code=500)
 
 
 # =====================================================================

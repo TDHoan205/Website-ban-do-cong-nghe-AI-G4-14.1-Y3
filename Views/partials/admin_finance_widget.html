@@ -1,0 +1,354 @@
+{% set finance_data = finance if finance is defined else {} %}
+{% set stats_data = stats if stats is defined else {} %}
+{% set admin_name = admin.username if admin is defined and admin.username is defined else 'admin' %}
+{% set top_selling_data = [] %}
+{% if top_selling is defined %}
+  {% for item in top_selling %}
+    {% set _ = top_selling_data.append({
+      'name': item.product_name[:35],
+      'qty': item.total_qty | default(0),
+      'rev': "{:,.0f}".format(item.total_revenue | default(0) | float)
+    }) %}
+  {% endfor %}
+{% endif %}
+{% set low_stock_data = [] %}
+{% if low_stock_products is defined %}
+  {% for p in low_stock_products %}
+    {% set _ = low_stock_data.append({
+      'name': p.name[:35],
+      'qty': p.stock_quantity | default(0)
+    }) %}
+  {% endfor %}
+{% endif %}
+
+<style>
+  .admin-fab-stack {
+    display: none;
+  }
+  .admin-finance-fab {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    color: #172554;
+    background: linear-gradient(135deg, #facc15, #f59e0b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    box-shadow: 0 10px 28px rgba(245, 158, 11, 0.36);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .admin-finance-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 14px 36px rgba(245, 158, 11, 0.45);
+  }
+  .admin-finance-fab .fab-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #152A45;
+    background: #fff7cc;
+    color: #9a3412;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.52rem;
+    font-weight: 800;
+  }
+  .admin-finance-panel {
+    position: fixed;
+    right: 28px;
+    bottom: 108px;
+    z-index: 9996;
+    width: 380px;
+    max-height: 520px;
+    background: #1E3A5F;
+    border: 1px solid #2D4A6F;
+    border-radius: 18px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: adminFinanceSlideUp 0.25s ease;
+  }
+  .admin-finance-panel.open { display: flex; }
+  @keyframes adminFinanceSlideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .admin-finance-header {
+    background: linear-gradient(135deg, #facc15, #f59e0b);
+    color: #172554;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .admin-finance-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+  .admin-finance-info h4 {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+  .admin-finance-info p {
+    margin: 0;
+    font-size: 0.72rem;
+    color: rgba(23,37,84,0.8);
+  }
+  .admin-finance-close {
+    margin-left: auto;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    color: #172554;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .admin-finance-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    max-height: 360px;
+  }
+  .admin-finance-msg {
+    max-width: 88%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.18);
+    color: #FFFFFF;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    border-bottom-left-radius: 4px;
+  }
+  .admin-finance-msg strong { color: #facc15; }
+  .admin-finance-actions {
+    padding: 12px 16px;
+    border-top: 1px solid #2D4A6F;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .admin-finance-action {
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(250, 204, 21, 0.28);
+    background: rgba(250, 204, 21, 0.08);
+    color: #facc15;
+    font-size: 0.74rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .admin-finance-action:hover {
+    background: rgba(250, 204, 21, 0.16);
+    border-color: rgba(250, 204, 21, 0.5);
+  }
+  @media (max-width: 640px) {
+    .admin-fab-stack { right: 16px; bottom: 96px; gap: 12px; }
+    .admin-finance-panel {
+      right: 16px;
+      left: 16px;
+      width: auto;
+      bottom: 96px;
+    }
+  }
+</style>
+
+<div class="admin-fab-stack">
+  <button class="admin-finance-fab" id="admin-finance-fab" title="Trợ thủ Tài chính AI">
+    <i class="fas fa-chart-line"></i>
+    <span class="fab-badge">AI</span>
+  </button>
+</div>
+
+<div
+  class="admin-finance-panel"
+  id="admin-finance-panel"
+  data-revenue-today="{{ '{:,.0f}'.format(finance_data.revenue_today | default(0) | float) }}"
+  data-revenue-week="{{ '{:,.0f}'.format(finance_data.revenue_week | default(0) | float) }}"
+  data-revenue-month="{{ '{:,.0f}'.format(finance_data.revenue_month | default(0) | float) }}"
+  data-revenue-year="{{ '{:,.0f}'.format(finance_data.revenue_year | default(0) | float) }}"
+  data-products-sold-today="{{ finance_data.products_sold_today | default(0) }}"
+  data-products-sold-month="{{ finance_data.products_sold_month | default(0) }}"
+  data-orders-today="{{ finance_data.orders_today | default(0) }}"
+  data-avg-order-value="{{ '{:,.0f}'.format(finance_data.avg_order_value | default(0) | float) }}"
+  data-cancel-rate="{{ finance_data.cancel_rate | default(0) }}"
+  data-cancelled-orders="{{ finance_data.cancelled_orders | default(0) }}"
+  data-new-customers-month="{{ finance_data.new_customers_month | default(0) }}"
+  data-total-products="{{ stats_data.total_products | default(0) }}"
+  data-total-orders="{{ stats_data.total_orders | default(0) }}"
+  data-pending-orders="{{ stats_data.pending_orders | default(0) }}"
+  data-total-customers="{{ stats_data.total_customers | default(0) }}"
+  data-top-selling="{{ top_selling_data | tojson | forceescape }}"
+  data-low-stock="{{ low_stock_data | tojson | forceescape }}"
+>
+  <div class="admin-finance-header">
+    <div class="admin-finance-avatar"><i class="fas fa-chart-line"></i></div>
+    <div class="admin-finance-info">
+      <h4>Trợ thủ Tài chính AI</h4>
+      <p>Dữ liệu realtime từ hệ thống</p>
+    </div>
+    <button class="admin-finance-close" id="admin-finance-close"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="admin-finance-body" id="admin-finance-body">
+    <div class="admin-finance-msg">
+      Xin chào <strong>{{ admin_name }}</strong>! Tôi có thể tóm tắt nhanh tình hình kinh doanh ngay trong trang admin.
+    </div>
+  </div>
+  <div class="admin-finance-actions" id="admin-finance-actions">
+    <button class="admin-finance-action" data-action="overview">Tổng quan</button>
+    <button class="admin-finance-action" data-action="today">Hôm nay</button>
+    <button class="admin-finance-action" data-action="month">Tháng này</button>
+    <button class="admin-finance-action" data-action="alerts">Cảnh báo</button>
+    <button class="admin-finance-action" data-action="top">Bán chạy</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  if (window.__adminFinanceWidgetInitialized) return;
+  window.__adminFinanceWidgetInitialized = true;
+
+  var fab = document.getElementById("admin-finance-fab");
+  var panel = document.getElementById("admin-finance-panel");
+  var closeBtn = document.getElementById("admin-finance-close");
+  var body = document.getElementById("admin-finance-body");
+  var actions = document.getElementById("admin-finance-actions");
+
+  function parseJsonAttr(value) {
+    try {
+      return JSON.parse(value || "[]");
+    } catch (_) {
+      return [];
+    }
+  }
+
+  if (fab && panel && closeBtn && body && actions) {
+  var finData = {
+    revenue_today: panel.dataset.revenueToday || "0",
+    revenue_week: panel.dataset.revenueWeek || "0",
+    revenue_month: panel.dataset.revenueMonth || "0",
+    revenue_year: panel.dataset.revenueYear || "0",
+    products_sold_today: panel.dataset.productsSoldToday || "0",
+    products_sold_month: panel.dataset.productsSoldMonth || "0",
+    orders_today: panel.dataset.ordersToday || "0",
+    avg_order_value: panel.dataset.avgOrderValue || "0",
+    cancel_rate: panel.dataset.cancelRate || "0",
+    cancelled_orders: panel.dataset.cancelledOrders || "0",
+    new_customers_month: panel.dataset.newCustomersMonth || "0",
+    total_products: panel.dataset.totalProducts || "0",
+    total_orders: panel.dataset.totalOrders || "0",
+    pending_orders: panel.dataset.pendingOrders || "0",
+    total_customers: panel.dataset.totalCustomers || "0"
+  };
+
+  var topSellingData = parseJsonAttr(panel.dataset.topSelling);
+  var lowStockData = parseJsonAttr(panel.dataset.lowStock);
+
+  var alertMsg = "";
+  if (parseInt(finData.pending_orders || "0", 10) > 0) {
+    alertMsg += "Có <strong>" + finData.pending_orders + "</strong> đơn đang chờ xử lý.<br>";
+  }
+  if (lowStockData.length > 0) {
+    alertMsg += "Có <strong>" + lowStockData.length + "</strong> sản phẩm tồn thấp:<br>";
+    lowStockData.slice(0, 5).forEach(function (p) {
+      alertMsg += "- " + p.name + ": còn <strong>" + p.qty + "</strong> SP<br>";
+    });
+  }
+  if (parseFloat(finData.cancel_rate || "0") > 10) {
+    alertMsg += "Tỷ lệ hủy đơn đang cao: <strong>" + finData.cancel_rate + "%</strong><br>";
+  }
+
+  var topMsg = "Chưa có dữ liệu bán hàng tháng này.";
+  if (topSellingData.length) {
+    topMsg = topSellingData.map(function (p, i) {
+      return (i + 1) + ". <strong>" + p.name + "</strong> - " + p.qty + " SP - " + p.rev + " đ";
+    }).join("<br>");
+  }
+
+  var responses = {
+    overview:
+      "Tổng sản phẩm: <strong>" + finData.total_products + "</strong><br>" +
+      "Tổng đơn hàng: <strong>" + finData.total_orders + "</strong><br>" +
+      "Đơn chờ xử lý: <strong>" + finData.pending_orders + "</strong><br>" +
+      "Tổng khách hàng: <strong>" + finData.total_customers + "</strong><br>" +
+      "Giá trị TB/đơn: <strong>" + finData.avg_order_value + " đ</strong><br>" +
+      "Tỷ lệ hủy: <strong>" + finData.cancel_rate + "%</strong> (" + finData.cancelled_orders + " đơn)",
+    today:
+      "Doanh thu hôm nay: <strong>" + finData.revenue_today + " đ</strong><br>" +
+      "Đơn mới hôm nay: <strong>" + finData.orders_today + "</strong><br>" +
+      "SP đã bán: <strong>" + finData.products_sold_today + "</strong>",
+    month:
+      "Doanh thu tháng: <strong>" + finData.revenue_month + " đ</strong><br>" +
+      "Doanh thu tuần: <strong>" + finData.revenue_week + " đ</strong><br>" +
+      "SP đã bán tháng này: <strong>" + finData.products_sold_month + "</strong><br>" +
+      "Khách mới tháng này: <strong>" + finData.new_customers_month + "</strong><br>" +
+      "Doanh thu năm: <strong>" + finData.revenue_year + " đ</strong>",
+    alerts: alertMsg || "Không có cảnh báo đáng chú ý.",
+    top: topMsg
+  };
+
+  function closeFinancePanel() {
+    panel.classList.remove("open");
+  }
+
+  function openFinancePanel() {
+    if (typeof window["closeAdminChatWidget"] === "function") {
+      window["closeAdminChatWidget"]();
+    }
+    if (typeof window["closeMainChatWidget"] === "function") {
+      window["closeMainChatWidget"]();
+    }
+    panel.classList.add("open");
+  }
+
+  fab.addEventListener("click", function () {
+    if (panel.classList.contains("open")) {
+      closeFinancePanel();
+    } else {
+      openFinancePanel();
+    }
+  });
+
+  closeBtn.addEventListener("click", closeFinancePanel);
+
+  actions.addEventListener("click", function (e) {
+    var btn = e.target.closest(".admin-finance-action");
+    if (!btn) return;
+    var action = btn.getAttribute("data-action");
+    if (!responses[action]) return;
+    var msg = document.createElement("div");
+    msg.className = "admin-finance-msg";
+    msg.innerHTML = responses[action];
+    body.appendChild(msg);
+    body.scrollTop = body.scrollHeight;
+  });
+
+  window.closeAdminFinanceWidget = closeFinancePanel;
+  window.openAdminFinanceWidget = openFinancePanel;
+  }
+})();
+</script>

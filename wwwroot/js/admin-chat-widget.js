@@ -7,7 +7,7 @@
     .admin-chat-widget {
       position: fixed;
       right: 24px;
-      bottom: 24px;
+      bottom: 102px;
       z-index: 1100;
       width: 360px;
       max-height: 560px;
@@ -121,10 +121,10 @@
       <button type="button" id="admin-chat-close" aria-label="Close"><i class="fas fa-times"></i></button>
     </div>
     <div class="admin-chat-msgs" id="admin-chat-msgs">
-      <div class="admin-chat-row bot"><div class="admin-chat-bubble">Xin chao! Toi co the ho tro ban ngay trong trang admin.</div></div>
+      <div class="admin-chat-row bot"><div class="admin-chat-bubble">Xin chào! Tôi có thể hỗ trợ bạn ngay trong trang admin.</div></div>
     </div>
     <div class="admin-chat-input">
-      <input id="admin-chat-input" type="text" placeholder="Nhap noi dung..." />
+      <input id="admin-chat-input" type="text" placeholder="Nhập nội dung..." />
       <button id="admin-chat-send" type="button"><i class="fas fa-paper-plane"></i></button>
     </div>
   `;
@@ -194,12 +194,12 @@
           sessionUuid = d.session_uuid;
           localStorage.setItem("admin_cb_session", sessionUuid);
         }
-        addMsg(d.response || "Da nhan duoc tin nhan.", "bot");
+        addMsg(d.response || "Đã nhận được tin nhắn.", "bot");
       } else {
         addMsg("He thong dang ban, vui long thu lai.", "bot");
       }
     } catch (_) {
-      addMsg("Khong the ket noi chatbot.", "bot");
+      addMsg("Không thể kết nối chatbot.", "bot");
     }
 
     sending = false;
@@ -208,6 +208,10 @@
   }
 
   function togglePanel() {
+    const willOpen = !panel.classList.contains("active");
+    if (willOpen && typeof window.closeAdminFinanceWidget === "function") {
+      window.closeAdminFinanceWidget();
+    }
     panel.classList.toggle("active");
     if (panel.classList.contains("active")) {
       initSession();
@@ -229,6 +233,10 @@
   window.toggleAdminChatWidget = function (e) {
     if (e) e.preventDefault();
     togglePanel();
+  };
+
+  window.closeAdminChatWidget = function () {
+    panel.classList.remove("active");
   };
 
   document.addEventListener("click", function (e) {

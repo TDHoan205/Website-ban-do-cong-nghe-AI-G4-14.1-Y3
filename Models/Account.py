@@ -2,7 +2,7 @@
 Account Model - Tài khoản người dùng
 Tương đương Models/Account.cs trong C#
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Unicode, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
@@ -12,12 +12,12 @@ class Account(Base):
     __tablename__ = "Accounts"
 
     account_id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, nullable=False, index=True)
+    username = Column(Unicode(50), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    email = Column(String(100), unique=True)
-    full_name = Column(String(100))
-    phone = Column(String(20))
-    address = Column(String(255))
+    email = Column(Unicode(100), unique=True)
+    full_name = Column(Unicode(100))
+    phone = Column(Unicode(20))
+    address = Column(Unicode(255))
     is_active = Column(Boolean, default=True)
     role_id = Column(Integer, ForeignKey("Roles.role_id"), nullable=False)
     reset_token = Column(String(64))
@@ -49,8 +49,8 @@ class Employee(Base):
 
     employee_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("Accounts.account_id"), unique=True, nullable=False)
-    department = Column(String(50))
-    position = Column(String(50))
+    department = Column(Unicode(50))
+    position = Column(Unicode(50))
     hire_date = Column(DateTime(timezone=True))
     salary = Column(Integer)
     is_active = Column(Boolean, default=True)
@@ -71,7 +71,7 @@ class Role(Base):
     __tablename__ = "Roles"
 
     role_id = Column(Integer, primary_key=True, index=True)
-    role_name = Column(String(50), unique=True, nullable=False)
+    role_name = Column(Unicode(50), unique=True, nullable=False)
 
     accounts = relationship("Account", back_populates="role")
 

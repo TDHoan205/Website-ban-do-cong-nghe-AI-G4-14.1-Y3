@@ -55,17 +55,31 @@
       }
       .admin-logo-name { font-size: 1.05rem; font-weight: 700; color: white; }
       .admin-logo-badge { font-size: 0.6rem; background: #4DA6FF; color: #152A45; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
-      .topbar-nav { display: flex; gap: 4px; align-items: center; }
-      .topbar-nav a {
-        padding: 6px 12px;
-        border-radius: 6px;
-        color: rgba(255,255,255,0.55);
-        font-size: 0.85rem;
-        font-weight: 500;
-        text-decoration: none;
-      }
-      .topbar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
       .topbar-right { display: flex; align-items: center; gap: 12px; }
+      .topbar-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-family: 'Be Vietnam Pro', sans-serif;
+      }
+      .btn-gold {
+        background: rgba(77,166,255,0.1);
+        border: 1px solid rgba(77,166,255,0.3);
+        color: #4DA6FF;
+      }
+      .btn-gold:hover { background: rgba(77,166,255,0.2); color: #4DA6FF; }
+      .btn-red {
+        background: rgba(239,68,68,0.1);
+        border: 1px solid rgba(239,68,68,0.3);
+        color: #ef4444;
+      }
+      .btn-red:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
       .topbar-user { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: rgba(255,255,255,0.06); border-radius: 8px; }
       .user-avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #1a2a3a, #152A45); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #4DA6FF; }
       .user-name { font-size: 0.85rem; font-weight: 600; color: white; }
@@ -188,51 +202,8 @@
       
     </style>
   </head>
-  <body>
-    <!-- ===== TOPBAR ===== -->
-    <div class="admin-topbar">
-      <div class="topbar-left">
-        <a href="/Admin/Dashboard" class="admin-logo">
-          <div class="admin-logo-icon"><i class="fas fa-robot"></i></div>
-          <div class="admin-logo-text"><div class="admin-logo-name">Tech Store <span class="admin-logo-badge">Admin</span></div></div>
-        </a>
-      </div>
-      <div class="topbar-right">
-        <div class="topbar-user">
-          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
-          <div class="user-info">
-            <div class="user-name">{{ admin.username }}</div>
-            <div class="user-role">Quản trị viên</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== BODY ===== -->
-    <div class="admin-body">
-      <!-- ===== SIDEBAR ===== -->
-      <aside class="admin-sidebar">
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Quản lý</div>
-          <a href="/Admin/Dashboard" class="sidebar-link"><i class="fas fa-chart-pie"></i> Trang chủ</a>
-          <a href="/Admin/Products" class="sidebar-link"><i class="fas fa-box"></i> Sản phẩm</a>
-          <a href="/Admin/Categories" class="sidebar-link"><i class="fas fa-tags"></i> Danh mục</a>
-          <a href="/Admin/Suppliers" class="sidebar-link"><i class="fas fa-truck"></i> Nhà cung cấp</a>
-          <a href="/Admin/Orders" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Đơn hàng</a>
-          <a href="/Admin/Accounts" class="sidebar-link"><i class="fas fa-users"></i> Tài khoản</a>
-          <a href="/Admin/FAQs" class="sidebar-link"><i class="fas fa-question-circle"></i> FAQ</a>
-        </div>
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Phân tích</div>
-          <a href="/Admin/Statistics" class="sidebar-link"><i class="fas fa-chart-line"></i> Thống kê</a>
-        </div>
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Hệ thống</div>
-          <a href="/Admin/Chatbot" class="sidebar-link"><i class="fas fa-robot"></i> AI Chatbot</a>
-          <a href="/Admin/Chats" class="sidebar-link active"><i class="fas fa-comments"></i> Lịch sử Chat</a>
-          <a href="/" class="sidebar-link"><i class="fas fa-globe"></i> Xem website</a>
-        </div>
-      </aside>
+  <body class="admin-page">
+    {% include "partials/admin_shell.html" %}
 
       <!-- ===== MAIN CONTENT ===== -->
       <main class="admin-main">
@@ -326,8 +297,9 @@
           chatBox.innerHTML = '<div class="empty-state"><p>Lỗi tải dữ liệu.</p></div>';
         }
       }
-    </script>
+</script>
     <script src="/static/js/admin-chat-widget.js"></script>
+    {% include "partials/admin_finance_widget.html" %}
     {% include "partials/chatbot.html" %}
 </body>
 </html>

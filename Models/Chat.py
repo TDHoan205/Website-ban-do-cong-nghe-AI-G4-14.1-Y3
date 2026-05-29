@@ -2,7 +2,7 @@
 Chat Models - AI Chatbot
 Tương đương Models/AI/Chat/Entities/ trong C#
 """
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, String, Unicode, UnicodeText, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
@@ -14,7 +14,7 @@ class ChatSession(Base):
     session_id = Column(Integer, primary_key=True, index=True)
     session_uuid = Column(String(36), unique=True, nullable=False)
     account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
-    device_info = Column(String(255))
+    device_info = Column(Unicode(255))
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     ended_at = Column(DateTime(timezone=True))
     is_active = Column(Boolean, default=True)
@@ -32,8 +32,8 @@ class ChatMessage(Base):
     message_id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("ChatSessions.session_id"), nullable=False)
     sender_type = Column(String(20), nullable=False)  # 'user', 'bot', 'staff'
-    message_content = Column(Text, nullable=False)
-    intent = Column(String(50))  # product_query, order_status, general, etc.
+    message_content = Column(UnicodeText, nullable=False)
+    intent = Column(Unicode(50))  # product_query, order_status, general, etc.
     confidence_score = Column(String(10))
     is_product_recommendation = Column(Boolean, default=False)
     recommended_product_ids = Column(String(255))  # JSON array of product IDs
@@ -51,9 +51,9 @@ class AIConversationLog(Base):
     log_id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("ChatSessions.session_id"), nullable=False)
     account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
-    user_message = Column(Text)
-    bot_response = Column(Text)
-    intent_detected = Column(String(50))
+    user_message = Column(UnicodeText)
+    bot_response = Column(UnicodeText)
+    intent_detected = Column(Unicode(50))
     confidence_score = Column(String(10))
     response_time_ms = Column(Integer)
     is_escalated_to_staff = Column(Boolean, default=False)
@@ -70,9 +70,9 @@ class FAQ(Base):
     __tablename__ = "FAQs"
 
     faq_id = Column(Integer, primary_key=True, index=True)
-    question = Column(String(500), nullable=False)
-    answer = Column(Text, nullable=False)
-    category = Column(String(50))
+    question = Column(Unicode(500), nullable=False)
+    answer = Column(UnicodeText, nullable=False)
+    category = Column(Unicode(50))
     display_order = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -87,9 +87,9 @@ class Notification(Base):
 
     notification_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
-    title = Column(String(200), nullable=False)
-    content = Column(Text, nullable=False)
-    notification_type = Column(String(50))  # order_update, promotion, system
+    title = Column(Unicode(200), nullable=False)
+    content = Column(UnicodeText, nullable=False)
+    notification_type = Column(Unicode(50))  # order_update, promotion, system
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -108,12 +108,12 @@ class KnowledgeChunk(Base):
     __tablename__ = "KnowledgeChunks"
 
     chunk_id = Column(Integer, primary_key=True, index=True)
-    content = Column(Text, nullable=False)
-    content_type = Column(String(50))  # product_info, faq, policy
+    content = Column(UnicodeText, nullable=False)
+    content_type = Column(Unicode(50))  # product_info, faq, policy
     source_id = Column(Integer)  # Reference to source entity
-    source_table = Column(String(50))  # Table name
-    embedding_vector = Column(Text)  # Vector embedding
-    metadata_json = Column(Text)  # JSON metadata
+    source_table = Column(Unicode(50))  # Table name
+    embedding_vector = Column(UnicodeText)  # Vector embedding
+    metadata_json = Column(UnicodeText)  # JSON metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):

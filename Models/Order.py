@@ -2,7 +2,7 @@
 Order Model - Đơn hàng
 Tương đương Models/Order.cs trong C#
 """
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, DECIMAL
+from sqlalchemy import Column, Integer, String, Unicode, Boolean, ForeignKey, DateTime, Text, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
@@ -16,10 +16,10 @@ class Order(Base):
     order_date = Column(DateTime(timezone=True), server_default=func.now())
     total_amount = Column(DECIMAL(10, 2), nullable=False)
     status = Column(String(20), default="Pending")  # Pending, Confirmed, Processing, Shipped, Delivered, Cancelled
-    customer_name = Column(String(100))
-    customer_phone = Column(String(20))
-    customer_address = Column(String(255))
-    notes = Column(String(500))
+    customer_name = Column(Unicode(100))
+    customer_phone = Column(Unicode(20))
+    customer_address = Column(Unicode(255))
+    notes = Column(Unicode(500))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -45,8 +45,8 @@ class OrderItem(Base):
     order_id = Column(Integer, ForeignKey("Orders.order_id"), nullable=False)
     product_id = Column(Integer, ForeignKey("Products.product_id"), nullable=False)
     variant_id = Column(Integer, ForeignKey("ProductVariants.variant_id"), nullable=True)
-    product_name = Column(String(255), nullable=False)  # Lưu tên tại thời điểm đặt
-    variant_name = Column(String(100))  # Lưu tên variant tại thời điểm đặt
+    product_name = Column(Unicode(255), nullable=False)  # Lưu tên tại thời điểm đặt
+    variant_name = Column(Unicode(100))  # Lưu tên variant tại thời điểm đặt
     quantity = Column(Integer, nullable=False)
     unit_price = Column(DECIMAL(10, 2), nullable=False)
     subtotal = Column(DECIMAL(10, 2), nullable=False)
