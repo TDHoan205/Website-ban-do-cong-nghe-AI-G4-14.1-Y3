@@ -7,6 +7,25 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
 
+_LOG_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "debug-ed9600.log")
+
+def _debug_log(session_id: str, hypothesis_id: str, location: str, message: str, data: dict):
+    try:
+        import json, time
+        log_entry = {
+            "sessionId": session_id,
+            "id": f"log_{int(time.time() * 1000)}",
+            "timestamp": int(time.time() * 1000),
+            "location": location,
+            "message": message,
+            "data": data,
+            "hypothesisId": hypothesis_id
+        }
+        with open(_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
 
 class Product(Base):
     __tablename__ = "Products"
@@ -29,7 +48,6 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Computed property (không lưu DB)
     @property
     def is_deal(self) -> bool:
         return self.discount_percent > 0 or (
@@ -38,14 +56,33 @@ class Product(Base):
 
     @property
     def first_image_url(self) -> str:
-        """Lấy ảnh đầu tiên: ưu tiên primary, không thì theo display_order, fallback sang image_url gốc"""
-        if self.product_images:
-            for img in sorted(self.product_images, key=lambda x: (not x.is_primary, x.display_order)):
+        images = self.product_images
+        _debug_log("ed9600", "H2", "Product.first_image_url",
+            "first_image_url called",
+            {
+                "product_id": self.product_id,
+                "name": self.name[:40] if self.name else "",
+                "product_images_count": len(images) if images else 0,
+                "product_images": [
+                    {"image_id": i.image_id, "image_url": i.image_url, "is_primary": bool(i.is_primary), "display_order": i.display_order}
+                    for i in (images or [])
+                ] if images else [],
+                "product_image_url": self.image_url or ""
+            })
+        if images:
+            sorted_imgs = sorted(images, key=lambda x: (not x.is_primary, x.display_order))
+            for img in sorted_imgs:
                 if img.image_url:
+                    _debug_log("ed9600", "H2", "Product.first_image_url:selected",
+                        "first_image_url: selected image",
+                        {"selected_image_id": img.image_id, "image_url": img.image_url, "is_primary": bool(img.is_primary)})
                     return img.image_url
-        return self.image_url or "/static/images/no-image.png"
+        fallback = self.image_url or "/static/images/no-image.png"
+        _debug_log("ed9600", "H2", "Product.first_image_url:fallback",
+            "first_image_url: using fallback",
+            {"fallback_url": fallback, "product_image_url": self.image_url or ""})
+        return fallback
 
-    # Relationships
     category = relationship("Category", back_populates="products")
     supplier = relationship("Supplier", back_populates="products")
     inventory = relationship("Inventory", back_populates="product", uselist=False)
@@ -57,12 +94,6 @@ class Product(Base):
 
     def __repr__(self):
         return f"<Product(name='{self.name}', price={self.price})>"
-
-
-"""
-ProductVariant Model - Biến thể sản phẩm
-Tương đương Models/ProductVariant.cs trong C#
-"""
 
 
 class ProductVariant(Base):
@@ -90,12 +121,6 @@ class ProductVariant(Base):
 
     def __repr__(self):
         return f"<ProductVariant(name='{self.variant_name}')>"
-
-
-"""
-ProductImage Model - Hình ảnh sản phẩm
-Tương đương Models/ProductImage.cs trong C#
-"""
 
 
 class ProductImage(Base):

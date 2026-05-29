@@ -1674,6 +1674,16 @@ async def api_update_product_image(request: Request, image_id: int, db: Session 
     except IntegrityError:
         db.rollback()
         return JSONResponse({"success": False, "error": "Du lieu anh san pham khong hop le"}, status_code=400)
+
+    _debug_log("ed9600", "H3", "AdminController.update_product_image:success",
+        "Image update successful - verifying new state",
+        {
+            "image_id": image_id,
+            "is_primary": img.is_primary,
+            "product_id": img.product_id,
+            "variant_id": img.variant_id,
+            "image_url": img.image_url
+        })
     return JSONResponse({"success": True})
 
 

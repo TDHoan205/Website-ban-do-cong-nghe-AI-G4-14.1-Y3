@@ -256,6 +256,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
               {% if img.is_primary %}
               <span style="position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#4DA6FF;color:#152A45;padding:1px 4px;border-radius:3px;font-weight:700;">★</span>
               {% endif %}
+              <button onclick="toggleImgSelect(this, {{ img.image_id }})" title="Dat lam anh chinh" style="position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:rgba(0,0,0,0.65);color:#ffd700;border:none;border-radius:3px;padding:1px 5px;cursor:pointer;font-weight:700;">★</button>
               <button onclick="removeProductImg({{ img.image_id }})" style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#ef4444;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:white;line-height:1;">✕</button>
             </div>
             {% endfor %}
@@ -664,7 +665,13 @@ async function removeProductImg(imageId) {
 }
 
 function toggleImgSelect(el, imageId) {
-  document.querySelectorAll('#product-img-gallery .product-img-thumb').forEach(i => i.classList.remove('selected'));
+  document.querySelectorAll('#product-img-gallery .product-img-thumb').forEach(i => {
+    const wrap = i.closest('.img-thumb-wrap');
+    if (wrap) {
+      const star = wrap.querySelector('span');
+      if (star) star.remove();
+    }
+  });
   el.classList.add('selected');
   // Set as primary
   fetch(IMG_API + '/' + imageId, {
@@ -672,20 +679,14 @@ function toggleImgSelect(el, imageId) {
     body: new FormData().append('is_primary', 'true')
   }).then(r => r.json()).then(d => {
     if (d.success) {
-      document.querySelectorAll('#product-img-gallery .product-img-thumb').forEach(i => {
-        const wrap = i.closest('.img-thumb-wrap');
-        if (wrap) {
-          const star = wrap.querySelector('span');
-          if (star) star.remove();
-        }
-        i.classList.remove('selected');
-      });
-      el.classList.add('selected');
       const wrap = el.closest('.img-thumb-wrap') || el.parentElement;
       const star = document.createElement('span');
       star.style.cssText = 'position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#4DA6FF;color:#152A45;padding:1px 4px;border-radius:3px;font-weight:700;';
       star.textContent = '★';
       wrap.style.position = 'relative';
+      const star = document.createElement('span');
+      star.style.cssText = 'position:absolute;bottom:32px;left:2px;font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 4px;border-radius:3px;font-weight:700;';
+      star.textContent = '★ Chinh';
       wrap.insertBefore(star, wrap.firstChild);
     }
   });

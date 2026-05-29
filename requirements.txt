@@ -23,7 +23,7 @@ pydantic==2.6.1
 pydantic-settings==2.1.0
 
 # AI - Groq LLM
-groq==0.12.0
+groq>=1.0.0
 
 # AI - Gemini Embeddings
 google-genai>=1.0.0

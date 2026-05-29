@@ -338,27 +338,44 @@
         <!-- LEFT: GALLERY -->
         <div class="gallery-col">
           {% set all_images = [] %}
+          {# 1. Product-level images FIRST (these include the primary image) #}
+          {% for img in product_images %}
+            {% set _ = all_images.append({'url': img.image_url, 'variant_id': None, 'is_primary': img.is_primary}) %}
+          {% endfor %}
+          {# 2. Variant images SECOND #}
           {% for v in variants %}
             {% for img in v.images %}
-              {% set _ = all_images.append({'url': img.image_url, 'variant_id': v.variant_id}) %}
+              {% set _ = all_images.append({'url': img.image_url, 'variant_id': v.variant_id, 'is_primary': img.is_primary}) %}
             {% endfor %}
           {% endfor %}
-          {% for img in product_images %}
-            {% set _ = all_images.append({'url': img.image_url, 'variant_id': None}) %}
-          {% endfor %}
+          {# 3. Fallback to product.image_url if no images at all #}
           {% if not all_images %}
-            {% set _ = all_images.append({'url': product.image_url, 'variant_id': None}) %}
+            {% set _ = all_images.append({'url': product.image_url, 'variant_id': None, 'is_primary': False}) %}
           {% endif %}
-          {% set first_img = all_images[0].url if all_images else (product.image_url or '/static/images/no-image.png') %}
+          {# Find primary image: search product-level first, then any #}
+          {% set primary_img_url = '' %}
+          {# Check product-level images for primary first #}
+          {% for img in product_images %}
+            {% if img.is_primary %}
+              {% set primary_img_url = img.image_url %}
+            {% endif %}
+          {% endfor %}
+          {# Fallback: first image overall, or product.image_url #}
+          {% if not primary_img_url and all_images %}
+            {% set primary_img_url = all_images[0].url %}
+          {% endif %}
+          {% if not primary_img_url %}
+            {% set primary_img_url = product.image_url or '/static/images/no-image.png' %}
+          {% endif %}
 
           <div class="gallery-main-wrap">
-            <img src="{{ first_img }}" class="gallery-main-img" alt="{{ product.name }}" id="main-image" onerror="this.src='/static/images/no-image.png'" />
+            <img src="{{ primary_img_url }}" class="gallery-main-img" alt="{{ product.name }}" id="main-image" onerror="this.src='/static/images/no-image.png'" />
           </div>
 
           {% if all_images | length > 1 %}
           <div class="gallery-thumbs">
             {% for img in all_images %}
-            <img src="{{ img.url }}" class="gallery-thumb {% if loop.first %}active{% endif %}" onclick="changeImage(this, '{{ img.url }}')" onerror="this.style.display='none'" />
+            <img src="{{ img.url }}" class="gallery-thumb {% if img.url == primary_img_url %}active{% endif %}" onclick="changeImage(this, '{{ img.url }}')" onerror="this.style.display='none'" />
             {% endfor %}
           </div>
           {% endif %}
@@ -428,14 +445,16 @@
             {% endif %}
 
             {% if variants | selectattr('storage') | list | length > 0 %}
+            {% set seen_storages = [] %}
             <div class="variant-group">
               <div class="variant-label">
                 <i class="fas fa-memory"></i> Dung lượng: <span id="selected-storage-label">Chọn dung lượng</span>
               </div>
               <div class="variant-options">
                 {% for v in variants %}
-                {% if v.storage %}
-                <label class="variant-chip {% if loop.first %}selected{% endif %}" id="chip-storage-{{ v.variant_id }}">
+                {% if v.storage and v.storage not in seen_storages %}
+                {% set _ = seen_storages.append(v.storage) %}
+                <label class="variant-chip {% if loop.index == 1 %}selected{% endif %}" id="chip-storage-{{ v.variant_id }}">
                   <input type="radio" name="storage" value="{{ v.variant_id }}" data-storage="{{ v.storage }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" onchange="selectVariant(this)" autocomplete="off" />
                   {{ v.storage }}
                 </label>
@@ -684,5 +703,10 @@
         });
       })();
     </script>
+
+    <!-- ===== FLOATING CHAT AI ===== -->
+    <a href="/Chat/" title="Chat voi AI" style="position:fixed;bottom:28px;right:28px;z-index:9999;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;text-decoration:none;box-shadow:0 6px 24px rgba(102,126,234,0.4);transition:transform 0.3s,box-shadow 0.3s;">
+      <i class="fas fa-robot"></i>
+    </a>
   </body>
 </html>
