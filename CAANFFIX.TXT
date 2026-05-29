@@ -1,0 +1,3 @@
++ bóng bóng chat AI ở admin bị lỗi khi ấn vào , kéo ra thì bị lỗi (bị đẩy ra chỗ khác)
++ bóng chat ở admin chỉ cần 1 chức năng thống kê tài chính bỏ chat bot ai đi
++ thay giao diện bóng chat ai ở admin chuyển qua bên trang Web giao diện bên khách hàng

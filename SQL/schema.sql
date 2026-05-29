@@ -314,3 +314,33 @@ CREATE TABLE KnowledgeChunks (
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
 
+-- LiveChatConversations (cuộc hội thoại khách hàng ↔ nhân viên)
+CREATE TABLE LiveChatConversations (
+    conversation_id INT IDENTITY(1,1) PRIMARY KEY,
+    session_id INT NULL,
+    customer_account_id INT NULL,
+    staff_account_id INT NULL,
+    status NVARCHAR(20) NOT NULL DEFAULT 'waiting',
+    subject NVARCHAR(200) NULL,
+    customer_name NVARCHAR(100) NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    accepted_at DATETIME2 NULL,
+    closed_at DATETIME2 NULL,
+    CONSTRAINT FK_LiveChat_ChatSessions FOREIGN KEY (session_id) REFERENCES ChatSessions(session_id),
+    CONSTRAINT FK_LiveChat_CustomerAccounts FOREIGN KEY (customer_account_id) REFERENCES Accounts(account_id),
+    CONSTRAINT FK_LiveChat_StaffAccounts FOREIGN KEY (staff_account_id) REFERENCES Accounts(account_id)
+);
+
+-- LiveChatMessages (tin nhắn trong cuộc hội thoại live chat)
+CREATE TABLE LiveChatMessages (
+    message_id INT IDENTITY(1,1) PRIMARY KEY,
+    conversation_id INT NOT NULL,
+    sender_type NVARCHAR(20) NOT NULL,
+    sender_account_id INT NULL,
+    content NVARCHAR(MAX) NOT NULL,
+    is_read BIT NOT NULL DEFAULT 0,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_LiveChatMessages_Conversations FOREIGN KEY (conversation_id) REFERENCES LiveChatConversations(conversation_id) ON DELETE CASCADE,
+    CONSTRAINT FK_LiveChatMessages_Accounts FOREIGN KEY (sender_account_id) REFERENCES Accounts(account_id)
+);
+

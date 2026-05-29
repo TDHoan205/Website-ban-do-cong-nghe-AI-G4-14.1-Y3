@@ -118,3 +118,50 @@ class KnowledgeChunk(Base):
 
     def __repr__(self):
         return f"<KnowledgeChunk(type='{self.content_type}')>"
+
+
+"""
+Live Chat Models - Khách hàng ↔ Nhân viên
+"""
+
+
+class LiveChatConversation(Base):
+    __tablename__ = "LiveChatConversations"
+
+    conversation_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("ChatSessions.session_id"), nullable=True)
+    customer_account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
+    staff_account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
+    status = Column(String(20), nullable=False, default="waiting")  # waiting, active, closed
+    subject = Column(Unicode(200))
+    customer_name = Column(Unicode(100))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    accepted_at = Column(DateTime(timezone=True))
+    closed_at = Column(DateTime(timezone=True))
+
+    session = relationship("ChatSession")
+    customer_account = relationship("Account", foreign_keys=[customer_account_id])
+    staff_account = relationship("Account", foreign_keys=[staff_account_id])
+    messages = relationship("LiveChatMessage", back_populates="conversation", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<LiveChatConversation(id={self.conversation_id}, status='{self.status}')>"
+
+
+class LiveChatMessage(Base):
+    __tablename__ = "LiveChatMessages"
+
+    message_id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("LiveChatConversations.conversation_id"), nullable=False)
+    sender_type = Column(String(20), nullable=False)  # customer, staff, system
+    sender_account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
+    content = Column(UnicodeText, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    conversation = relationship("LiveChatConversation", back_populates="messages")
+    sender_account = relationship("Account")
+
+    def __repr__(self):
+        return f"<LiveChatMessage(sender='{self.sender_type}')>"
+

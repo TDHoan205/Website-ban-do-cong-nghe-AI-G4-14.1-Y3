@@ -80,9 +80,14 @@ class ChatService:
     def process_user_message(self, session_uuid: str, user_message: str, account_id: int = None) -> str:
         """
         Xử lý tin nhắn từ user qua RAG Pipeline thực tế
+        Nếu user muốn nói chuyện nhân viên → chuyển sang live chat
         """
         # Tạo hoặc lấy session
         session = self.get_or_create_session(session_uuid, account_id)
+
+        # Kiểm tra nếu user muốn nói chuyện với nhân viên
+        if self._is_live_chat_request(user_message):
+            return self._handle_live_chat_request(session, account_id)
 
         # Lưu tin nhắn user
         self.add_message(session.session_id, "user", user_message)
@@ -112,3 +117,56 @@ class ChatService:
         self.add_message(session.session_id, "bot", response, intent=intent)
 
         return response
+
+    def _is_live_chat_request(self, message: str) -> bool:
+        """Kiểm tra user có muốn nói chuyện với nhân viên không"""
+        msg = message.lower().strip()
+        keywords = [
+            "nói chuyện với nhân viên",
+            "chat với nhân viên",
+            "gặp nhân viên",
+            "kết nối nhân viên",
+            "liên hệ nhân viên",
+            "muốn gặp người thật",
+            "chat với người thật",
+            "nhắn với nhân viên",
+            "tư vấn viên",
+            "hỗ trợ trực tiếp",
+            "talk to staff",
+            "human support",
+            "live chat",
+        ]
+        return any(kw in msg for kw in keywords)
+
+    def _handle_live_chat_request(self, session, account_id: int = None) -> str:
+        """Tạo yêu cầu live chat và trả về thông báo"""
+        from Services.LiveChatService import LiveChatService
+
+        live_chat_service = LiveChatService(self.db)
+
+        # Lấy tên khách hàng nếu đăng nhập
+        customer_name = "Khách vãng lai"
+        if account_id:
+            from Models.Account import Account
+            account = self.db.query(Account).filter(Account.account_id == account_id).first()
+            if account and account.full_name:
+                customer_name = account.full_name
+
+        conversation = live_chat_service.request_live_chat(
+            session_id=session.session_id,
+            customer_account_id=account_id,
+            customer_name=customer_name,
+            subject="Hỗ trợ khách hàng",
+        )
+
+        # Lưu tin nhắn vào chat session
+        self.add_message(session.session_id, "user", "Yêu cầu nói chuyện với nhân viên")
+        self.add_message(
+            session.session_id, "bot",
+            "Đang kết nối bạn với nhân viên hỗ trợ...",
+            intent="live_chat_request",
+        )
+
+        # Trả về response đặc biệt (chứa conversation_id để frontend chuyển mode)
+        return f"__LIVECHAT__{conversation.conversation_id}__Đang kết nối bạn với nhân viên hỗ trợ. Vui lòng đợi trong giây lát... 💬"
+

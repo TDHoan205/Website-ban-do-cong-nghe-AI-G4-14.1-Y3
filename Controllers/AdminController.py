@@ -636,6 +636,208 @@ async def api_get_chat_messages(request: Request, session_uuid: str, db: Session
 
 
 # =====================================================================
+# LIVE CHAT (ADMIN / STAFF)
+# =====================================================================
+
+@router.get("/LiveChat", response_class=HTMLResponse)
+async def admin_livechat(request: Request, db: Session = Depends(get_db)):
+    """Trang quản lý Live Chat cho nhân viên"""
+    try:
+        admin = _check_admin(request, db)
+    except HTTPException as e:
+        if e.status_code == 401:
+            return RedirectResponse(url="/Auth/Admin", status_code=303)
+        raise
+
+    from Services.LiveChatService import LiveChatService
+    live_chat_service = LiveChatService(db)
+
+    waiting = live_chat_service.get_waiting_conversations()
+    active = live_chat_service.get_active_conversations()
+    all_conversations = live_chat_service.get_all_conversations()
+
+    return templates.TemplateResponse(
+        "Admin/livechat.html",
+        {
+            "request": request,
+            "page_title": "Live Chat",
+            "admin": admin,
+            "waiting_conversations": waiting,
+            "active_conversations": active,
+            "all_conversations": all_conversations,
+            **_admin_nav_context(db, "livechat"),
+        }
+    )
+
+
+@router.get("/API/LiveChat/Waiting")
+async def api_livechat_waiting(request: Request, db: Session = Depends(get_db)):
+    """Lấy danh sách cuộc hội thoại đang chờ (polling)"""
+    admin = _admin_json(request, db)
+    if not admin:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    from Services.LiveChatService import LiveChatService
+    live_chat_service = LiveChatService(db)
+
+    waiting = live_chat_service.get_waiting_conversations()
+    active = live_chat_service.get_active_conversations(admin.account_id)
+
+    return JSONResponse({
+        "success": True,
+        "waiting": [
+            {
+                "conversation_id": c.conversation_id,
+                "customer_name": c.customer_name or "Khách vãng lai",
+                "subject": c.subject or "",
+                "created_at": c.created_at.strftime("%H:%M %d/%m") if c.created_at else "",
+            }
+            for c in waiting
+        ],
+        "active": [
+            {
+                "conversation_id": c.conversation_id,
+                "customer_name": c.customer_name or "Khách vãng lai",
+                "subject": c.subject or "",
+                "created_at": c.created_at.strftime("%H:%M %d/%m") if c.created_at else "",
+            }
+            for c in active
+        ],
+        "waiting_count": len(waiting),
+    })
+
+
+@router.post("/API/LiveChat/Accept/{conversation_id}")
+async def api_livechat_accept(
+    request: Request, conversation_id: int, db: Session = Depends(get_db)
+):
+    """Nhân viên nhận hỗ trợ cuộc hội thoại"""
+    admin = _admin_json(request, db)
+    if not admin:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    from Services.LiveChatService import LiveChatService
+    live_chat_service = LiveChatService(db)
+
+    conversation = live_chat_service.accept_conversation(
+        conversation_id, admin.account_id
+    )
+
+    if not conversation:
+        return JSONResponse({
+            "success": False,
+            "error": "Không thể nhận cuộc hội thoại này",
+        }, status_code=400)
+
+    return JSONResponse({
+        "success": True,
+        "conversation_id": conversation.conversation_id,
+        "status": conversation.status,
+    })
+
+
+@router.post("/API/LiveChat/Send/{conversation_id}")
+async def api_livechat_send(
+    request: Request, conversation_id: int, db: Session = Depends(get_db)
+):
+    """Nhân viên gửi tin nhắn"""
+    admin = _admin_json(request, db)
+    if not admin:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    try:
+        body = await request.json()
+        content = body.get("message", "").strip()
+    except Exception:
+        return JSONResponse({"success": False, "error": "Invalid body"}, status_code=400)
+
+    if not content:
+        return JSONResponse({"success": False, "error": "Tin nhắn trống"}, status_code=400)
+
+    from Services.LiveChatService import LiveChatService
+    live_chat_service = LiveChatService(db)
+
+    message = live_chat_service.send_staff_message(
+        conversation_id=conversation_id,
+        content=content,
+        staff_account_id=admin.account_id,
+    )
+
+    if not message:
+        return JSONResponse({
+            "success": False,
+            "error": "Cuộc hội thoại không active",
+        }, status_code=400)
+
+    return JSONResponse({
+        "success": True,
+        "message_id": message.message_id,
+    })
+
+
+@router.get("/API/LiveChat/Messages/{conversation_id}")
+async def api_livechat_messages(
+    request: Request, conversation_id: int, after_id: int = 0,
+    db: Session = Depends(get_db),
+):
+    """Lấy tin nhắn cho admin (polling)"""
+    admin = _admin_json(request, db)
+    if not admin:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    from Services.LiveChatService import LiveChatService
+    live_chat_service = LiveChatService(db)
+
+    # Đánh dấu đã đọc tin nhắn từ customer
+    live_chat_service.mark_messages_read(conversation_id, "staff")
+
+    messages = live_chat_service.get_messages(conversation_id, after_id)
+
+    conv = live_chat_service._get_conversation(conversation_id)
+    status = conv.status if conv else "closed"
+
+    return JSONResponse({
+        "success": True,
+        "status": status,
+        "messages": [
+            {
+                "message_id": msg.message_id,
+                "sender_type": msg.sender_type,
+                "content": msg.content,
+                "created_at": msg.created_at.strftime("%H:%M") if msg.created_at else "",
+            }
+            for msg in messages
+        ],
+    })
+
+
+@router.post("/API/LiveChat/Close/{conversation_id}")
+async def api_livechat_close(
+    request: Request, conversation_id: int, db: Session = Depends(get_db)
+):
+    """Kết thúc cuộc hội thoại"""
+    admin = _admin_json(request, db)
+    if not admin:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    from Services.LiveChatService import LiveChatService
+    live_chat_service = LiveChatService(db)
+
+    conversation = live_chat_service.close_conversation(conversation_id)
+
+    if not conversation:
+        return JSONResponse({
+            "success": False,
+            "error": "Không thể kết thúc cuộc hội thoại",
+        }, status_code=400)
+
+    return JSONResponse({
+        "success": True,
+        "status": conversation.status,
+    })
+
+
+# =====================================================================
 # ORDER DETAIL
 # =====================================================================
 

@@ -14,7 +14,8 @@ from Models.Cart import Cart, CartItem
 from Models.Order import Order, OrderItem, OrderStatus
 from Models.Chat import (
     ChatSession, ChatMessage, AIConversationLog,
-    FAQ, Notification, KnowledgeChunk
+    FAQ, Notification, KnowledgeChunk,
+    LiveChatConversation, LiveChatMessage
 )
 from Models.AI import AIResponse, RAGContext, ProductContext
 from Models.Payment import Payment, PaymentStatus
@@ -55,6 +56,10 @@ __all__ = [
     "FAQ",
     "Notification",
     "KnowledgeChunk",
+
+    # Live Chat
+    "LiveChatConversation",
+    "LiveChatMessage",
 
     # AI
     "AIResponse",

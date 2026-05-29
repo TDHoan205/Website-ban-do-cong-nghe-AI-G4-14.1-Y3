@@ -228,6 +228,7 @@
           <button class="quick-btn" onclick="sendSuggestion('Tư vấn laptop cho sinh viên')">💻 Laptop sinh viên</button>
           <button class="quick-btn" onclick="sendSuggestion('So sánh Samsung và iPhone')">⚖️ So sánh</button>
           <button class="quick-btn" onclick="sendSuggestion('Có khuyến mãi gì không?')">🏷️ Khuyến mãi</button>
+          <button class="quick-btn" onclick="requestLiveChat()" style="border-color:#22c55e;color:#22c55e;font-weight:700">💬 Chat với nhân viên</button>
         </div>
 
         <!-- Input -->
@@ -267,6 +268,12 @@
       let sessionUuid = document.getElementById("session-uuid").value;
       let isSending = false;
 
+      // Live Chat States
+      let liveChatMode = false;
+      let liveChatConvId = null;
+      let liveChatLastId = 0;
+      let liveChatPollTimer = null;
+
       function escHtml(s){
         const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
       }
@@ -284,10 +291,16 @@
         return h;
       }
 
-      function addMessage(content, sender) {
+      function addMessage(content, sender, iconOverride) {
         const div = document.createElement("div");
         div.className = "message " + sender + "-message";
-        const icon = sender === "bot" ? "fa-robot" : "fa-user";
+        let icon = sender === "bot" ? "fa-robot" : "fa-user";
+        if (liveChatMode && sender === "bot") {
+          icon = "fa-headset";
+        }
+        if (iconOverride) {
+          icon = iconOverride;
+        }
         const now = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
         const rendered = sender === "bot" ? renderMd(content) : escHtml(content);
 
@@ -296,6 +309,19 @@
           '<div class="message-content">' +
             '<div class="message-bubble">' + rendered + '</div>' +
             '<div class="message-time">' + now + '</div>' +
+          '</div>';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function addSystemMsg(content) {
+        const div = document.createElement("div");
+        div.className = "message bot-message justify-content-center";
+        div.innerHTML =
+          '<div class="message-content text-center w-100">' +
+            '<div class="message-bubble" style="background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.2);color:#b8860b;font-size:.78rem;font-style:italic;max-width:90%;border-radius:12px;">' +
+              escHtml(content) +
+            '</div>' +
           '</div>';
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -319,6 +345,106 @@
         if (el) el.remove();
       }
 
+      async function initSession() {
+        try {
+          const r = await fetch('/Chat/Widget/Init', {method: 'POST'});
+          const d = await r.json();
+          if (d.success) {
+            sessionUuid = d.session_uuid;
+            document.getElementById("session-uuid").value = sessionUuid;
+          }
+        } catch (e) {}
+      }
+
+      async function requestLiveChat() {
+        if (!sessionUuid) await initSession();
+        document.getElementById('quick-actions').style.display = 'none';
+        addMessage('💬 Yêu cầu nói chuyện với nhân viên', 'user');
+        try {
+          const r = await fetch('/Chat/LiveChat/Request', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({session_uuid: sessionUuid})
+          });
+          const d = await r.json();
+          if (d.success) {
+            enterLiveChatMode(d.conversation_id);
+            addMessage('Đang kết nối bạn với nhân viên hỗ trợ. Vui lòng đợi trong giây lát... 💬', 'bot');
+          } else {
+            addMessage('Lỗi yêu cầu live chat. Vui lòng thử lại!', 'bot');
+          }
+        } catch(e) {
+          addMessage('Lỗi kết nối. Vui lòng thử lại.', 'bot');
+        }
+      }
+
+      function enterLiveChatMode(convId) {
+        liveChatMode = true;
+        liveChatConvId = convId;
+        liveChatLastId = 0;
+        
+        const heroText = document.querySelector(".chat-hero p");
+        if (heroText) {
+          heroText.innerHTML = '<span class="text-warning"><i class="fas fa-headset"></i> Đang chờ nhân viên kết nối...</span>';
+        }
+        messageInput.placeholder = 'Nhắn tin cho nhân viên hỗ trợ...';
+
+        if (liveChatPollTimer) clearInterval(liveChatPollTimer);
+        liveChatPollTimer = setInterval(pollLiveChatMessages, 3000);
+      }
+
+      function exitLiveChatMode() {
+        liveChatMode = false;
+        liveChatConvId = null;
+        if (liveChatPollTimer) clearInterval(liveChatPollTimer);
+        
+        const heroText = document.querySelector(".chat-hero p");
+        if (heroText) {
+          heroText.innerHTML = 'Tư vấn sản phẩm • So sánh giá • Tra cứu đơn hàng';
+        }
+        messageInput.placeholder = 'Nhập tin nhắn để trò chuyện với AI...';
+      }
+
+      async function pollLiveChatMessages() {
+        if (!liveChatConvId) return;
+        try {
+          const r = await fetch('/Chat/LiveChat/Messages/' + liveChatConvId + '?after_id=' + liveChatLastId);
+          const d = await r.json();
+          if (d.success && d.messages.length) {
+            d.messages.forEach(function(m) {
+              if (m.sender_type === 'staff') {
+                addMessage(m.content, 'bot', 'fa-headset');
+              } else if (m.sender_type === 'system') {
+                addSystemMsg(m.content);
+              }
+              liveChatLastId = m.message_id;
+            });
+          }
+          if (d.status === 'active') {
+            const heroText = document.querySelector(".chat-hero p");
+            if (heroText) {
+              heroText.innerHTML = '<span class="text-success"><i class="fas fa-headset"></i> Nhân viên đang hỗ trợ bạn</span>';
+            }
+          }
+          if (d.status === 'closed') {
+            addSystemMsg('Cuộc hội thoại đã kết thúc. Bạn đã quay lại chế độ chat với AI.');
+            exitLiveChatMode();
+          }
+        } catch(e) {}
+      }
+
+      async function checkLiveChatStatus() {
+        if (!sessionUuid) return;
+        try {
+          const r = await fetch('/Chat/LiveChat/Status?session_uuid=' + sessionUuid);
+          const d = await r.json();
+          if (d.success && d.active) {
+            enterLiveChatMode(d.conversation_id);
+            pollLiveChatMessages();
+          }
+        } catch (e) {}
+      }
+
       async function sendMessage(message) {
         if (!message.trim() || isSending) return;
         isSending = true;
@@ -327,6 +453,23 @@
         addMessage(message, "user");
         messageInput.value = "";
         document.getElementById("quick-actions").style.display = "none";
+
+        if (liveChatMode) {
+          try {
+            await fetch('/Chat/LiveChat/Send', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({conversation_id: liveChatConvId, message: message})
+            });
+          } catch (e) {
+            console.error(e);
+          }
+          isSending = false;
+          sendBtnEl.disabled = false;
+          messageInput.focus();
+          return;
+        }
+
         showTyping();
 
         try {
@@ -340,7 +483,12 @@
 
           if (data.success) {
             if (data.session_uuid) sessionUuid = data.session_uuid;
-            addMessage(data.response, "bot");
+            if (data.live_chat && data.conversation_id) {
+              enterLiveChatMode(data.conversation_id);
+              addMessage(data.response, "bot");
+            } else {
+              addMessage(data.response, "bot");
+            }
           } else {
             addMessage("Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại! 🙏", "bot");
           }
@@ -394,8 +542,9 @@
         }
       }
 
-      window.addEventListener('DOMContentLoaded', () => {
-        loadChatHistory();
+      window.addEventListener('DOMContentLoaded', async () => {
+        await loadChatHistory();
+        await checkLiveChatStatus();
       });
     </script>
     {% include "partials/chatbot.html" %}
