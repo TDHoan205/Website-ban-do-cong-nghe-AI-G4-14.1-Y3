@@ -683,6 +683,92 @@ def repair_vietnamese_seed_text():
     except Exception as exc:
         return f"FAIL: {exc}"
 
+
+def ensure_runtime_schema_compatibility():
+    """
+    Add small, backward-compatible columns used by current ORM models.
+    This prevents 500 errors when the app runs against an older local DB.
+    """
+    statements = [
+        """
+        IF OBJECT_ID('Payments', 'U') IS NULL
+        BEGIN
+            CREATE TABLE Payments (
+                payment_id INT IDENTITY(1,1) PRIMARY KEY,
+                order_id NVARCHAR(50) NOT NULL UNIQUE,
+                account_id INT NULL,
+                amount BIGINT NOT NULL,
+                payment_method NVARCHAR(20) NOT NULL DEFAULT 'QR_BANKING',
+                transaction_code NVARCHAR(100) NULL,
+                transfer_content NVARCHAR(200) NULL,
+                status NVARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                qr_data NVARCHAR(MAX) NULL,
+                qr_image_base64 NVARCHAR(MAX) NULL,
+                bank_code NVARCHAR(20) NULL,
+                bank_account NVARCHAR(50) NULL,
+                bank_account_name NVARCHAR(200) NULL,
+                created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                paid_at DATETIME2 NULL,
+                expires_at DATETIME2 NULL,
+                verified_by NVARCHAR(50) NULL,
+                notes NVARCHAR(500) NULL,
+                CONSTRAINT FK_Payments_Accounts_Runtime FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+            )
+        END
+        """,
+        """
+        IF OBJECT_ID('Payments', 'U') IS NOT NULL AND COL_LENGTH('Payments', 'qr_image_base64') IS NULL
+        BEGIN
+            ALTER TABLE Payments ADD qr_image_base64 NVARCHAR(MAX) NULL
+        END
+        """,
+        """
+        IF OBJECT_ID('Payments', 'U') IS NOT NULL AND COL_LENGTH('Payments', 'transfer_content') IS NULL
+        BEGIN
+            ALTER TABLE Payments ADD transfer_content NVARCHAR(200) NULL
+        END
+        """,
+        """
+        IF OBJECT_ID('Payments', 'U') IS NOT NULL AND COL_LENGTH('Payments', 'verified_by') IS NULL
+        BEGIN
+            ALTER TABLE Payments ADD verified_by NVARCHAR(50) NULL
+        END
+        """,
+        """
+        IF OBJECT_ID('Payments', 'U') IS NOT NULL AND COL_LENGTH('Payments', 'notes') IS NULL
+        BEGIN
+            ALTER TABLE Payments ADD notes NVARCHAR(500) NULL
+        END
+        """,
+        """
+        IF COL_LENGTH('ProductVariants', 'color_hex') IS NULL
+        BEGIN
+            ALTER TABLE ProductVariants ADD color_hex NVARCHAR(7) NULL
+        END
+        """,
+        """
+        IF COL_LENGTH('ProductImages', 'variant_id') IS NULL
+        BEGIN
+            ALTER TABLE ProductImages ADD variant_id INT NULL
+        END
+        """,
+        """
+        IF COL_LENGTH('KnowledgeChunks', 'metadata_json') IS NULL
+        BEGIN
+            ALTER TABLE KnowledgeChunks ADD metadata_json NVARCHAR(MAX) NULL
+        END
+        """,
+    ]
+
+    try:
+        with engine.begin() as connection:
+            for statement in statements:
+                connection.execute(text(statement))
+        return "OK"
+    except Exception as exc:
+        return f"FAIL: {exc}"
+
+
 # =====================================================================
 # Register Controllers voi templates
 # =====================================================================
@@ -735,6 +821,8 @@ async def startup():
     except Exception as exc:
         db_error = str(exc)
 
+    schema_status = ensure_runtime_schema_compatibility()
+
     # Seed 2 roles mac dinh (Admin va Customer)
     roles_status = "SKIPPED"
     try:
@@ -758,6 +846,7 @@ async def startup():
 |  Server   : {db_info['server']:<46} |
 |  Auth     : {db_info['auth_mode']:<46} |
 |  SQL Test : {db_status:<46} |
+|  Schema   : {schema_status:<46} |
 |  Roles    : {roles_status:<46} |
 |  Unicode  : {vietnamese_text_status:<46} |
 |  URL      : http://localhost:8000                         |

@@ -4,10 +4,11 @@ Payment Controller - Thanh toán QR Banking
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import datetime
 from typing import Optional
 
-from Data.database import get_db
+from Data.database import get_db, engine
 from Services.CartService import CartService
 from Services.PaymentService import PaymentService, BANK_CONFIG
 from Services.AuthService import AuthService
@@ -16,6 +17,37 @@ from Utilities.http import is_ajax_request
 from Models.Payment import PaymentStatus
 
 router = APIRouter(prefix="/Checkout")
+
+
+def _ensure_payment_schema():
+    """Tao bang Payments neu local DB cu chua co."""
+    with engine.begin() as connection:
+        connection.execute(text("""
+            IF OBJECT_ID('Payments', 'U') IS NULL
+            BEGIN
+                CREATE TABLE Payments (
+                    payment_id INT IDENTITY(1,1) PRIMARY KEY,
+                    order_id NVARCHAR(50) NOT NULL UNIQUE,
+                    account_id INT NULL,
+                    amount BIGINT NOT NULL,
+                    payment_method NVARCHAR(20) NOT NULL DEFAULT 'QR_BANKING',
+                    transaction_code NVARCHAR(100) NULL,
+                    transfer_content NVARCHAR(200) NULL,
+                    status NVARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                    qr_data NVARCHAR(MAX) NULL,
+                    qr_image_base64 NVARCHAR(MAX) NULL,
+                    bank_code NVARCHAR(20) NULL,
+                    bank_account NVARCHAR(50) NULL,
+                    bank_account_name NVARCHAR(200) NULL,
+                    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                    paid_at DATETIME2 NULL,
+                    expires_at DATETIME2 NULL,
+                    verified_by NVARCHAR(50) NULL,
+                    notes NVARCHAR(500) NULL,
+                    CONSTRAINT FK_Payments_Accounts_Runtime_Controller FOREIGN KEY (account_id) REFERENCES Accounts(account_id)
+                )
+            END
+        """))
 
 
 def _get_cart_count(request: Request, db: Session) -> int:
@@ -45,6 +77,8 @@ def _get_current_user(request: Request, db: Session):
 @router.get("/", response_class=HTMLResponse)
 async def checkout_page(request: Request, db: Session = Depends(get_db)):
     """Trang checkout - hiển thị QR thanh toán"""
+    _ensure_payment_schema()
+
     try:
         account = require_account(request, db)
     except HTTPException:
@@ -125,6 +159,7 @@ async def checkout_page(request: Request, db: Session = Depends(get_db)):
 @router.get("/api/payment/status/{order_id}")
 async def get_payment_status(order_id: str, request: Request, db: Session = Depends(get_db)):
     """API lấy trạng thái thanh toán - dùng cho polling"""
+    _ensure_payment_schema()
     payment_service = PaymentService(db)
     info = payment_service.get_payment_display_info(order_id)
 
@@ -148,6 +183,7 @@ async def verify_payment(
     """
     Xác nhận thanh toán - tạo đơn hàng nếu chưa có
     """
+    _ensure_payment_schema()
     payment_service = PaymentService(db)
 
     # 1. Verify payment

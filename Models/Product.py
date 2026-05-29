@@ -2,7 +2,8 @@
 Product Model - Sản phẩm
 Tương đương Models/Product.cs trong C#
 """
-from sqlalchemy import Column, Integer, String, Unicode, UnicodeText, Boolean, ForeignKey, DateTime, DECIMAL
+import os
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
@@ -31,9 +32,9 @@ class Product(Base):
     __tablename__ = "Products"
 
     product_id = Column(Integer, primary_key=True, index=True)
-    name = Column(Unicode(255), nullable=False, index=True)
-    description = Column(UnicodeText)
-    image_url = Column(Unicode(500))
+    name = Column(String(255), nullable=False, index=True)
+    description = Column(Text)
+    image_url = Column(String(500))
     price = Column(DECIMAL(10, 2), nullable=False)
     original_price = Column(DECIMAL(10, 2))
     stock_quantity = Column(Integer, default=0)
@@ -42,7 +43,7 @@ class Product(Base):
     is_new = Column(Boolean, default=False)
     is_hot = Column(Boolean, default=False)
     discount_percent = Column(Integer, default=0)
-    specifications = Column(UnicodeText)  # JSON string cho thông số kỹ thuật
+    specifications = Column(Text)
     category_id = Column(Integer, ForeignKey("Categories.category_id"))
     supplier_id = Column(Integer, ForeignKey("Suppliers.supplier_id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -101,12 +102,12 @@ class ProductVariant(Base):
 
     variant_id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("Products.product_id"), nullable=False)
-    color = Column(Unicode(50))
-    color_hex = Column(String(7))  # Mã màu hex cho swatch (VD: #FF5733)
-    storage = Column(Unicode(20))
-    ram = Column(Unicode(20))
-    variant_name = Column(Unicode(100))
-    sku = Column(Unicode(50))
+    color = Column(String(50))
+    color_hex = Column(String(7))
+    storage = Column(String(20))
+    ram = Column(String(20))
+    variant_name = Column(String(100))
+    sku = Column(String(50))
     price = Column(DECIMAL(10, 2))
     original_price = Column(DECIMAL(10, 2))
     stock_quantity = Column(Integer, default=0)
@@ -129,7 +130,7 @@ class ProductImage(Base):
     image_id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("Products.product_id"), nullable=False)
     variant_id = Column(Integer, ForeignKey("ProductVariants.variant_id"), nullable=True)
-    image_url = Column(Unicode(500), nullable=False)
+    image_url = Column(String(500), nullable=False)
     display_order = Column(Integer, default=0)
     is_primary = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

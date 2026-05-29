@@ -3,24 +3,24 @@
    ================================================================ */
 
 :root {
-  --primary: #4DA6FF;
-  --primary-dark: #2196F3;
-  --primary-light: #F5FAFF;
+  --primary: #0d6efd;
+  --primary-dark: #0b5ed7;
+  --primary-light: #e7f1ff;
   --success: #22c55e;
   --success-dark: #16a34a;
   --success-bg: #f0fdf4;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --bg: #F5FAFF;
-  --card-bg: #FFFFFF;
-  --border: #D6EAFB;
-  --text-primary: #1E3A5F;
-  --text-secondary: #5C6F82;
-  --text-muted: #5C6F82;
+  --bg: #f0f2f5;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
   --radius: 16px;
   --radius-sm: 10px;
-  box-shadow: 0 4px 24px rgba(77, 166, 255, 0.1);
-  --shadow-lg: 0 12px 48px rgba(77, 166, 255, 0.12);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
 }
 
 body {
@@ -87,7 +87,7 @@ a { text-decoration: none; }
 .checkout-breadcrumb .step.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(77, 166, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
 }
 .checkout-breadcrumb .step.done {
   background: var(--success-bg);
@@ -170,7 +170,7 @@ a { text-decoration: none; }
   border: 3px solid var(--primary);
   border-radius: var(--radius);
   padding: 16px;
-  box-shadow: 0 4px 16px rgba(77, 166, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(13, 110, 253, 0.15);
   margin-bottom: 20px;
 }
 .qr-frame img {
@@ -185,7 +185,7 @@ a { text-decoration: none; }
 
 /* ===== QR BANK INFO ===== */
 .qr-bank-info {
-  background: #F5FAFF;
+  background: #f8f9fb;
   border-radius: var(--radius-sm);
   padding: 16px 20px;
   text-align: left;
@@ -341,7 +341,7 @@ a { text-decoration: none; }
 .order-summary-card .summary-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, #F5FAFF, #ffffff);
+  background: linear-gradient(135deg, #f8f9fb, #fff);
 }
 .order-summary-card .summary-item {
   display: flex;
@@ -519,11 +519,11 @@ a { text-decoration: none; }
   cursor: pointer;
   transition: all 0.3s;
   font-family: "Be Vietnam Pro", sans-serif;
-  box-shadow: 0 4px 16px rgba(77, 166, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(13,110,253,0.3);
 }
 .btn-continue:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(77, 166, 255, 0.4);
+  box-shadow: 0 6px 24px rgba(13,110,253,0.4);
 }
 
 /* ===== LOADING STATE ===== */
@@ -552,8 +552,8 @@ a { text-decoration: none; }
 
 /* ===== FOOTER ===== */
 footer {
-  background: #1E3A5F;
-  color: #5C6F82;
+  background: #1f2937;
+  color: #9ca3af;
   padding: 28px 0;
   text-align: center;
   font-size: 0.83rem;

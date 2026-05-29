@@ -97,15 +97,15 @@ SET IDENTITY_INSERT Products OFF;
 
 -- ProductVariants
 SET IDENTITY_INSERT ProductVariants ON;
-INSERT INTO ProductVariants (variant_id, product_id, color, storage, ram, variant_name, sku, price, original_price, stock_quantity, display_order, is_active)
+INSERT INTO ProductVariants (variant_id, product_id, color, color_hex, storage, ram, variant_name, sku, price, original_price, stock_quantity, display_order, is_active)
 VALUES
-(1, 1, N'Titan Tự nhiên', N'256GB', N'8GB', N'iPhone 15 Pro Max Titan Tự nhiên 256GB', N'IP15PM-NT-256', 29990000, 34990000, 20, 1, 1),
-(2, 1, N'Titan Đen', N'256GB', N'8GB', N'iPhone 15 Pro Max Titan Đen 256GB', N'IP15PM-BK-256', 29990000, 34990000, 30, 2, 1),
-(3, 2, N'Xám Titan', N'256GB', N'12GB', N'Galaxy S24 Ultra Xám 256GB', N'S24U-GY-256', 31990000, 33990000, 15, 1, 1),
-(4, 3, N'Silver', N'512GB', N'18GB', N'MacBook Pro 14 M3 Silver', N'MBP14-SL-512', 39990000, 42990000, 10, 1, 1),
-(5, 4, N'Platinum Silver', N'1TB', N'32GB', N'Dell XPS 15 9530 1TB', N'XPS15-SL-1TB', 45990000, 49990000, 15, 1, 1),
-(6, 5, N'Space Grey', N'256GB', N'8GB', N'iPad Pro 11 M2 Space Grey', N'IPP11-SG-256', 20990000, 22990000, 25, 1, 1),
-(7, 6, N'Trắng', N'N/A', N'N/A', N'AirPods Pro 2', N'AP-PRO2-WH', 5990000, 6990000, 100, 1, 1);
+(1, 1, N'Titan Tự nhiên', N'#C9B8A8', N'256GB', N'8GB', N'iPhone 15 Pro Max Titan Tự nhiên 256GB', N'IP15PM-NT-256', 29990000, 34990000, 20, 1, 1),
+(2, 1, N'Titan Đen', N'#2B2B2D', N'256GB', N'8GB', N'iPhone 15 Pro Max Titan Đen 256GB', N'IP15PM-BK-256', 29990000, 34990000, 30, 2, 1),
+(3, 2, N'Xám Titan', N'#8A8D91', N'256GB', N'12GB', N'Galaxy S24 Ultra Xám 256GB', N'S24U-GY-256', 31990000, 33990000, 15, 1, 1),
+(4, 3, N'Silver', N'#D8D8D8', N'512GB', N'18GB', N'MacBook Pro 14 M3 Silver', N'MBP14-SL-512', 39990000, 42990000, 10, 1, 1),
+(5, 4, N'Platinum Silver', N'#C7C9CC', N'1TB', N'32GB', N'Dell XPS 15 9530 1TB', N'XPS15-SL-1TB', 45990000, 49990000, 15, 1, 1),
+(6, 5, N'Space Grey', N'#6E6E73', N'256GB', N'8GB', N'iPad Pro 11 M2 Space Grey', N'IPP11-SG-256', 20990000, 22990000, 25, 1, 1),
+(7, 6, N'Trắng', N'#F5F5F0', N'N/A', N'N/A', N'AirPods Pro 2', N'AP-PRO2-WH', 5990000, 6990000, 100, 1, 1);
 SET IDENTITY_INSERT ProductVariants OFF;
 
 -- ProductImages

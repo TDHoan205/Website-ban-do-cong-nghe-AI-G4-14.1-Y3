@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/css/checkout.css" />
   <style>
-    body { background: linear-gradient(135deg, #F5FAFF 0%, #F5FAFF 100%); }
+    body { background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); }
     .success-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
     .success-card {
       background: #fff;
@@ -47,7 +47,7 @@
     .success-top p { opacity: 0.9; font-size: 0.95rem; margin: 0; }
     .success-body { padding: 32px; }
     .order-id-display {
-      background: #F5FAFF;
+      background: #f0fdf4;
       border: 2px dashed #22c55e;
       border-radius: 14px;
       padding: 20px;
@@ -56,7 +56,7 @@
     }
     .order-id-display .lbl {
       font-size: 0.75rem;
-      color: #5C6F82;
+      color: #6b7280;
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-bottom: 4px;
@@ -74,18 +74,18 @@
       margin-bottom: 24px;
     }
     .detail-box {
-      background: #F5FAFF;
+      background: #f9fafb;
       border-radius: 10px;
       padding: 14px;
       text-align: center;
     }
-    .detail-box .lbl { font-size: 0.72rem; color: #5C6F82; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .detail-box .lbl { font-size: 0.72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .detail-box .val { font-size: 1rem; font-weight: 700; color: #111827; }
     .detail-box .val.success { color: #22c55e; }
-    .detail-box .val.primary { color: #4DA6FF; }
+    .detail-box .val.primary { color: #3b82f6; }
     .notice-card {
-      background: #F5FAFF;
-      border: 1px solid #D6EAFB;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 24px;
@@ -93,8 +93,8 @@
       gap: 12px;
       align-items: flex-start;
     }
-    .notice-card i { color: #4DA6FF; font-size: 1.1rem; margin-top: 2px; flex-shrink: 0; }
-    .notice-card p { margin: 0; font-size: 0.85rem; color: #1E3A5F; line-height: 1.6; }
+    .notice-card i { color: #3b82f6; font-size: 1.1rem; margin-top: 2px; flex-shrink: 0; }
+    .notice-card p { margin: 0; font-size: 0.85rem; color: #1e40af; line-height: 1.6; }
     .action-buttons { display: flex; gap: 12px; }
     .btn-view-orders {
       flex: 1; padding: 14px 20px;
@@ -109,7 +109,7 @@
       flex: 1; padding: 14px 20px;
       border-radius: 12px; font-weight: 700; font-size: 0.95rem;
       border: none;
-      background: linear-gradient(135deg, #4DA6FF, #4DA6FF);
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
       color: #fff; cursor: pointer; transition: all 0.25s;
       font-family: "Be Vietnam Pro", sans-serif;
       text-decoration: none; text-align: center;
@@ -204,7 +204,7 @@
 <script>
   // Confetti animation
   (function() {
-    const colors = ['#22c55e','#4DA6FF','#f59e0b','#ef4444','#8b5cf6'];
+    const colors = ['#22c55e','#3b82f6','#f59e0b','#ef4444','#8b5cf6'];
     for (let i = 0; i < 60; i++) {
       const conf = document.createElement('div');
       conf.style.cssText = `
@@ -226,8 +226,6 @@
 @keyframes confetti-fall {
   to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 </style>
-
-{% include "partials/chatbot.html" %}
 
 </body>
 </html>
