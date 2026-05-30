@@ -236,7 +236,12 @@ async def profile(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/Auth/Login", status_code=303)
     return templates.TemplateResponse(
         "Auth/Profile.html",
-        {"request": request, "page_title": "Thong tin ca nhan", "user": user}
+        {
+            "request": request,
+            "page_title": "Thong tin ca nhan",
+            "user": user,
+            "current_user": user,
+        }
     )
 
 

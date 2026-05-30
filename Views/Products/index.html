@@ -1154,16 +1154,16 @@
       <div class="nav-bar-inner">
         <ul class="nav-links">
           <li><a href="/">Trang chủ</a></li>
-          <li><a href="/Products/" class="active">Sản phẩm</a></li>
+          <li><a href="/Products/" {% if not is_new_page and not is_hot_page %}class="active"{% endif %}>Sản phẩm</a></li>
           <li><a href="/Cart/">Giỏ hàng</a></li>
           <li><a href="/Chat/">AI Tư vấn</a></li>
           <li>
-            <a href="/Products/?sort=new" class="nav-new"
+            <a href="/Products/?sort=new" class="nav-new{% if is_new_page %} active{% endif %}"
               ><i class="fas fa-bolt"></i> Sản phẩm mới</a
             >
           </li>
           <li>
-            <a href="/Products/?sort=hot" class="nav-hot"
+            <a href="/Products/?sort=hot" class="nav-hot{% if is_hot_page %} active{% endif %}"
               ><i class="fas fa-fire"></i> Hot</a
             >
           </li>

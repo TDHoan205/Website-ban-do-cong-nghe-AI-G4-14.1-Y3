@@ -211,11 +211,17 @@ async def index(
     cart_count = _get_cart_count(request, db)
     current_user = _get_current_user(request, db)
 
+    page_title = category_name or "Tất cả sản phẩm"
+    if is_new:
+        page_title = "Sản phẩm mới"
+    elif is_hot:
+        page_title = "Sản phẩm hot"
+
     return templates.TemplateResponse(
         "Products/index.html",
         {
             "request": request,
-            "page_title": category_name or "Tất cả sản phẩm",
+            "page_title": page_title,
             "category_name": category_name,
             "products": products,
             "categories": categories,
@@ -227,8 +233,13 @@ async def index(
             "search": search or "",
             "sort_by": sort_by,
             "sort_order": sort_order,
+            "is_new_page": is_new,
+            "is_hot_page": is_hot,
             "min_price": min_price or "",
             "max_price": max_price or "",
+            "sort": sort or "",
+            "is_new_page": is_new,
+            "is_hot_page": is_hot,
             "cart_count": cart_count,
             "current_user": current_user,
             "storage_counts": storage_counts,

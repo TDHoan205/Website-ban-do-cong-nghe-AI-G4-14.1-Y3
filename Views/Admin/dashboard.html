@@ -445,10 +445,57 @@
       .fc-year { background: linear-gradient(135deg, #3a2a1a 0%, #2a1a0d 100%); }
       .fc-year .fc-icon { background: rgba(251,191,36,0.2); color: #fbbf24; }
 
-      .sales-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+      .sales-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .sales-scroll-wrap {
+        margin-bottom: 28px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 10px;
+        scrollbar-width: none;
+        scrollbar-color: rgba(77,166,255,0.4) transparent;
+      }
+      .sales-scroll-wrap::-webkit-scrollbar {
+        height: 8px;
+      }
+      .sales-scroll-wrap::-webkit-scrollbar-thumb {
+        background: rgba(77,166,255,0.35);
+        border-radius: 999px;
+      }
+      .sales-scroll-wrap::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .sales-scroll-wrap:not(:hover) {
+        scrollbar-width: none;
+      }
+      .sales-scroll-wrap:hover {
+        scrollbar-width: thin;
+      }
+      .sales-scroll-wrap:not(:hover)::-webkit-scrollbar-thumb,
+      .sales-scroll-wrap:not(:hover)::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .sales-scroll-wrap:hover::-webkit-scrollbar-thumb {
+        background: rgba(77,166,255,0.4);
+      }
+      .sales-grid.scrollable {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 16px;
+        width: max-content;
+        min-width: 100%;
+        margin-bottom: 0;
+      }
       .sales-card {
         background: #1E3A5F; border: 1px solid #2D4A6F; border-radius: 12px; padding: 18px;
         display: flex; align-items: center; gap: 14px; transition: all 0.2s;
+      }
+      .sales-grid.scrollable .sales-card {
+        flex: 0 0 320px;
       }
       .sales-card:hover { border-color: #4DA6FF; transform: translateY(-2px); }
       .sales-card .sc-icon { width: 46px; height: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
@@ -456,10 +503,10 @@
       .sales-card .sc-label { font-size: 0.73rem; color: #64748b; font-weight: 500; }
 
       /* Chart */
-      .chart-card { background: #1E3A5F; border: 1px solid #2D4A6F; border-radius: 14px; padding: 24px; margin-bottom: 28px; min-height: 380px; position: relative; }
+      .chart-card { background: #1E3A5F; border: 1px solid #2D4A6F; border-radius: 14px; padding: 24px; margin-bottom: 28px; min-height: 402px; position: relative; }
       .chart-legend { display:flex; gap:18px; align-items:center; margin-bottom:12px; color:#E6F2FF; font-size:0.78rem; font-weight:700; }
       .legend-dot { width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:6px; }
-      .chart-visual { width:100%; height:300px; position:relative; }
+      .chart-visual { width:100%; height:248px; position:relative; }
       .chart-visual svg { width:100%; height:100%; overflow:visible; }
       .chart-tooltip { position:absolute; pointer-events:none; transform:translate(-50%, -110%); background:#0f2138; color:#fff; border:1px solid #4DA6FF; border-radius:8px; padding:8px 10px; font-size:0.76rem; font-weight:700; white-space:nowrap; opacity:0; transition:opacity .12s; z-index:5; box-shadow:0 8px 24px rgba(0,0,0,.25); }
 
@@ -475,6 +522,7 @@
         .products-grid { grid-template-columns: repeat(4, 1fr); }
         .finance-grid { grid-template-columns: repeat(2, 1fr); }
         .sales-grid { grid-template-columns: repeat(2, 1fr); }
+        .sales-grid.scrollable .sales-card { flex-basis: 360px; }
       }
       @media (max-width: 900px) {
         .admin-sidebar { width: 190px; }
@@ -482,6 +530,7 @@
         .content-row { grid-template-columns: 1fr; }
         .finance-grid { grid-template-columns: repeat(2, 1fr); }
         .sales-grid { grid-template-columns: repeat(2, 1fr); }
+        .sales-grid.scrollable .sales-card { flex-basis: 320px; }
       }
       @media (max-width: 640px) {
         .admin-sidebar { display: none; }
@@ -489,6 +538,7 @@
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
         .finance-grid { grid-template-columns: 1fr; }
         .sales-grid { grid-template-columns: 1fr; }
+        .sales-grid.scrollable .sales-card { flex-basis: 280px; }
         .admin-topbar { padding: 0 12px; }
         .topbar-right { gap: 8px; }
         .topbar-btn { padding: 7px 10px; font-size: 0.76rem; }
@@ -583,7 +633,8 @@
 
         <!-- ===== HOẠT ĐỘNG BÁN HÀNG ===== -->
         <h3 class="section-title"><i class="fas fa-shopping-cart"></i> Hoạt động Bán hàng</h3>
-        <div class="sales-grid">
+        <div class="sales-scroll-wrap">
+        <div class="sales-grid scrollable">
           <div class="sales-card">
             <div class="sc-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fas fa-box-open"></i></div>
             <div><div class="sc-value">{{ finance.products_sold_today }}</div><div class="sc-label">SP bán hôm nay</div></div>
@@ -600,6 +651,15 @@
             <div class="sc-icon" style="background:rgba(251,191,36,0.15);color:#eab308;"><i class="fas fa-coins"></i></div>
             <div><div class="sc-value">{{ "{:,.0f}".format(finance.avg_order_value) }} đ</div><div class="sc-label">Giá trị TB / đơn</div></div>
           </div>
+          <div class="sales-card">
+            <div class="sc-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-times-circle"></i></div>
+            <div><div class="sc-value">{{ finance.cancel_rate }}%</div><div class="sc-label">Tỷ lệ hủy ({{ finance.cancelled_orders }} đơn)</div></div>
+          </div>
+          <div class="sales-card">
+            <div class="sc-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fas fa-user-plus"></i></div>
+            <div><div class="sc-value">{{ finance.new_customers_month }}</div><div class="sc-label">Khách mới tháng này</div></div>
+          </div>
+        </div>
         </div>
 
         <!-- ===== BIỂU ĐỒ 7 NGÀY + THỐNG KÊ PHỤ ===== -->
@@ -622,24 +682,13 @@
             </div>
           </div>
           <div>
-            <!-- Thống kê bổ sung -->
-            <div class="sales-grid" style="grid-template-columns: 1fr 1fr;">
-              <div class="sales-card">
-                <div class="sc-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-times-circle"></i></div>
-                <div><div class="sc-value">{{ finance.cancel_rate }}%</div><div class="sc-label">Tỷ lệ hủy ({{ finance.cancelled_orders }} đơn)</div></div>
-              </div>
-              <div class="sales-card">
-                <div class="sc-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fas fa-user-plus"></i></div>
-                <div><div class="sc-value">{{ finance.new_customers_month }}</div><div class="sc-label">Khách mới tháng này</div></div>
-              </div>
-            </div>
             <!-- Top selling -->
-            <div class="admin-table-card" style="margin-top:16px;">
+            <div class="admin-table-card" style="margin-top:16px; min-height: 426px; display:flex; flex-direction:column;">
               <div class="table-header">
                 <div class="table-title"><i class="fas fa-crown"></i> Top SP bán chạy tháng này</div>
               </div>
               {% if top_selling %}
-              <table class="admin-table">
+              <table class="admin-table" style="flex:1;">
                 <thead><tr><th>Sản phẩm</th><th>SL bán</th><th>Doanh thu</th></tr></thead>
                 <tbody>
                   {% for item in top_selling %}

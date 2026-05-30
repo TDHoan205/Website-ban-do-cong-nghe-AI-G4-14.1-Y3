@@ -8,6 +8,12 @@
   body { background: var(--bg); }
   .checkout-page { padding: 36px 0 48px; }
   .checkout-page .container { max-width: 1180px; }
+  .checkout-page .payment-layout { align-items: start; }
+  body .nav-bar { position: static; }
+  .payment-layout .order-summary-card.sticky-top {
+    position: relative !important;
+    top: 0 !important;
+  }
   .checkout-back-link {
     display: inline-flex;
     align-items: center;
@@ -24,6 +30,9 @@
     background: var(--primary); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+  }
+  @media (max-width: 900px) {
+    .payment-layout .order-summary-card.sticky-top { position: relative !important; top: 0 !important; }
   }
 </style>
 {% endblock %}

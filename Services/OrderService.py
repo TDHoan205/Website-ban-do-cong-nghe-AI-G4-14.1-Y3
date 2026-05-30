@@ -3,7 +3,7 @@ Order Service - Xử lý logic đơn hàng
 Tương đương Services/OrderService.cs trong C#
 """
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from typing import List, Optional
 from datetime import datetime
 import uuid
@@ -118,6 +118,43 @@ class OrderService:
             .order_by(desc(Order.order_date))
             .all()
         )
+
+    def get_order_stats_for_account(self, account_id: int) -> dict:
+        """Thống kê đơn hàng cho trang Đơn hàng của tôi."""
+        rows = (
+            self.db.query(Order.status, func.count(Order.order_id))
+            .filter(Order.account_id == account_id)
+            .group_by(Order.status)
+            .all()
+        )
+
+        stats = {
+            "total": 0,
+            "pending": 0,
+            "confirmed": 0,
+            "processing": 0,
+            "shipped": 0,
+            "delivered": 0,
+            "cancelled": 0,
+        }
+
+        for status, count in rows:
+            status_key = (status or "").lower().strip()
+            stats["total"] += count
+            if status_key in ("pending", "cho_xu_ly"):
+                stats["pending"] += count
+            elif status_key in ("confirmed", "da_xac_nhan"):
+                stats["confirmed"] += count
+            elif status_key in ("processing", "dang_xu_ly"):
+                stats["processing"] += count
+            elif status_key in ("shipped", "dang_giao"):
+                stats["shipped"] += count
+            elif status_key in ("delivered", "da_giao"):
+                stats["delivered"] += count
+            elif status_key in ("cancelled", "huy", "da_huy"):
+                stats["cancelled"] += count
+
+        return stats
 
     def create_order(
         self,

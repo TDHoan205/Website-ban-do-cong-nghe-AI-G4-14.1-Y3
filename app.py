@@ -469,6 +469,7 @@ def repair_vietnamese_seed_text():
         ),
         (
             "Accounts",
+            "Accounts",
             "account_id",
             1,
             {"full_name": "Quản Trị Viên", "address": "Trụ sở Tech Store"},

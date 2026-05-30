@@ -23,6 +23,7 @@
     {% block extra_head %}{% endblock %}
   </head>
   <body>
+    {% set layout_user = current_user if current_user is defined and current_user else request.state.current_user if request is defined and request.state.current_user is defined else None %}
     <div class="top-bar">
       <div class="top-bar-inner">
         <div class="top-bar-left">
@@ -84,20 +85,20 @@
             </div>
           </a>
 
-          {% if current_user %}
+          {% if layout_user %}
           <div class="header-user-menu">
             <div class="header-action header-user-action">
               <div class="header-action-icon">
                 <i class="fas fa-user-check" style="color:#16a34a;"></i>
               </div>
               <div class="header-action-text">
-                <span class="header-action-label" style="color:#16a34a;">{{ current_user.full_name or current_user.username }}</span>
+                <span class="header-action-label" style="color:#16a34a;">{{ layout_user.full_name or layout_user.username }}</span>
               </div>
             </div>
             <div class="header-user-dropdown">
               <a href="/Auth/Profile" class="dropdown-item"><i class="fas fa-user"></i> Thông tin cá nhân</a>
               <a href="/Orders/" class="dropdown-item"><i class="fas fa-shopping-bag"></i> Đơn hàng của tôi</a>
-              {% if current_user.role_name == 'Admin' %}
+              {% if layout_user.role_name == 'Admin' %}
               <a href="/Admin/Dashboard" class="dropdown-item"><i class="fas fa-cog"></i> Quản lý Admin</a>
               {% endif %}
               <div class="dropdown-divider"></div>

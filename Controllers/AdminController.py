@@ -343,7 +343,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         OrderItem.product_id, OrderItem.product_name
     ).order_by(
         func.sum(OrderItem.quantity).desc()
-    ).limit(5).all()
+    ).limit(7).all()
 
     top_selling_list = [
         {

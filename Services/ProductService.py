@@ -125,9 +125,15 @@ class ProductService:
         if discount:
             query = query.filter(Product.discount_percent > 0)
         if is_new:
-            query = query.filter(Product.is_new == True)
+            query = query.filter(
+                Product.is_new == True,
+                or_(Product.is_hot == False, Product.is_hot.is_(None))
+            )
         if is_hot:
-            query = query.filter(Product.is_hot == True)
+            query = query.filter(
+                Product.is_hot == True,
+                or_(Product.is_new == False, Product.is_new.is_(None))
+            )
 
         # Storage filter - join with variants and filter by storage value
         if storage:
@@ -249,6 +255,7 @@ class ProductService:
             joinedload(Product.product_images)
         ).filter(
             Product.is_hot == True,
+            or_(Product.is_new == False, Product.is_new.is_(None)),
             Product.is_available == True
         ).limit(limit).all()
 
@@ -294,6 +301,7 @@ class ProductService:
             joinedload(Product.product_images)
         ).filter(
             Product.is_new == True,
+            or_(Product.is_hot == False, Product.is_hot.is_(None)),
             Product.is_available == True
         ).limit(limit).all()
 

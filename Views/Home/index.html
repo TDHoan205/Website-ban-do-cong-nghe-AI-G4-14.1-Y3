@@ -1446,11 +1446,11 @@
                 {% for product in new_products %}
                 <div class="product-card">
                   <a href="/Products/{{ product.product_id }}" class="product-img-wrap">
-                    {% if product.is_new %}
+                    {% if product.is_new and not product.is_hot %}
                     <span class="product-badge badge-new">Mới</span>
                     {% endif %}
-                    {% if product.is_hot %}
-                    <span class="product-badge badge-hot" style="left:80px;">Hot</span>
+                    {% if product.is_hot and not product.is_new %}
+                    <span class="product-badge badge-hot">Hot</span>
                     {% endif %}
                     {% if product.discount_percent > 0 %}
                     <span class="product-discount">-{{ product.discount_percent }}%</span>
@@ -1504,11 +1504,11 @@
                 {% for product in featured_products %}
                 <div class="product-card">
                   <a href="/Products/{{ product.product_id }}" class="product-img-wrap">
-                    {% if product.is_hot %}
+                    {% if product.is_hot and not product.is_new %}
                     <span class="product-badge badge-hot">Hot</span>
                     {% endif %}
-                    {% if product.is_new %}
-                    <span class="product-badge badge-new" style="left:80px;">Mới</span>
+                    {% if product.is_new and not product.is_hot %}
+                    <span class="product-badge badge-new">Mới</span>
                     {% endif %}
                     {% if product.discount_percent > 0 %}
                     <span class="product-discount">-{{ product.discount_percent }}%</span>
