@@ -1,5 +1,7 @@
 {% set finance_data = finance if finance is defined else {} %}
 {% set stats_data = stats if stats is defined else {} %}
+{% set nav_stats = admin_nav_stats if admin_nav_stats is defined else stats if stats is defined else {} %}
+{% set livechat_count = nav_stats.livechat_count | default(0) %}
 {% set admin_name = admin.username if admin is defined and admin.username is defined else 'admin' %}
 {% set top_selling_data = [] %}
 {% if top_selling is defined %}
@@ -23,9 +25,55 @@
 
 <style>
   .admin-fab-stack {
-    display: none;
+    display: flex;
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 10030;
+    width: 60px;
+    height: 60px;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    touch-action: none;
   }
-  .admin-finance-fab {
+  .admin-fab-stack:active { cursor: grabbing; }
+  .admin-widget-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: 72px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid rgba(77,166,255,0.22);
+    border-radius: 18px;
+    background: rgba(21,42,69,0.96);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.38);
+    cursor: default;
+  }
+  .admin-fab-stack.open .admin-widget-menu { display: flex; }
+  .admin-widget-choice {
+    width: 172px;
+    height: 48px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.045);
+    color: #E6F2FF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .admin-widget-choice:hover { background: rgba(77,166,255,0.12); border-color: rgba(77,166,255,0.4); }
+  .admin-widget-choice i { width: 30px; height: 30px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; }
+  .admin-widget-choice.finance i { background: rgba(250,204,21,0.16); color: #facc15; }
+  .admin-widget-choice.livechat i { background: rgba(77,166,255,0.16); color: #4DA6FF; }
+  .admin-widget-main-fab {
     position: relative;
     width: 60px;
     height: 60px;
@@ -41,11 +89,11 @@
     box-shadow: 0 10px 28px rgba(245, 158, 11, 0.36);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .admin-finance-fab:hover {
+  .admin-widget-main-fab:hover {
     transform: scale(1.08);
     box-shadow: 0 14px 36px rgba(245, 158, 11, 0.45);
   }
-  .admin-finance-fab .fab-badge {
+  .admin-widget-main-fab .fab-badge {
     position: absolute;
     top: -2px;
     right: -2px;
@@ -78,6 +126,55 @@
     animation: adminFinanceSlideUp 0.25s ease;
   }
   .admin-finance-panel.open { display: flex; }
+  .admin-livechat-panel {
+    position: fixed;
+    right: 28px;
+    bottom: 108px;
+    z-index: 9997;
+    width: 430px;
+    max-height: 620px;
+    background: #1E3A5F;
+    border: 1px solid #2D4A6F;
+    border-radius: 18px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: adminFinanceSlideUp 0.25s ease;
+  }
+  .admin-widget-main-fab .fab-notice {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    border-radius: 999px;
+    border: 2px solid #152A45;
+    background: #ef4444;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .admin-widget-choice .choice-notice {
+    margin-left: auto;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 900;
+  }
+  .admin-livechat-panel.open { display: flex; }
   @keyframes adminFinanceSlideUp {
     from { opacity: 0; transform: translateY(18px); }
     to { opacity: 1; transform: translateY(0); }
@@ -166,21 +263,151 @@
     background: rgba(250, 204, 21, 0.16);
     border-color: rgba(250, 204, 21, 0.5);
   }
+  .admin-finance-action.livechat {
+    border-color: rgba(77,166,255,0.45);
+    background: rgba(77,166,255,0.1);
+    color: #80C7FF;
+  }
+  .admin-finance-action.livechat:hover {
+    background: rgba(77,166,255,0.18);
+    border-color: rgba(77,166,255,0.7);
+    color: #FFFFFF;
+  }
+  .admin-livechat-header {
+    background: linear-gradient(135deg, #1E3A5F, #2563eb);
+    color: #E6F2FF;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .admin-livechat-title { flex: 1; line-height: 1.25; }
+  .admin-livechat-title h4 { margin: 0; font-size: 0.92rem; font-weight: 800; }
+  .admin-livechat-title p { margin: 0; font-size: 0.7rem; color: #80C7FF; }
+  .admin-livechat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .admin-livechat-expand,
+  .admin-livechat-close {
+    width: 30px; height: 30px; border: none; border-radius: 50%;
+    background: rgba(255,255,255,0.1); color: #E6F2FF; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .admin-livechat-expand:hover,
+  .admin-livechat-close:hover {
+    background: rgba(77,166,255,0.22);
+    color: #FFFFFF;
+  }
+  .admin-livechat-content { display: grid; grid-template-columns: 150px 1fr; min-height: 420px; }
+  .admin-livechat-list {
+    border-right: 1px solid rgba(255,255,255,0.08);
+    background: rgba(21,42,69,0.6);
+    overflow-y: auto;
+    max-height: 470px;
+  }
+  .admin-livechat-list-title {
+    padding: 10px 12px 6px;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #80C7FF;
+    font-weight: 800;
+  }
+  .admin-livechat-item {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: transparent;
+    color: #E6F2FF;
+    text-align: left;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .admin-livechat-item:hover,
+  .admin-livechat-item.active { background: rgba(77,166,255,0.12); }
+  .admin-livechat-item strong { display:block; font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .admin-livechat-item span { display:block; font-size:0.66rem; color:#80C7FF; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+  .admin-livechat-chat { display: flex; flex-direction: column; min-width: 0; }
+  .admin-livechat-chat-head {
+    min-height: 48px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .admin-livechat-chat-name { font-weight:800; color:#E6F2FF; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .admin-livechat-chat-actions { display:flex; gap:6px; }
+  .admin-livechat-mini-btn {
+    border:none; border-radius:999px; padding:5px 9px; font-size:0.68rem; font-weight:800;
+    font-family:inherit; cursor:pointer;
+  }
+  .admin-livechat-mini-btn.accept { background:rgba(34,197,94,.16); color:#22c55e; }
+  .admin-livechat-mini-btn.close { background:rgba(239,68,68,.14); color:#ef4444; }
+  .admin-livechat-messages {
+    flex:1; padding:12px; overflow-y:auto; max-height:335px; background:#152A45;
+  }
+  .admin-livechat-empty { color:#80A7CC; text-align:center; padding:48px 20px; font-size:0.82rem; }
+  .admin-livechat-msg { display:flex; margin-bottom:10px; }
+  .admin-livechat-msg.staff { justify-content:flex-end; }
+  .admin-livechat-bubble {
+    max-width:82%; min-width:150px; border-radius:14px; padding:9px 12px; font-size:0.78rem; line-height:1.45;
+    background:rgba(255,255,255,0.08); color:#E6F2FF; border:1px solid rgba(255,255,255,0.08);
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .admin-livechat-msg.staff .admin-livechat-bubble { background:linear-gradient(135deg,#4DA6FF,#2196F3); color:#fff; }
+  .admin-livechat-msg.system { justify-content:center; }
+  .admin-livechat-msg.system .admin-livechat-bubble { background:rgba(250,204,21,.09); color:#facc15; max-width:90%; font-style:italic; }
+  .admin-livechat-time { font-size:0.62rem; color:#80A7CC; margin-top:3px; }
+  .admin-livechat-input { display:flex; gap:8px; padding:10px; border-top:1px solid rgba(255,255,255,0.08); }
+  .admin-livechat-input input {
+    flex:1; border:1px solid rgba(255,255,255,0.12); border-radius:999px;
+    background:rgba(255,255,255,0.07); color:#E6F2FF; padding:9px 13px; outline:none; font-family:inherit; font-size:0.78rem;
+  }
+  .admin-livechat-input button {
+    width:38px; height:38px; border-radius:50%; border:none; background:linear-gradient(135deg,#4DA6FF,#2196F3); color:white; cursor:pointer;
+  }
   @media (max-width: 640px) {
-    .admin-fab-stack { right: 16px; bottom: 96px; gap: 12px; }
+    .admin-fab-stack { right: 16px; bottom: 16px; }
+    .admin-widget-menu { right: 0; bottom: 72px; }
     .admin-finance-panel {
       right: 16px;
       left: 16px;
       width: auto;
       bottom: 96px;
     }
+    .admin-livechat-panel {
+      left: 16px;
+      right: 16px;
+      width: auto;
+    }
+    .admin-livechat-content { grid-template-columns: 1fr; }
+    .admin-livechat-list { max-height: 150px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
   }
 </style>
 
-<div class="admin-fab-stack">
-  <button class="admin-finance-fab" id="admin-finance-fab" title="Trợ thủ Tài chính AI">
-    <i class="fas fa-chart-line"></i>
+<div class="admin-fab-stack" id="admin-widget-launcher">
+  <div class="admin-widget-menu" id="admin-widget-menu">
+    <button type="button" class="admin-widget-choice finance" id="admin-finance-open">
+      <i class="fas fa-chart-line"></i>
+      <span>Tài chính AI</span>
+    </button>
+    <button type="button" class="admin-widget-choice livechat" id="admin-livechat-open">
+      <i class="fas fa-headset"></i>
+      <span>Live Chat</span>
+      {% if livechat_count >= 1 %}
+      <span class="choice-notice">{{ livechat_count }}</span>
+      {% endif %}
+    </button>
+  </div>
+  <button class="admin-widget-main-fab" id="admin-widget-main-fab" title="Công cụ admin">
+    <i class="fas fa-wand-magic-sparkles"></i>
+    {% if livechat_count >= 1 %}
+    <span class="fab-notice">{{ livechat_count }}</span>
+    {% else %}
     <span class="fab-badge">AI</span>
+    {% endif %}
   </button>
 </div>
 
@@ -224,6 +451,45 @@
     <button class="admin-finance-action" data-action="month">Tháng này</button>
     <button class="admin-finance-action" data-action="alerts">Cảnh báo</button>
     <button class="admin-finance-action" data-action="top">Bán chạy</button>
+    <button class="admin-finance-action livechat" data-action="livechat"><i class="fas fa-headset"></i> Live Chat</button>
+  </div>
+</div>
+
+<div class="admin-livechat-panel" id="admin-livechat-panel">
+  <div class="admin-livechat-header">
+    <div class="admin-finance-avatar"><i class="fas fa-headset"></i></div>
+    <div class="admin-livechat-title">
+      <h4>Live Chat khách hàng</h4>
+      <p><span id="admin-livechat-count">0</span> cuộc đang chờ</p>
+    </div>
+    <div class="admin-livechat-header-actions">
+      <button class="admin-livechat-expand" id="admin-livechat-expand" title="Mở trang Live Chat"><i class="fas fa-expand-alt"></i></button>
+      <button class="admin-livechat-close" id="admin-livechat-close" title="Đóng"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  <div class="admin-livechat-content">
+    <div class="admin-livechat-list">
+      <div class="admin-livechat-list-title">Đang chờ</div>
+      <div id="admin-livechat-waiting"></div>
+      <div class="admin-livechat-list-title">Đang hỗ trợ</div>
+      <div id="admin-livechat-active"></div>
+    </div>
+    <div class="admin-livechat-chat">
+      <div class="admin-livechat-chat-head">
+        <div class="admin-livechat-chat-name" id="admin-livechat-name">Chọn khách hàng</div>
+        <div class="admin-livechat-chat-actions">
+          <button class="admin-livechat-mini-btn accept" id="admin-livechat-accept" style="display:none">Nhận</button>
+          <button class="admin-livechat-mini-btn close" id="admin-livechat-end" style="display:none">Kết thúc</button>
+        </div>
+      </div>
+      <div class="admin-livechat-messages" id="admin-livechat-messages">
+        <div class="admin-livechat-empty">Chọn một cuộc hội thoại để chat trực tiếp với khách.</div>
+      </div>
+      <div class="admin-livechat-input" id="admin-livechat-input-wrap" style="display:none">
+        <input id="admin-livechat-input" type="text" placeholder="Nhập tin nhắn..." autocomplete="off" />
+        <button id="admin-livechat-send"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -232,9 +498,15 @@
   if (window.__adminFinanceWidgetInitialized) return;
   window.__adminFinanceWidgetInitialized = true;
 
-  var fab = document.getElementById("admin-finance-fab");
+  var fab = document.getElementById("admin-widget-main-fab");
+  var financeOpen = document.getElementById("admin-finance-open");
+  var livechatOpen = document.getElementById("admin-livechat-open");
+  var menu = document.getElementById("admin-widget-menu");
   var panel = document.getElementById("admin-finance-panel");
+  var livePanel = document.getElementById("admin-livechat-panel");
   var closeBtn = document.getElementById("admin-finance-close");
+  var liveCloseBtn = document.getElementById("admin-livechat-close");
+  var liveExpandBtn = document.getElementById("admin-livechat-expand");
   var body = document.getElementById("admin-finance-body");
   var actions = document.getElementById("admin-finance-actions");
 
@@ -246,7 +518,88 @@
     }
   }
 
-  if (fab && panel && closeBtn && body && actions) {
+  if (fab && panel && livePanel && closeBtn && liveCloseBtn && body && actions) {
+  var launcher = document.getElementById("admin-widget-launcher");
+  var isDragging = false;
+  var hasDragged = false;
+  var offsetX = 0;
+  var offsetY = 0;
+  var movedOnce = false;
+  var dragStartX = 0;
+  var dragStartY = 0;
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(value, max));
+  }
+
+  function anchorPanelToLauncher(targetPanel) {
+    if (!launcher || !targetPanel) return;
+    var rect = launcher.getBoundingClientRect();
+    var gap = 12;
+    var panelWidth = targetPanel.offsetWidth || 380;
+    var panelHeight = targetPanel.offsetHeight || 520;
+    var left = rect.right - panelWidth;
+    var top = rect.top - panelHeight - gap;
+
+    if (top < 12) top = rect.bottom + gap;
+    left = clamp(left, 12, window.innerWidth - panelWidth - 12);
+    top = clamp(top, 12, window.innerHeight - panelHeight - 12);
+
+    targetPanel.style.left = left + "px";
+    targetPanel.style.top = top + "px";
+    targetPanel.style.right = "auto";
+    targetPanel.style.bottom = "auto";
+  }
+
+  function setLauncherPosition(clientX, clientY) {
+    if (!launcher) return;
+    var width = launcher.offsetWidth;
+    var height = launcher.offsetHeight;
+    var x = clamp(clientX - offsetX, 8, window.innerWidth - width - 8);
+    var y = clamp(clientY - offsetY, 8, window.innerHeight - height - 8);
+    launcher.style.left = x + "px";
+    launcher.style.top = y + "px";
+    launcher.style.right = "auto";
+    launcher.style.bottom = "auto";
+    movedOnce = true;
+    if (panel.classList.contains("open") || livePanel.classList.contains("open")) anchorOpenPanelToLauncher();
+  }
+
+  if (fab) {
+    fab.addEventListener("mousedown", function (event) {
+      if (event.button !== 0) return;
+      var rect = launcher.getBoundingClientRect();
+      isDragging = true;
+      hasDragged = false;
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      offsetX = event.clientX - rect.left;
+      offsetY = event.clientY - rect.top;
+      launcher.style.transition = "none";
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+  }
+
+  function onMouseMove(event) {
+    if (!isDragging) return;
+    if (!hasDragged) {
+      var dx = Math.abs(event.clientX - dragStartX);
+      var dy = Math.abs(event.clientY - dragStartY);
+      if (dx < 4 && dy < 4) return;
+      hasDragged = true;
+    }
+    setLauncherPosition(event.clientX, event.clientY);
+  }
+
+  function onMouseUp() {
+    isDragging = false;
+    if (launcher) launcher.style.transition = "";
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+    window.setTimeout(function () { hasDragged = false; }, 80);
+  }
+
   var finData = {
     revenue_today: panel.dataset.revenueToday || "0",
     revenue_week: panel.dataset.revenueWeek || "0",
@@ -311,34 +664,54 @@
     top: topMsg
   };
 
+  function anchorOpenPanelToLauncher() {
+    if (panel.classList.contains("open")) anchorPanelToLauncher(panel);
+    if (livePanel.classList.contains("open")) anchorPanelToLauncher(livePanel);
+  }
+
   function closeFinancePanel() {
     panel.classList.remove("open");
   }
+  function closeLiveChatPanel() {
+    livePanel.classList.remove("open");
+  }
 
   function openFinancePanel() {
-    if (typeof window["closeAdminChatWidget"] === "function") {
-      window["closeAdminChatWidget"]();
-    }
-    if (typeof window["closeMainChatWidget"] === "function") {
-      window["closeMainChatWidget"]();
-    }
+    closeLiveChatPanel();
     panel.classList.add("open");
+    anchorPanelToLauncher(panel);
+  }
+
+  function openLiveChatPanel() {
+    closeFinancePanel();
+    livePanel.classList.add("open");
+    anchorPanelToLauncher(livePanel);
+    lcPollList();
   }
 
   fab.addEventListener("click", function () {
-    if (panel.classList.contains("open")) {
-      closeFinancePanel();
-    } else {
-      openFinancePanel();
-    }
+    if (hasDragged) return;
+    launcher.classList.toggle("open");
   });
+  if (financeOpen) financeOpen.addEventListener("click", function () { launcher.classList.remove("open"); openFinancePanel(); });
+  if (livechatOpen) livechatOpen.addEventListener("click", function () { launcher.classList.remove("open"); openLiveChatPanel(); });
 
   closeBtn.addEventListener("click", closeFinancePanel);
+  liveCloseBtn.addEventListener("click", closeLiveChatPanel);
+  if (liveExpandBtn) {
+    liveExpandBtn.addEventListener("click", function () {
+      window.location.href = "/Admin/LiveChat";
+    });
+  }
 
   actions.addEventListener("click", function (e) {
     var btn = e.target.closest(".admin-finance-action");
     if (!btn) return;
     var action = btn.getAttribute("data-action");
+    if (action === "livechat") {
+      window.location.href = "/Admin/LiveChat";
+      return;
+    }
     if (!responses[action]) return;
     var msg = document.createElement("div");
     msg.className = "admin-finance-msg";
@@ -349,6 +722,209 @@
 
   window.closeAdminFinanceWidget = closeFinancePanel;
   window.openAdminFinanceWidget = openFinancePanel;
+  window.openAdminLiveChatWidget = openLiveChatPanel;
+  window.addEventListener("resize", function () {
+    anchorOpenPanelToLauncher();
+    if (launcher && movedOnce) {
+      var rect = launcher.getBoundingClientRect();
+      offsetX = 0;
+      offsetY = 0;
+      setLauncherPosition(rect.left, rect.top);
+    }
+  });
+  document.addEventListener("click", function (event) {
+    if (!launcher.contains(event.target) && !panel.contains(event.target) && !livePanel.contains(event.target)) {
+      launcher.classList.remove("open");
+    }
+  });
+
+  var lcCurrentId = null;
+  var lcLastMsgId = 0;
+  var lcListTimer = null;
+  var lcMsgTimer = null;
+  var lcWaitingBox = document.getElementById("admin-livechat-waiting");
+  var lcActiveBox = document.getElementById("admin-livechat-active");
+  var lcCount = document.getElementById("admin-livechat-count");
+  var lcName = document.getElementById("admin-livechat-name");
+  var lcMessages = document.getElementById("admin-livechat-messages");
+  var lcAcceptBtn = document.getElementById("admin-livechat-accept");
+  var lcEndBtn = document.getElementById("admin-livechat-end");
+  var lcInputWrap = document.getElementById("admin-livechat-input-wrap");
+  var lcInput = document.getElementById("admin-livechat-input");
+  var lcSendBtn = document.getElementById("admin-livechat-send");
+
+  function esc(text) {
+    var div = document.createElement("div");
+    div.textContent = text || "";
+    return div.innerHTML;
+  }
+
+  function lcRenderItems(target, items, status) {
+    target.innerHTML = "";
+    if (!items.length) {
+      target.innerHTML = '<div class="admin-livechat-empty" style="padding:14px 10px">Không có</div>';
+      return;
+    }
+    items.forEach(function (item) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "admin-livechat-item" + (item.conversation_id === lcCurrentId ? " active" : "");
+      btn.innerHTML = "<strong>" + esc(item.customer_name) + "</strong><span>" + esc(item.subject || item.created_at || "") + "</span>";
+      btn.addEventListener("click", function () {
+        lcSelect(item.conversation_id, item.customer_name, status);
+      });
+      target.appendChild(btn);
+    });
+  }
+
+  async function lcPollList() {
+    try {
+      var response = await fetch("/Admin/API/LiveChat/Waiting");
+      var data = await response.json();
+      if (!data.success) return;
+      var noticeCount = data.notice_count !== undefined
+        ? data.notice_count
+        : (data.waiting_count || 0) + ((data.active || []).length || 0);
+      lcCount.textContent = data.waiting_count || 0;
+      updateWidgetNotice(noticeCount);
+      lcRenderItems(lcWaitingBox, data.waiting || [], "waiting");
+      lcRenderItems(lcActiveBox, data.active || [], "active");
+    } catch (_) {}
+  }
+
+  function updateWidgetNotice(count) {
+    var mainFab = document.getElementById("admin-widget-main-fab");
+    var liveChoice = document.getElementById("admin-livechat-open");
+    if (!mainFab || !liveChoice) return;
+
+    var oldFabBadge = mainFab.querySelector(".fab-badge, .fab-notice");
+    if (oldFabBadge) oldFabBadge.remove();
+    var oldChoiceBadge = liveChoice.querySelector(".choice-notice");
+    if (oldChoiceBadge) oldChoiceBadge.remove();
+
+    if (count >= 1) {
+      var fabBadge = document.createElement("span");
+      fabBadge.className = "fab-notice";
+      fabBadge.textContent = String(count);
+      mainFab.appendChild(fabBadge);
+
+      var choiceBadge = document.createElement("span");
+      choiceBadge.className = "choice-notice";
+      choiceBadge.textContent = String(count);
+      liveChoice.appendChild(choiceBadge);
+    } else {
+      var aiBadge = document.createElement("span");
+      aiBadge.className = "fab-badge";
+      aiBadge.textContent = "AI";
+      mainFab.appendChild(aiBadge);
+    }
+  }
+
+  function lcSetStatus(status) {
+    lcAcceptBtn.style.display = status === "waiting" ? "inline-flex" : "none";
+    lcEndBtn.style.display = status === "active" ? "inline-flex" : "none";
+    lcInputWrap.style.display = status === "active" ? "flex" : "none";
+  }
+
+  function lcSelect(id, name, status) {
+    lcCurrentId = id;
+    lcLastMsgId = 0;
+    lcName.textContent = name || "Khách hàng";
+    lcMessages.innerHTML = "";
+    lcSetStatus(status);
+    lcLoadMessages();
+    if (lcMsgTimer) clearInterval(lcMsgTimer);
+    lcMsgTimer = setInterval(lcPollMessages, 3000);
+    lcPollList();
+  }
+
+  function lcAddMsg(msg) {
+    var row = document.createElement("div");
+    row.className = "admin-livechat-msg " + msg.sender_type;
+    row.innerHTML = '<div><div class="admin-livechat-bubble">' + esc(msg.content) + '</div><div class="admin-livechat-time">' + esc(msg.created_at) + '</div></div>';
+    lcMessages.appendChild(row);
+  }
+
+  async function lcLoadMessages() {
+    if (!lcCurrentId) return;
+    try {
+      var response = await fetch("/Admin/API/LiveChat/Messages/" + lcCurrentId + "?after_id=0");
+      var data = await response.json();
+      if (!data.success) return;
+      lcMessages.innerHTML = "";
+      (data.messages || []).forEach(lcAddMsg);
+      if (data.messages && data.messages.length) lcLastMsgId = data.messages[data.messages.length - 1].message_id;
+      lcSetStatus(data.status || "closed");
+      lcMessages.scrollTop = lcMessages.scrollHeight;
+    } catch (_) {}
+  }
+
+  async function lcPollMessages() {
+    if (!lcCurrentId) return;
+    try {
+      var response = await fetch("/Admin/API/LiveChat/Messages/" + lcCurrentId + "?after_id=" + lcLastMsgId);
+      var data = await response.json();
+      if (!data.success) return;
+      (data.messages || []).forEach(function (msg) {
+        lcAddMsg(msg);
+        lcLastMsgId = msg.message_id;
+      });
+      lcSetStatus(data.status || "closed");
+      lcMessages.scrollTop = lcMessages.scrollHeight;
+    } catch (_) {}
+  }
+
+  async function lcAccept() {
+    if (!lcCurrentId) return;
+    try {
+      var response = await fetch("/Admin/API/LiveChat/Accept/" + lcCurrentId, { method: "POST" });
+      var data = await response.json();
+      if (data.success) {
+        lcSetStatus("active");
+        lcPollList();
+        lcLoadMessages();
+      }
+    } catch (_) {}
+  }
+
+  async function lcEnd() {
+    if (!lcCurrentId) return;
+    try {
+      var response = await fetch("/Admin/API/LiveChat/Close/" + lcCurrentId, { method: "POST" });
+      var data = await response.json();
+      if (data.success) {
+        lcSetStatus("closed");
+        lcPollList();
+        lcLoadMessages();
+      }
+    } catch (_) {}
+  }
+
+  async function lcSend() {
+    var message = (lcInput.value || "").trim();
+    if (!message || !lcCurrentId) return;
+    lcInput.value = "";
+    try {
+      await fetch("/Admin/API/LiveChat/Send/" + lcCurrentId, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+      });
+      lcPollMessages();
+    } catch (_) {}
+  }
+
+  lcAcceptBtn.addEventListener("click", lcAccept);
+  lcEndBtn.addEventListener("click", lcEnd);
+  lcSendBtn.addEventListener("click", lcSend);
+  lcInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      lcSend();
+    }
+  });
+  lcPollList();
+  lcListTimer = setInterval(lcPollList, 5000);
   }
 })();
 </script>

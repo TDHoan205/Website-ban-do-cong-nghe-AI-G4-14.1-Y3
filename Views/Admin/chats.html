@@ -125,6 +125,45 @@
       }
       .pane-header h3 { font-size: 1rem; font-weight: 700; color: white; margin: 0; display: flex; align-items: center; gap: 8px; }
       .pane-header h3 i { color: #4DA6FF; }
+      .chat-filter-form {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .chat-filter-form input {
+        width: 100%;
+        border: 1px solid #2D4A6F;
+        border-radius: 8px;
+        background: #152A45;
+        color: #E6F2FF;
+        padding: 9px 10px;
+        font-family: inherit;
+        font-size: 0.78rem;
+        outline: none;
+      }
+      .chat-filter-form input::placeholder { color: #5C7A99; }
+      .chat-filter-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .chat-filter-actions { display: flex; gap: 8px; }
+      .chat-filter-btn {
+        flex: 1;
+        border: 1px solid rgba(77,166,255,0.35);
+        border-radius: 8px;
+        background: rgba(77,166,255,0.12);
+        color: #80C7FF;
+        padding: 8px 10px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        font-family: inherit;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .chat-filter-btn.clear {
+        border-color: rgba(148,163,184,0.25);
+        background: rgba(148,163,184,0.08);
+        color: #94a3b8;
+      }
       
       .session-list { flex: 1; overflow-y: auto; }
       .session-item {
@@ -141,6 +180,18 @@
       .session-user i { color: #80C7FF; font-size: 0.8rem; }
       .session-time { font-size: 0.75rem; color: #64748b; }
       .session-preview { font-size: 0.8rem; color: #80C7FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .session-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 6px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.66rem;
+        font-weight: 800;
+      }
+      .session-type.ai { background: rgba(77,166,255,0.14); color: #80C7FF; }
+      .session-type.live { background: rgba(34,197,94,0.14); color: #22c55e; }
 
       .chat-detail-pane {
         flex: 1;
@@ -175,17 +226,22 @@
       .msg-row { display: flex; }
       .msg-row.user { justify-content: flex-end; }
       .msg-row.bot { justify-content: flex-start; }
+      .msg-row.system { justify-content: center; }
       
       .msg-bubble {
         max-width: 75%;
+        min-width: 220px;
         padding: 12px 16px;
         border-radius: 12px;
         font-size: 0.9rem;
         line-height: 1.5;
         position: relative;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
       .msg-row.bot .msg-bubble { background: #1E3A5F; color: #FFFFFF; border: 1px solid #2D4A6F; border-bottom-left-radius: 4px; }
       .msg-row.user .msg-bubble { background: #3b82f6; color: white; border-bottom-right-radius: 4px; }
+      .msg-row.system .msg-bubble { background: rgba(250,204,21,0.1); color: #facc15; border: 1px solid rgba(250,204,21,0.22); text-align: center; max-width: 520px; }
       
       .msg-time { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 6px; text-align: right; }
       .msg-row.bot .msg-time { color: #64748b; text-align: left; }
@@ -211,18 +267,32 @@
         <div class="chat-sessions-pane">
           <div class="pane-header">
             <h3><i class="fas fa-history"></i> Phiên trò chuyện</h3>
+            <form class="chat-filter-form" method="get" action="/Admin/Chats">
+              <input type="text" name="search" value="{{ search }}" placeholder="Tìm theo tên khách hàng..." />
+              <div class="chat-filter-dates">
+                <input type="date" name="date_from" value="{{ date_from }}" />
+                <input type="date" name="date_to" value="{{ date_to }}" />
+              </div>
+              <div class="chat-filter-actions">
+                <button type="submit" class="chat-filter-btn"><i class="fas fa-search"></i> Lọc</button>
+                <a href="/Admin/Chats" class="chat-filter-btn clear">Xóa</a>
+              </div>
+            </form>
           </div>
           <div class="session-list">
             {% if sessions %}
               {% for s in sessions %}
-              <div class="session-item" onclick="loadSession(event, '{{ s.session_uuid }}', '{{ s.account.username if s.account else 'Khách vãng lai' }}')">
+              <div class="session-item" onclick='loadSession(event, {{ s.key | tojson }}, {{ s.title | tojson }}, {{ s.full_id | tojson }})'>
                 <div class="session-header">
                   <div class="session-user">
-                    <i class="fas fa-user-circle"></i> {{ s.account.username if s.account else 'Khách vãng lai' }}
+                    <i class="fas fa-user-circle"></i> {{ s.title }}
                   </div>
-                  <div class="session-time">{{ s.started_at.strftime('%d/%m %H:%M') if s.started_at else '' }}</div>
+                  <div class="session-time">{{ s.time.strftime('%d/%m %H:%M') if s.time else '' }}</div>
                 </div>
-                <div class="session-preview">Mã: {{ s.session_uuid[:8] }}...</div>
+                <div class="session-preview">{{ s.subtitle }}</div>
+                <div class="session-type {{ s.type }}">
+                  {% if s.type == 'live' %}<i class="fas fa-headset"></i> Live Chat{% else %}<i class="fas fa-robot"></i> AI Chat{% endif %}
+                </div>
               </div>
               {% endfor %}
             {% else %}
@@ -251,7 +321,7 @@
     </div>
 
     <script>
-      async function loadSession(evt, uuid, userName) {
+      async function loadSession(evt, uuid, userName, displayId) {
         // Update UI
         document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
         if (evt && evt.currentTarget) {
@@ -260,7 +330,7 @@
         
         document.getElementById('detailHeader').style.display = 'flex';
         document.getElementById('detailUser').innerText = userName;
-        document.getElementById('detailUuid').innerText = 'Mã phiên: ' + uuid;
+        document.getElementById('detailUuid').innerText = 'Mã phiên: ' + (displayId || uuid);
         
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Đang tải tin nhắn...</p></div>';
@@ -273,8 +343,9 @@
               chatBox.innerHTML = '';
               data.messages.forEach(msg => {
                 const isBot = msg.sender === 'bot';
+                const isSystem = msg.sender === 'system';
                 const row = document.createElement('div');
-                row.className = `msg-row ${isBot ? 'bot' : 'user'}`;
+                row.className = `msg-row ${isSystem ? 'system' : isBot ? 'bot' : 'user'}`;
                 
                 // Cắt nội dung quá dài (đối với markdown, nên render cẩn thận, nhưng ở đây in text thường cũng được)
                 row.innerHTML = `
@@ -299,7 +370,6 @@
       }
 </script>
     {% include "partials/admin_finance_widget.html" %}
-    {% include "partials/chatbot.html" %}
 </body>
 </html>
 

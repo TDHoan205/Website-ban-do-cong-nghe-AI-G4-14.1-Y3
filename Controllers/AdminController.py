@@ -26,7 +26,7 @@ from Models.Category import Category
 from Models.Supplier import Supplier
 from Models.Order import Order, OrderItem
 from Models.Order import OrderStatus
-from Models.Chat import ChatSession, ChatMessage
+from Models.Chat import ChatSession, ChatMessage, LiveChatConversation, LiveChatMessage
 from fastapi.templating import Jinja2Templates
 import json
 import os
@@ -82,7 +82,17 @@ def _admin_nav_context(db: Session, active_page: str):
     total_orders = db.query(Order).count()
     total_accounts = db.query(Account).count()
     total_faqs = db.query(FAQ).count()
-    total_chats = db.query(ChatSession).count()
+    total_chats = (
+        db.query(ChatSession)
+        .join(ChatMessage, ChatMessage.session_id == ChatSession.session_id)
+        .distinct()
+        .count()
+    )
+    livechat_count = (
+        db.query(LiveChatConversation)
+        .filter(LiveChatConversation.status.in_(["waiting", "active"]))
+        .count()
+    )
     pending_orders = db.query(Order).filter(
         or_(Order.status == "Pending", Order.status == "cho_xu_ly")
     ).count()
@@ -96,6 +106,7 @@ def _admin_nav_context(db: Session, active_page: str):
             "total_accounts": total_accounts,
             "total_faqs": total_faqs,
             "total_chats": total_chats,
+            "livechat_count": livechat_count,
             "pending_orders": pending_orders,
         },
     }
@@ -203,6 +214,27 @@ def _product_upload_path_from_url(image_url: str) -> str | None:
     return os.path.join("wwwroot", relative_path)
 
 
+def _paid_order_filter():
+    return Order.status.in_([
+        OrderStatus.CONFIRMED,
+        OrderStatus.PROCESSING,
+        OrderStatus.SHIPPED,
+        OrderStatus.DELIVERED,
+    ])
+
+
+def _create_customer_order_notification(db: Session, order: Order, title: str, content: str):
+    if not order.account_id:
+        return
+    db.add(Notification(
+        account_id=order.account_id,
+        title=title,
+        content=content,
+        notification_type="order_update",
+        is_read=False,
+    ))
+
+
 # =====================================================================
 # PAGES
 # =====================================================================
@@ -221,7 +253,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     total_customers = db.query(Account).join(Role).filter(Role.role_name == "Customer").count()
     total_admins = db.query(Account).join(Role).filter(Role.role_name == "Admin").count()
     total_orders = db.query(Order).count()
-    total_revenue = db.query(func.sum(Order.total_amount)).scalar() or 0
+    total_revenue = db.query(func.sum(Order.total_amount)).filter(_paid_order_filter()).scalar() or 0
     pending_orders = db.query(Order).filter(
         or_(Order.status == "Pending", Order.status == "cho_xu_ly")
     ).count()
@@ -238,11 +270,11 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     month_start = today_start.replace(day=1)
     year_start = today_start.replace(month=1, day=1)
 
-    # --- Revenue by period (only Delivered orders) ---
+    # --- Revenue by period (paid/confirmed orders) ---
     def _revenue_in_period(start_dt):
         result = db.query(func.sum(Order.total_amount)).filter(
             Order.order_date >= start_dt,
-            Order.status == OrderStatus.DELIVERED
+            _paid_order_filter()
         ).scalar()
         return float(result) if result else 0
 
@@ -257,7 +289,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             Order, Order.order_id == OrderItem.order_id
         ).filter(
             Order.order_date >= start_dt,
-            Order.status == OrderStatus.DELIVERED
+            _paid_order_filter()
         ).scalar()
         return int(result) if result else 0
 
@@ -271,7 +303,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
 
     # --- Average order value ---
     avg_order_value = db.query(func.avg(Order.total_amount)).filter(
-        Order.status == OrderStatus.DELIVERED
+        _paid_order_filter()
     ).scalar()
     avg_order_value = float(avg_order_value) if avg_order_value else 0
 
@@ -281,18 +313,21 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     ).count()
     cancel_rate = round((cancelled_orders / total_orders * 100), 1) if total_orders > 0 else 0
 
-    # --- 7-day revenue chart data ---
+    # --- Weekly revenue chart data (Monday -> Sunday) ---
     chart_labels = []
+    chart_dates = []
     chart_data = []
-    for i in range(6, -1, -1):
-        day = today_start - timedelta(days=i)
+    weekday_labels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+    for i in range(7):
+        day = week_start + timedelta(days=i)
         next_day = day + timedelta(days=1)
         day_revenue = db.query(func.sum(Order.total_amount)).filter(
             Order.order_date >= day,
             Order.order_date < next_day,
-            Order.status == OrderStatus.DELIVERED
+            _paid_order_filter()
         ).scalar()
-        chart_labels.append(day.strftime("%d/%m"))
+        chart_labels.append(weekday_labels[i])
+        chart_dates.append(day.strftime("%d/%m"))
         chart_data.append(float(day_revenue) if day_revenue else 0)
 
     # --- Top 5 best selling products this month ---
@@ -303,7 +338,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         func.sum(OrderItem.subtotal).label("total_revenue")
     ).join(Order, Order.order_id == OrderItem.order_id).filter(
         Order.order_date >= month_start,
-        Order.status == OrderStatus.DELIVERED
+        _paid_order_filter()
     ).group_by(
         OrderItem.product_id, OrderItem.product_name
     ).order_by(
@@ -363,8 +398,9 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
                 "cancelled_orders": cancelled_orders,
                 "new_customers_month": new_customers_month,
             },
-            "chart_labels": json.dumps(chart_labels),
-            "chart_data": json.dumps(chart_data),
+            "chart_labels": chart_labels,
+            "chart_dates": chart_dates,
+            "chart_data": chart_data,
             "top_selling": top_selling_list,
             "low_stock_products": low_stock_products,
             **_admin_nav_context(db, "dashboard"),
@@ -385,9 +421,7 @@ async def admin_statistics(request: Request, db: Session = Depends(get_db)):
     delivered_orders = db.query(Order).filter(Order.status == OrderStatus.DELIVERED).count()
     cancelled_orders = db.query(Order).filter(Order.status == OrderStatus.CANCELLED).count()
     pending_orders = db.query(Order).filter(Order.status == OrderStatus.PENDING).count()
-    total_revenue = db.query(func.sum(Order.total_amount)).filter(
-        Order.status == OrderStatus.DELIVERED
-    ).scalar() or 0
+    total_revenue = db.query(func.sum(Order.total_amount)).filter(_paid_order_filter()).scalar() or 0
 
     top_products = db.query(
         OrderItem.product_id,
@@ -395,7 +429,7 @@ async def admin_statistics(request: Request, db: Session = Depends(get_db)):
         func.sum(OrderItem.quantity).label("total_quantity"),
         func.sum(OrderItem.subtotal).label("total_amount"),
     ).join(Order, Order.order_id == OrderItem.order_id).filter(
-        Order.status == OrderStatus.DELIVERED
+        _paid_order_filter()
     ).group_by(
         OrderItem.product_id,
         OrderItem.product_name,
@@ -593,7 +627,82 @@ async def admin_chats(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse(url="/Auth/Admin", status_code=303)
         raise
 
-    sessions = db.query(ChatSession).order_by(ChatSession.started_at.desc()).all()
+    search = (request.query_params.get("search") or "").strip()
+    date_from = (request.query_params.get("date_from") or "").strip()
+    date_to = (request.query_params.get("date_to") or "").strip()
+
+    def _parse_date(value):
+        if not value:
+            return None
+        try:
+            return datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            return None
+
+    start_date = _parse_date(date_from)
+    end_date = _parse_date(date_to)
+    if end_date:
+        end_date = end_date.replace(hour=23, minute=59, second=59)
+
+    ai_query = (
+        db.query(ChatSession)
+        .join(ChatMessage, ChatMessage.session_id == ChatSession.session_id)
+        .distinct()
+    )
+    if search:
+        ai_query = ai_query.outerjoin(Account, Account.account_id == ChatSession.account_id).filter(
+            or_(
+                Account.username.ilike(f"%{search}%"),
+                Account.full_name.ilike(f"%{search}%"),
+                ChatSession.session_uuid.ilike(f"%{search}%"),
+            )
+        )
+    if start_date:
+        ai_query = ai_query.filter(ChatSession.started_at >= start_date)
+    if end_date:
+        ai_query = ai_query.filter(ChatSession.started_at <= end_date)
+
+    live_query = (
+        db.query(LiveChatConversation)
+        .join(LiveChatMessage, LiveChatMessage.conversation_id == LiveChatConversation.conversation_id)
+        .filter(LiveChatMessage.sender_type.in_(["customer", "staff"]))
+        .distinct()
+    )
+    if search:
+        live_query = live_query.filter(
+            or_(
+                LiveChatConversation.customer_name.ilike(f"%{search}%"),
+                LiveChatConversation.subject.ilike(f"%{search}%"),
+            )
+        )
+    if start_date:
+        live_query = live_query.filter(LiveChatConversation.created_at >= start_date)
+    if end_date:
+        live_query = live_query.filter(LiveChatConversation.created_at <= end_date)
+
+    sessions = []
+    for s in ai_query.order_by(ChatSession.started_at.desc()).all():
+        customer_name = s.account.full_name or s.account.username if s.account else "Khách vãng lai"
+        sessions.append({
+            "type": "ai",
+            "key": f"ai:{s.session_uuid}",
+            "title": customer_name,
+            "subtitle": f"Mã: {s.session_uuid[:8]}...",
+            "full_id": s.session_uuid,
+            "time": s.started_at,
+        })
+
+    for c in live_query.order_by(LiveChatConversation.created_at.desc()).all():
+        sessions.append({
+            "type": "live",
+            "key": f"live:{c.conversation_id}",
+            "title": c.customer_name or "Khách vãng lai",
+            "subtitle": c.subject or "Live Chat",
+            "full_id": f"Live Chat #{c.conversation_id}",
+            "time": c.created_at,
+        })
+
+    sessions.sort(key=lambda item: item["time"] or datetime.min, reverse=True)
 
     return templates.TemplateResponse(
         "Admin/chats.html",
@@ -602,6 +711,9 @@ async def admin_chats(request: Request, db: Session = Depends(get_db)):
             "page_title": "Lịch sử Chat",
             "admin": admin,
             "sessions": sessions,
+            "search": search,
+            "date_from": date_from,
+            "date_to": date_to,
             **_admin_nav_context(db, "chats"),
         }
     )
@@ -613,6 +725,39 @@ async def api_get_chat_messages(request: Request, session_uuid: str, db: Session
         admin = _check_admin(request, db)
     except HTTPException:
         return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    if session_uuid.startswith("live:"):
+        try:
+            conversation_id = int(session_uuid.split(":", 1)[1])
+        except ValueError:
+            return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
+
+        conv = db.query(LiveChatConversation).filter(
+            LiveChatConversation.conversation_id == conversation_id
+        ).first()
+        if not conv:
+            return JSONResponse({"success": False, "error": "Không tìm thấy"}, status_code=404)
+
+        messages = db.query(LiveChatMessage).filter(
+            LiveChatMessage.conversation_id == conversation_id,
+            LiveChatMessage.sender_type.in_(["customer", "staff", "system"]),
+        ).order_by(LiveChatMessage.created_at.asc()).all()
+
+        return JSONResponse({
+            "success": True,
+            "messages": [
+                {
+                    "message_id": m.message_id,
+                    "sender": "user" if m.sender_type == "customer" else "bot" if m.sender_type == "staff" else "system",
+                    "content": m.content,
+                    "created_at": m.created_at.strftime('%H:%M:%S %d/%m/%Y') if m.created_at else "",
+                }
+                for m in messages
+            ],
+        })
+
+    if session_uuid.startswith("ai:"):
+        session_uuid = session_uuid.split(":", 1)[1]
 
     session = db.query(ChatSession).filter(ChatSession.session_uuid == session_uuid).first()
     if not session:
@@ -682,6 +827,11 @@ async def api_livechat_waiting(request: Request, db: Session = Depends(get_db)):
 
     waiting = live_chat_service.get_waiting_conversations()
     active = live_chat_service.get_active_conversations(admin.account_id)
+    notice_count = (
+        db.query(LiveChatConversation)
+        .filter(LiveChatConversation.status.in_(["waiting", "active"]))
+        .count()
+    )
 
     return JSONResponse({
         "success": True,
@@ -704,6 +854,7 @@ async def api_livechat_waiting(request: Request, db: Session = Depends(get_db)):
             for c in active
         ],
         "waiting_count": len(waiting),
+        "notice_count": notice_count,
     })
 
 
@@ -1927,6 +2078,15 @@ async def api_update_order_status(
                 continue
             new_stock = (product.stock_quantity or 0) + (item.quantity or 0)
             _sync_product_inventory(db, product, new_stock)
+
+    if old_status != new_status:
+        status_display = OrderStatus.get_display(new_status)
+        _create_customer_order_notification(
+            db,
+            order,
+            f"Cập nhật đơn hàng #{order.order_id}",
+            f"Đơn hàng #{order.order_id} đã được chuyển sang trạng thái: {status_display}.",
+        )
 
     db.commit()
     return JSONResponse({"success": True})

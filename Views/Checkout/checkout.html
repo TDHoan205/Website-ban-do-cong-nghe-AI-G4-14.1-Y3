@@ -1,40 +1,39 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thanh toán QR - Tech Store AI</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/checkout.css" />
-</head>
-<body>
+﻿{% extends "Shared/base.html" %}
 
-  <!-- Top bar -->
-  <div class="top-bar text-center">
-    <div class="container">
-      <i class="fas fa-lock me-1"></i> Thanh toán an toàn &amp; bảo mật qua QR Banking
-    </div>
-  </div>
+{% block title %}Thanh toán QR - Tech Store AI{% endblock %}
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg sticky-top bg-white">
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/checkout.css" />
+<style>
+  body { background: var(--bg); }
+  .checkout-page { padding: 36px 0 48px; }
+  .checkout-page .container { max-width: 1180px; }
+  .checkout-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 22px;
+    text-decoration: none;
+  }
+  .checkout-back-link:hover { color: var(--primary); }
+  .step-badge {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="checkout-page">
     <div class="container">
-      <a class="navbar-brand" href="/">
-        <i class="fas fa-robot text-primary"></i> Tech Store AI
+      <a href="/Cart/" class="checkout-back-link">
+        <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
       </a>
-      <div class="d-flex align-items-center gap-3">
-        <a href="/Cart/" class="text-secondary" style="font-size:0.9rem">
-          <i class="fas fa-arrow-left me-1"></i> Quay lại giỏ hàng
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main -->
-  <div class="main-content">
-    <div class="container">
 
       <!-- Breadcrumb -->
       <div class="checkout-breadcrumb">
@@ -276,27 +275,10 @@
       </div><!-- /.payment-layout -->
     </div><!-- /.container -->
   </div><!-- /.main-content -->
+</section>
+{% endblock %}
 
-  <footer>
-    <div class="container">
-      <p class="mb-0">
-        <i class="fas fa-shield-alt me-1"></i>
-        Thanh toán được bảo mật bởi Tech Store AI &bull;
-        Mã hóa SSL 256-bit &bull;
-        &copy; 2026
-      </p>
-    </div>
-  </footer>
-
-  <style>
-    .step-badge {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--primary); color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
-    }
-  </style>
-
+{% block scripts %}
   <script>
     const ORDER_ID = "{{ payment.order_id }}";
     const EXPIRES_AT = "{{ payment.expires_at }}";
@@ -381,8 +363,8 @@
         const data = await resp.json();
 
         if (data.success) {
-          showAlert('Thanh toán thành công! Đang chuyển trang...', 'success');
-          btn.innerHTML = '<i class="fas fa-check-circle"></i> Thành công!';
+          showAlert('Đã ghi nhận thanh toán. Đơn hàng đang chờ admin duyệt.', 'success');
+          btn.innerHTML = '<i class="fas fa-check-circle"></i> Đã gửi duyệt!';
           btn.style.background = 'var(--success)';
           setTimeout(() => {
             window.location.href = data.redirect_url;
@@ -408,11 +390,8 @@
         const data = await resp.json();
 
         if (data.status === 'PAID') {
-          // Already paid — redirect
-          showAlert('Đã xác nhận thanh toán! Đang chuyển...', 'success');
-          setTimeout(() => {
-            window.location.href = `/Checkout/success/${ORDER_ID}`;
-          }, 1000);
+          showAlert('Đã ghi nhận thanh toán. Đang tạo đơn để gửi admin duyệt...', 'success');
+          verifyPayment();
         } else if (data.status === 'EXPIRED') {
           showAlert('Mã thanh toán đã hết hạn!', 'warning');
           document.getElementById('btn-verify').disabled = true;
@@ -429,12 +408,4 @@
       setInterval(pollStatus, 5000);
     });
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- ===== FLOATING CHAT AI ===== -->
-  <a href="/Chat/" title="Chat voi AI" style="position:fixed;bottom:28px;right:28px;z-index:9999;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;text-decoration:none;box-shadow:0 6px 24px rgba(102,126,234,0.4);transition:transform 0.3s,box-shadow 0.3s;">
-    <i class="fas fa-robot"></i>
-  </a>
-</body>
-</html>
+{% endblock %}

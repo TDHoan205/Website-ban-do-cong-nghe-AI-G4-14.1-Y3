@@ -14,7 +14,7 @@ class Order(Base):
     order_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("Accounts.account_id"), nullable=True)
     order_date = Column(DateTime(timezone=True), server_default=func.now())
-    total_amount = Column(DECIMAL(10, 2), nullable=False)
+    total_amount = Column(DECIMAL(18, 2), nullable=False)
     status = Column(String(20), default="Pending")  # Pending, Confirmed, Processing, Shipped, Delivered, Cancelled
     customer_name = Column(String(100))
     customer_phone = Column(String(20))
@@ -48,8 +48,8 @@ class OrderItem(Base):
     product_name = Column(String(255), nullable=False)  # Lưu tên tại thời điểm đặt
     variant_name = Column(String(100))  # Lưu tên variant tại thời điểm đặt
     quantity = Column(Integer, nullable=False)
-    unit_price = Column(DECIMAL(10, 2), nullable=False)
-    subtotal = Column(DECIMAL(10, 2), nullable=False)
+    unit_price = Column(DECIMAL(18, 2), nullable=False)
+    subtotal = Column(DECIMAL(18, 2), nullable=False)
 
     order = relationship("Order", back_populates="order_items")
     product = relationship("Product", back_populates="order_items")

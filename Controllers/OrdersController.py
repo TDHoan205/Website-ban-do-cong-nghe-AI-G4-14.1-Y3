@@ -46,6 +46,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
     service = OrderService(db)
     orders = service.get_orders_by_account(account.account_id)
     cart_count = _get_cart_count(request, db)
+    order_stats = service.get_order_stats_for_account(account.account_id)
 
     return templates.TemplateResponse(
         "Orders/index.html",
@@ -53,6 +54,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "page_title": "Đơn hàng của tôi",
             "orders": orders,
+            "order_stats": order_stats,
             "current_user": account,
             "cart_count": cart_count,
         }
@@ -118,7 +120,34 @@ def list_orders(
     }
 
 
-@router.get("/{order_id}")
+@router.get("/{order_id}", response_class=HTMLResponse)
+async def order_detail(order_id: int, request: Request, db: Session = Depends(get_db)):
+    try:
+        account = require_account(request, db)
+    except HTTPException:
+        return RedirectResponse(url="/Auth/Login", status_code=303)
+
+    order = (
+        db.query(Order)
+        .filter(Order.order_id == order_id, Order.account_id == account.account_id)
+        .first()
+    )
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    return templates.TemplateResponse(
+        "Orders/detail.html",
+        {
+            "request": request,
+            "page_title": f"Chi tiết đơn hàng #{order.order_id}",
+            "order": order,
+            "current_user": account,
+            "cart_count": _get_cart_count(request, db),
+        },
+    )
+
+
+@router.get("/{order_id}/json")
 def get_order(order_id: int, db: Session = Depends(get_db)):
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:

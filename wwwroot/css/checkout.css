@@ -23,7 +23,7 @@
   --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
 }
 
-body {
+body.checkout-standalone {
   font-family: "Be Vietnam Pro", sans-serif;
   background: var(--bg);
   color: var(--text-primary);
@@ -35,14 +35,14 @@ body {
 a { text-decoration: none; }
 
 /* ===== TOP BAR ===== */
-.top-bar {
+.checkout-security-bar {
   background: var(--primary);
   color: #fff;
   padding: 10px 0;
   font-size: 0.82rem;
 }
-.top-bar a { color: rgba(255,255,255,0.9); }
-.top-bar a:hover { color: #fff; }
+.checkout-security-bar a { color: rgba(255,255,255,0.9); }
+.checkout-security-bar a:hover { color: #fff; }
 
 /* ===== NAVBAR ===== */
 .navbar {
@@ -551,7 +551,7 @@ a { text-decoration: none; }
 }
 
 /* ===== FOOTER ===== */
-footer {
+.checkout-footer {
   background: #1f2937;
   color: #9ca3af;
   padding: 28px 0;

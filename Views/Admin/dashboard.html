@@ -263,7 +263,7 @@
       .stat-value { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 3px; }
       .stat-label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
 
-      /* Quick actions */
+      /* Sections */
       .section-title {
         font-size: 0.95rem;
         font-weight: 700;
@@ -274,44 +274,6 @@
         gap: 8px;
       }
       .section-title i { color: #4DA6FF; }
-      .quick-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-        margin-bottom: 28px;
-      }
-      .quick-action-btn {
-        background: #1E3A5F;
-        border: 1px solid #2D4A6F;
-        border-radius: 12px;
-        padding: 16px 18px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
-        color: inherit;
-      }
-      .quick-action-btn:hover {
-        border-color: #4DA6FF;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(77,166,255,0.1);
-        color: inherit;
-      }
-      .qa-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        flex-shrink: 0;
-      }
-      .qa-text h4 { font-size: 0.88rem; font-weight: 700; color: white; margin-bottom: 2px; }
-      .qa-text p { font-size: 0.75rem; color: #64748b; margin: 0; }
-
       /* Tables */
       .admin-table-card {
         background: #1E3A5F;
@@ -494,8 +456,12 @@
       .sales-card .sc-label { font-size: 0.73rem; color: #64748b; font-weight: 500; }
 
       /* Chart */
-      .chart-card { background: #1E3A5F; border: 1px solid #2D4A6F; border-radius: 14px; padding: 24px; margin-bottom: 28px; }
-      .chart-card canvas { max-height: 280px; }
+      .chart-card { background: #1E3A5F; border: 1px solid #2D4A6F; border-radius: 14px; padding: 24px; margin-bottom: 28px; min-height: 380px; position: relative; }
+      .chart-legend { display:flex; gap:18px; align-items:center; margin-bottom:12px; color:#E6F2FF; font-size:0.78rem; font-weight:700; }
+      .legend-dot { width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:6px; }
+      .chart-visual { width:100%; height:300px; position:relative; }
+      .chart-visual svg { width:100%; height:100%; overflow:visible; }
+      .chart-tooltip { position:absolute; pointer-events:none; transform:translate(-50%, -110%); background:#0f2138; color:#fff; border:1px solid #4DA6FF; border-radius:8px; padding:8px 10px; font-size:0.76rem; font-weight:700; white-space:nowrap; opacity:0; transition:opacity .12s; z-index:5; box-shadow:0 8px 24px rgba(0,0,0,.25); }
 
       /* Low stock */
       .low-stock-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
@@ -513,7 +479,6 @@
       @media (max-width: 900px) {
         .admin-sidebar { width: 190px; }
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
         .content-row { grid-template-columns: 1fr; }
         .finance-grid { grid-template-columns: repeat(2, 1fr); }
         .sales-grid { grid-template-columns: repeat(2, 1fr); }
@@ -522,7 +487,6 @@
         .admin-sidebar { display: none; }
         .admin-main { padding: 16px; }
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        .quick-actions-grid { grid-template-columns: 1fr; }
         .finance-grid { grid-template-columns: 1fr; }
         .sales-grid { grid-template-columns: 1fr; }
         .admin-topbar { padding: 0 12px; }
@@ -642,7 +606,20 @@
         <div class="content-row">
           <div class="chart-card">
             <div class="section-title" style="margin-bottom:16px;"><i class="fas fa-chart-area"></i> Doanh thu 7 ngày gần nhất</div>
-            <canvas id="revenueChart"></canvas>
+            <div class="chart-legend">
+              <span><span class="legend-dot" style="background:#2F80D1;"></span>Doanh thu theo ngày</span>
+              <span><span class="legend-dot" style="background:#4DA6FF;"></span>Xu hướng doanh thu</span>
+            </div>
+            <div
+              class="chart-visual"
+              id="revenueChartWrap"
+              data-labels="{{ chart_labels | join('||') }}"
+              data-dates="{{ chart_dates | join('||') }}"
+              data-values="{{ chart_data | join(',') }}"
+            >
+              <svg id="revenueChartSvg" viewBox="0 0 720 300" preserveAspectRatio="none" aria-label="Doanh thu trong tuần"></svg>
+              <div class="chart-tooltip" id="revenueChartTooltip"></div>
+            </div>
           </div>
           <div>
             <!-- Thống kê bổ sung -->
@@ -698,65 +675,6 @@
           </div>
         </div>
         {% endif %}
-
-        <!-- Quick Actions -->
-        <h3 class="section-title"><i class="fas fa-bolt"></i> Thao tác nhanh</h3>
-        <div class="quick-actions-grid">
-          <a href="/Admin/Products" class="quick-action-btn">
-            <div class="qa-icon qa-blue" style="background:rgba(59,130,246,0.15);color:#3b82f6;">
-              <i class="fas fa-plus"></i>
-            </div>
-            <div class="qa-text">
-              <h4>Thêm sản phẩm</h4>
-              <p>Tạo sản phẩm mới</p>
-            </div>
-          </a>
-          <a href="/Admin/Orders" class="quick-action-btn">
-            <div class="qa-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">
-              <i class="fas fa-file-invoice"></i>
-            </div>
-            <div class="qa-text">
-              <h4>Tạo đơn hàng</h4>
-              <p>Đơn hàng mới cho khách</p>
-            </div>
-          </a>
-          <a href="/Admin/Categories" class="quick-action-btn">
-            <div class="qa-icon" style="background:rgba(249,115,22,0.15);color:#f97316;">
-              <i class="fas fa-tag"></i>
-            </div>
-            <div class="qa-text">
-              <h4>Thêm danh mục</h4>
-              <p>Quản lý danh mục sản phẩm</p>
-            </div>
-          </a>
-          <a href="/Admin/Accounts" class="quick-action-btn">
-            <div class="qa-icon" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">
-              <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="qa-text">
-              <h4>Thêm tài khoản</h4>
-              <p>Tạo tài khoản mới</p>
-            </div>
-          </a>
-          <a href="/Admin/Products" class="quick-action-btn">
-            <div class="qa-icon" style="background:rgba(234,179,8,0.15);color:#eab308;">
-              <i class="fas fa-warehouse"></i>
-            </div>
-            <div class="qa-text">
-              <h4>Nhập hàng</h4>
-              <p>Nhập sản phẩm mới</p>
-            </div>
-          </a>
-          <a href="/Admin/Statistics" class="quick-action-btn">
-            <div class="qa-icon" style="background:rgba(236,72,153,0.15);color:#ec4899;">
-              <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="qa-text">
-              <h4>Xem thống kê</h4>
-              <p>Báo cáo chi tiết</p>
-            </div>
-          </a>
-        </div>
 
         <!-- Recent orders -->
         <h3 class="section-title"><i class="fas fa-shopping-bag"></i> Đơn hàng gần đây</h3>
@@ -839,78 +757,75 @@
 
       </main>
     </div>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // ===== CHART.JS: Doanh thu 7 ngày =====
-      const ctx = document.getElementById('revenueChart');
-      if (ctx) {
-        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 280);
-        gradient.addColorStop(0, 'rgba(77, 166, 255, 0.25)');
-        gradient.addColorStop(1, 'rgba(77, 166, 255, 0.02)');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: {{ chart_labels | safe }},
-            datasets: [{
-              label: 'Doanh thu (VNĐ)',
-              data: {{ chart_data | safe }},
-              borderColor: '#4DA6FF',
-              backgroundColor: gradient,
-              borderWidth: 2.5,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: '#4DA6FF',
-              pointBorderColor: '#152A45',
-              pointBorderWidth: 2,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: '#1E3A5F',
-                titleColor: '#4DA6FF',
-                bodyColor: '#FFFFFF',
-                borderColor: '#2D4A6F',
-                borderWidth: 1,
-                padding: 12,
-                callbacks: {
-                  label: function(ctx) {
-                    return new Intl.NumberFormat('vi-VN').format(ctx.raw) + ' đ';
-                  }
-                }
-              }
-            },
-            scales: {
-              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 11 } } },
-              y: {
-                grid: { color: 'rgba(255,255,255,0.04)' },
-                ticks: {
-                  color: '#64748b', font: { size: 11 },
-                  callback: function(v) {
-                    if (v >= 1000000) return (v/1000000).toFixed(1) + 'M';
-                    if (v >= 1000) return (v/1000).toFixed(0) + 'K';
-                    return v;
-                  }
-                }
-              }
-            }
-          }
-        });
+      const wrap = document.getElementById('revenueChartWrap');
+      const svg = document.getElementById('revenueChartSvg');
+      const tooltip = document.getElementById('revenueChartTooltip');
+      if (!wrap || !svg || !tooltip) return;
+
+      const labels = (wrap.dataset.labels || '').split('||').filter(Boolean);
+      const dates = (wrap.dataset.dates || '').split('||').filter(Boolean);
+      const values = (wrap.dataset.values || '').split(',').map(v => Number(v || 0));
+      if (!labels.length || !values.length) return;
+
+      const width = 720, height = 300;
+      const margin = { left: 58, right: 24, top: 12, bottom: 42 };
+      const chartW = width - margin.left - margin.right;
+      const chartH = height - margin.top - margin.bottom;
+      const yStep = 500000000;
+      const maxValue = Math.max(...values, 0);
+      const yMax = Math.max(1500000000, Math.ceil(maxValue / yStep) * yStep);
+      const formatAxis = v => v >= 1000000000 ? (v / 1000000000).toFixed(v % 1000000000 ? 1 : 0) + 'B' : (v >= 1000000 ? (v / 1000000).toFixed(0) + 'M' : String(v));
+      const formatMoney = v => new Intl.NumberFormat('vi-VN').format(v) + ' đ';
+      const xAt = i => margin.left + (chartW / Math.max(labels.length - 1, 1)) * i;
+      const yAt = v => margin.top + chartH - (v / yMax) * chartH;
+      const barWidth = 34;
+
+      let html = '';
+      for (let tick = 0; tick <= yMax; tick += yStep) {
+        const y = yAt(tick);
+        html += `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>`;
+        html += `<text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" fill="#8AA6C4" font-size="12">${formatAxis(tick)}</text>`;
       }
+
+      const points = values.map((value, i) => ({ x: xAt(i), y: yAt(value), value }));
+      values.forEach((value, i) => {
+        const x = xAt(i);
+        const y = yAt(value);
+        const h = margin.top + chartH - y;
+        html += `<rect class="chart-hit" data-index="${i}" x="${x - barWidth / 2}" y="${y}" width="${barWidth}" height="${Math.max(h, 4)}" rx="8" fill="rgba(77,166,255,.28)" stroke="rgba(77,166,255,.75)"/>`;
+        html += `<text x="${x}" y="${height - 16}" text-anchor="middle" fill="#AFC4DD" font-size="13" font-weight="700">${labels[i]}</text>`;
+      });
+
+      const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+      html += `<path d="${path}" fill="none" stroke="#4DA6FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+      points.forEach((p, i) => {
+        html += `<circle class="chart-hit" data-index="${i}" cx="${p.x}" cy="${p.y}" r="5" fill="#4DA6FF" stroke="#152A45" stroke-width="2"/>`;
+      });
+      svg.innerHTML = html;
+
+      svg.querySelectorAll('.chart-hit').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          const i = Number(el.dataset.index);
+          tooltip.innerHTML = `${labels[i]} (${dates[i] || ''}): ${formatMoney(values[i])}`;
+          tooltip.style.opacity = '1';
+        });
+        el.addEventListener('mousemove', event => {
+          const rect = wrap.getBoundingClientRect();
+          tooltip.style.left = (event.clientX - rect.left) + 'px';
+          tooltip.style.top = (event.clientY - rect.top) + 'px';
+        });
+        el.addEventListener('mouseleave', () => {
+          tooltip.style.opacity = '0';
+        });
+      });
     });
     </script>
     {% include "partials/admin_finance_widget.html" %}
-    {% include "partials/chatbot.html" %}
   </body>
 </html>
 

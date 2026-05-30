@@ -132,8 +132,8 @@
       <div class="check-circle">
         <i class="fas fa-check"></i>
       </div>
-      <h2>Thanh toán thành công!</h2>
-      <p>Cảm ơn bạn đã mua hàng tại Tech Store AI</p>
+      <h2>Đã ghi nhận thanh toán!</h2>
+      <p>Đơn hàng đang chờ admin xác nhận</p>
     </div>
 
     <!-- Body -->
@@ -156,7 +156,7 @@
         <div class="detail-box">
           <div class="lbl">Trạng thái</div>
           <div class="val success">
-            <i class="fas fa-check-circle me-1"></i>Đã thanh toán
+            <i class="fas fa-clock me-1"></i>{{ 'Chờ xác nhận' if order and order.status == 'Pending' else 'Đã thanh toán' }}
           </div>
         </div>
         <div class="detail-box">
@@ -185,8 +185,7 @@
       <div class="notice-card">
         <i class="fas fa-info-circle"></i>
         <p>
-          Đơn hàng của bạn đang được xử lý và sẽ được giao trong thời gian sớm nhất.
-          Bạn sẽ nhận được thông báo khi đơn hàng được xác nhận.
+          Hệ thống đã ghi nhận giao dịch QR. Admin sẽ kiểm tra và duyệt đơn trước khi chuyển sang bước xử lý tiếp theo.
         </p>
       </div>
 
@@ -194,6 +193,9 @@
       <div class="action-buttons">
         <a href="/Products/" class="btn-shop-more">
           <i class="fas fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+        </a>
+        <a href="{% if order %}/Orders/{{ order.order_id }}{% else %}/Orders/{% endif %}" class="btn-view-orders">
+          <i class="fas fa-receipt me-1"></i> Xem chi tiết đơn hàng
         </a>
       </div>
 

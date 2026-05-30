@@ -15,6 +15,8 @@ from Services.AuthService import AuthService
 from Utilities.auth import require_account
 from Utilities.http import is_ajax_request
 from Models.Payment import PaymentStatus
+from Models.Chat import Notification
+from Models.Account import Account, Role
 
 router = APIRouter(prefix="/Checkout")
 
@@ -48,6 +50,9 @@ def _ensure_payment_schema():
                 )
             END
         """))
+        connection.execute(text("ALTER TABLE Orders ALTER COLUMN total_amount DECIMAL(18, 2) NOT NULL"))
+        connection.execute(text("ALTER TABLE OrderItems ALTER COLUMN unit_price DECIMAL(18, 2) NOT NULL"))
+        connection.execute(text("ALTER TABLE OrderItems ALTER COLUMN subtotal DECIMAL(18, 2) NOT NULL"))
 
 
 def _get_cart_count(request: Request, db: Session) -> int:
@@ -217,7 +222,7 @@ async def verify_payment(
         order = await _create_order_from_payment(db, payment)
         return JSONResponse({
             "success": True,
-            "message": message,
+            "message": "Đã ghi nhận thanh toán. Đơn hàng đang chờ admin duyệt.",
             "order_id": order.order_id,
             "redirect_url": f"/Checkout/success/{order.order_id}"
         })
@@ -287,6 +292,18 @@ async def success_page(order_id: str, request: Request, db: Session = Depends(ge
     )
 
 
+def _notify_admins_for_new_order(db: Session, order) -> None:
+    admins = db.query(Account).join(Role).filter(Role.role_name == "Admin").all()
+    for admin in admins:
+        db.add(Notification(
+            account_id=admin.account_id,
+            title="Đơn hàng mới chờ duyệt",
+            content=f"Đơn hàng #{order.order_id} đã thanh toán QR và đang chờ xác nhận.",
+            notification_type="order_update",
+            is_read=False,
+        ))
+
+
 # ============================================================
 # INTERNAL: Tạo đơn hàng từ payment
 # ============================================================
@@ -319,7 +336,7 @@ async def _create_order_from_payment(db: Session, payment) -> "Order":
     order = Order(
         account_id=payment.account_id,
         total_amount=float(payment.amount),
-        status="Confirmed",
+        status="Pending",
         customer_name=account.full_name if account else "Khách hàng",
         customer_phone=account.phone if account else "",
         customer_address=account.address if account else "",
@@ -356,6 +373,7 @@ async def _create_order_from_payment(db: Session, payment) -> "Order":
 
     # Xóa cart items
     db.query(CartItem).filter(CartItem.cart_id == cart.cart_id).delete()
+    _notify_admins_for_new_order(db, order)
 
     db.commit()
     db.refresh(order)

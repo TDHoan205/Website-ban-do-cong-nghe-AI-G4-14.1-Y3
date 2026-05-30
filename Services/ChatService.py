@@ -3,9 +3,11 @@ AI Chat Service - RAG Pipeline cho Chatbot
 """
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from Models.Chat import ChatSession, ChatMessage
+from Models.Chat import ChatSession, ChatMessage, FAQ
 from Services.AI.RAGEngine import RAGEngine
 import uuid
+import re
+import unicodedata
 from datetime import datetime
 
 
@@ -92,6 +94,11 @@ class ChatService:
         # Lưu tin nhắn user
         self.add_message(session.session_id, "user", user_message)
 
+        faq_response = self._find_direct_faq_answer(user_message)
+        if faq_response:
+            self.add_message(session.session_id, "bot", faq_response, intent="faq")
+            return faq_response
+
         # Lấy conversation history — giới hạn 6 tin (3 lượt) để tiết kiệm tokens
         history_msgs = self.get_session_messages(session.session_id)
         conversation_history = [
@@ -117,6 +124,61 @@ class ChatService:
         self.add_message(session.session_id, "bot", response, intent=intent)
 
         return response
+
+    def _normalize_text(self, text: str) -> str:
+        text = (text or "").lower().strip()
+        text = unicodedata.normalize("NFD", text)
+        text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
+        text = text.replace("đ", "d")
+        text = re.sub(r"[^a-z0-9\s]", " ", text)
+        return re.sub(r"\s+", " ", text).strip()
+
+    def _tokens(self, text: str) -> set:
+        stop_words = {
+            "la", "cua", "va", "hay", "hoac", "cho", "voi", "nay", "do",
+            "thi", "duoc", "co", "khong", "ban", "toi", "minh", "cai",
+            "mot", "nhung", "cac", "nao", "gi", "sao", "the", "bao",
+            "o", "tu", "den", "ve", "trong", "ngoai", "tren", "duoi",
+            "a", "an", "the", "is", "are", "what", "how",
+        }
+        return {
+            token for token in self._normalize_text(text).split()
+            if len(token) >= 2 and token not in stop_words
+        }
+
+    def _find_direct_faq_answer(self, user_message: str) -> Optional[str]:
+        """Ưu tiên trả lời FAQ nội bộ trước khi gọi LLM để tiết kiệm token."""
+        user_tokens = self._tokens(user_message)
+        if not user_tokens:
+            return None
+
+        faqs = self.db.query(FAQ).filter(FAQ.is_active == True).all()
+        best_faq = None
+        best_score = 0.0
+
+        for faq in faqs:
+            question_tokens = self._tokens(faq.question)
+            answer_tokens = self._tokens(faq.answer)
+            faq_tokens = question_tokens | answer_tokens
+            if not faq_tokens:
+                continue
+
+            overlap = len(user_tokens & faq_tokens)
+            question_overlap = len(user_tokens & question_tokens)
+            score = (overlap / max(len(user_tokens), 1)) + (question_overlap / max(len(question_tokens), 1))
+
+            normalized_question = self._normalize_text(faq.question)
+            normalized_user = self._normalize_text(user_message)
+            if normalized_question and (normalized_question in normalized_user or normalized_user in normalized_question):
+                score += 1.0
+
+            if score > best_score:
+                best_score = score
+                best_faq = faq
+
+        if best_faq and best_score >= 0.62:
+            return best_faq.answer
+        return None
 
     def _is_live_chat_request(self, message: str) -> bool:
         """Kiểm tra user có muốn nói chuyện với nhân viên không"""

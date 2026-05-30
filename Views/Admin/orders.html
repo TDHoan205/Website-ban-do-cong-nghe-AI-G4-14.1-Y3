@@ -69,6 +69,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 .filter-tab{padding:6px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;border:none;background:rgba(255,255,255,0.05);color:#80C7FF;transition:all 0.15s;font-family:'Be Vietnam Pro',sans-serif;}
 .filter-tab.active{background:rgba(77,166,255,0.12);color:#4DA6FF;}
 .filter-tab:hover{background:rgba(255,255,255,0.08);color:white;}
+.filter-count{margin-left:6px;background:rgba(239,68,68,0.15);color:#ef4444;font-size:0.68rem;padding:2px 7px;border-radius:10px;font-weight:700;}
 @media(max-width:900px){.admin-sidebar{width:190px;}}
 @media(max-width:640px){.admin-sidebar{display:none;}.admin-main{padding:16px;}}
 </style>
@@ -78,18 +79,24 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 
 <main class="admin-main">
 <h1 class="page-title"><i class="fas fa-shopping-bag me-2" style="color:#4DA6FF;"></i>Quản lý đơn hàng</h1>
+{% set pending_count = orders | selectattr('status', 'equalto', 'Pending') | list | length %}
+{% set confirmed_count = orders | selectattr('status', 'equalto', 'Confirmed') | list | length %}
+{% set processing_count = orders | selectattr('status', 'equalto', 'Processing') | list | length %}
+{% set shipped_count = orders | selectattr('status', 'equalto', 'Shipped') | list | length %}
+{% set delivered_count = orders | selectattr('status', 'equalto', 'Delivered') | list | length %}
+{% set cancelled_count = orders | selectattr('status', 'equalto', 'Cancelled') | list | length %}
 
 <!-- Filter tabs -->
 <div class="page-card" style="margin-bottom:16px;">
   <div class="page-card-header" style="gap:8px;flex-wrap:wrap;">
     <div class="filter-tabs">
-      <button class="filter-tab active" onclick="filterOrders('all', this)">Tất cả ({{ orders|length }})</button>
-      <button class="filter-tab" onclick="filterOrders('Pending', this)">Chờ xử lý</button>
-      <button class="filter-tab" onclick="filterOrders('Confirmed', this)">Đã xác nhận</button>
-      <button class="filter-tab" onclick="filterOrders('Processing', this)">Đang xử lý</button>
-      <button class="filter-tab" onclick="filterOrders('Shipped', this)">Đang giao</button>
-      <button class="filter-tab" onclick="filterOrders('Delivered', this)">Đã giao</button>
-      <button class="filter-tab" onclick="filterOrders('Cancelled', this)">Đã hủy</button>
+      <button class="filter-tab active" onclick="filterOrders('all', this)">Tất cả{% if orders|length >= 1 %}<span class="filter-count">{{ orders|length }}</span>{% endif %}</button>
+      <button class="filter-tab" onclick="filterOrders('Pending', this)">Chờ xử lý{% if pending_count >= 1 %}<span class="filter-count">{{ pending_count }}</span>{% endif %}</button>
+      <button class="filter-tab" onclick="filterOrders('Confirmed', this)">Đã xác nhận{% if confirmed_count >= 1 %}<span class="filter-count">{{ confirmed_count }}</span>{% endif %}</button>
+      <button class="filter-tab" onclick="filterOrders('Processing', this)">Đang xử lý{% if processing_count >= 1 %}<span class="filter-count">{{ processing_count }}</span>{% endif %}</button>
+      <button class="filter-tab" onclick="filterOrders('Shipped', this)">Đang giao{% if shipped_count >= 1 %}<span class="filter-count">{{ shipped_count }}</span>{% endif %}</button>
+      <button class="filter-tab" onclick="filterOrders('Delivered', this)">Đã giao{% if delivered_count >= 1 %}<span class="filter-count">{{ delivered_count }}</span>{% endif %}</button>
+      <button class="filter-tab" onclick="filterOrders('Cancelled', this)">Đã hủy{% if cancelled_count >= 1 %}<span class="filter-count">{{ cancelled_count }}</span>{% endif %}</button>
     </div>
     <input type="text" id="search-order" class="search-box" placeholder="Tìm kiếm đơn hàng..." oninput="doSearch()"/>
   </div>
@@ -128,6 +135,9 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
           </td>
           <td>
             <a href="/Admin/Orders/{{ order.order_id }}" class="action-btn view" title="Chi tiết"><i class="fas fa-eye"></i></a>
+            {% if order.status == 'Pending' %}
+            <button class="action-btn view" title="Duyệt đơn" onclick="approveOrder({{ order.order_id }})"><i class="fas fa-check"></i></button>
+            {% endif %}
             <button class="action-btn edit" title="Sửa trạng thái" onclick="quickStatus({{ order.order_id }})"><i class="fas fa-edit"></i></button>
             <button class="action-btn danger" title="Xóa" onclick="deleteOrder({{ order.order_id }})"><i class="fas fa-trash-alt"></i></button>
           </td>
@@ -219,6 +229,19 @@ async function saveStatus() {
   }
 }
 
+async function approveOrder(orderId) {
+  const fd = new FormData();
+  fd.append('status', 'Confirmed');
+  try {
+    const r = await fetch('/Admin/API/Orders/' + orderId + '/status', { method: 'PUT', body: fd });
+    const d = await r.json();
+    if (d.success) location.reload();
+    else alert('Lỗi: ' + (d.error || 'Không duyệt được đơn'));
+  } catch(e) {
+    alert('Lỗi kết nối!');
+  }
+}
+
 async function deleteOrder(orderId) {
   if (!confirm('Chuyển đơn hàng #' + orderId + ' sang Cancelled?')) return;
   try {
@@ -233,7 +256,6 @@ async function deleteOrder(orderId) {
 }
 </script>
   {% include "partials/admin_finance_widget.html" %}
-  {% include "partials/chatbot.html" %}
 </body>
 </html>
 
