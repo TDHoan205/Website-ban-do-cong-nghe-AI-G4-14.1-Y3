@@ -41,7 +41,7 @@ SET IDENTITY_INSERT Roles OFF;
 SET IDENTITY_INSERT Accounts ON;
 INSERT INTO Accounts (account_id, username, password_hash, email, full_name, phone, address, is_active, role_id)
 VALUES
-(1, N'admin', N'$2b$12$mUqpjMM0J1jQifI7j5fFnehx6DZu1nMRConvoXiN20yTSifyaFpES', N'admin@techstore.vn', N'Quản Trị Viên', N'0999999999', N'Trụ sở Tech Store', 1, 1),
+(1, N'admin', N'123456', N'admin@techstore.vn', N'Quản Trị Viên', N'0999999999', N'Trụ sở Tech Store', 1, 1),
 (2, N'customer01', N'$2b$12$r5fU5Qb9eU1rQhsx0bQwcuIbWYzInjEuu0crmFJMzJyc1UNdIFQM6', N'customer01@techstore.vn', N'Nguyễn Văn Khách', N'0901234001', N'Q.Bình Thạnh, TP.HCM', 1, 2),
 (3, N'staff01', N'$2b$12$RrufLkeBvFeTIN5zhjkWGuy.8qRPjtvIDsljhczp7ft0P8rwe9Q0G', N'staff01@techstore.vn', N'Trần Thị Nhân Viên', N'0901234002', N'Q.3, TP.HCM', 1, 3);
 SET IDENTITY_INSERT Accounts OFF;

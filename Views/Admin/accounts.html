@@ -85,6 +85,41 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 .form-check label{color:#80C7FF;font-size:0.82rem;cursor:pointer;}
 @media(max-width:900px){.admin-sidebar{width:190px;}}
 @media(max-width:640px){.admin-sidebar{display:none;}.admin-main{padding:16px;}}
+
+/* Password toggle button inside input */
+.pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #5C7A99;
+  cursor: pointer;
+  font-size: 0.88rem;
+  padding: 4px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.pw-toggle:hover { color: #4DA6FF; }
+
+/* Field-level validation error */
+.field-error {
+  display: none;
+  font-size: 0.75rem;
+  color: #f87171;
+  margin-top: 4px;
+  padding-left: 2px;
+}
+
+/* Hint text for optional password in edit mode */
+.form-hint {
+  display: flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
 </style>
 </head>
 <body class="admin-page">
@@ -155,7 +190,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
       <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div id="alertBox" class="alert-msg"></div>
-    <form id="accountForm" onsubmit="return saveAccount(event)">
+    <form id="accountForm" onsubmit="return saveAccount(event)" novalidate>
       <input type="hidden" id="account_id" value=""/>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
@@ -167,21 +202,52 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
           <input type="email" id="f-email" class="form-control" placeholder="email@example.com" required/>
         </div>
       </div>
+
+      <!-- Password section: shown for Create, optional for Edit -->
       <div id="passwordSection" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
-          <label class="form-label">Mật khẩu <span style="color:#ef4444;" id="pwRequired">*</span></label>
-          <input type="password" id="f-password" class="form-control" placeholder="Tối thiểu 6 ký tự"/>
+          <label class="form-label">
+            Mật khẩu <span id="pwRequiredStar" style="color:#ef4444;">*</span>
+          </label>
+          <div style="position:relative;">
+            <input type="password" id="f-password" class="form-control" placeholder="Tối thiểu 6 ký tự"/>
+            <button type="button" class="pw-toggle" onclick="togglePw('f-password',this)" title="Hiện/Ẩn mật khẩu">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="field-error" id="pwError"></div>
         </div>
+        <div class="form-group">
+          <label class="form-label">
+            Xác nhận mật khẩu <span id="pwConfirmStar" style="color:#ef4444;">*</span>
+          </label>
+          <div style="position:relative;">
+            <input type="password" id="f-password-confirm" class="form-control" placeholder="Nhập lại mật khẩu"/>
+            <button type="button" class="pw-toggle" onclick="togglePw('f-password-confirm',this)" title="Hiện/Ẩn mật khẩu">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="field-error" id="pwConfirmError"></div>
+        </div>
+      </div>
+
+      <!-- Hint for edit mode -->
+      <div id="pwHint" class="form-hint" style="display:none; margin-bottom:8px; font-size:0.78rem; color:#6b7280;">
+        <i class="fas fa-info-circle" style="color:#4DA6FF; margin-right:4px;"></i>
+        Để trống sẽ giữ nguyên mật khẩu hiện tại.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
           <label class="form-label">Họ tên</label>
           <input type="text" id="f-fullname" class="form-control" placeholder="Nguyễn Văn A"/>
         </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
           <label class="form-label">Số điện thoại</label>
           <input type="text" id="f-phone" class="form-control" placeholder="0901234567"/>
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
           <label class="form-label">Vai trò <span style="color:#ef4444;">*</span></label>
           <select id="f-role" class="form-control" required>
@@ -190,14 +256,14 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
             {% endfor %}
           </select>
         </div>
+        <div class="form-group" style="display:flex;align-items:center;padding-top:28px;">
+          <input type="checkbox" id="f-active" style="width:auto;margin-right:8px;"/>
+          <label for="f-active" style="margin:0;user-select:none;">Tài khoản hoạt động</label>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Địa chỉ</label>
         <input type="text" id="f-address" class="form-control" placeholder="123 Đường ABC, Quận 1, TP.HCM"/>
-      </div>
-      <div class="form-group form-check">
-        <input type="checkbox" id="f-active" checked/>
-        <label for="f-active">Tài khoản hoạt động</label>
       </div>
       <div class="form-actions">
         <button type="button" class="btn-modal-cancel" onclick="closeModal()">Hủy</button>
@@ -210,6 +276,78 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API = '/Admin/API/Accounts';
+
+/* ── Password visibility toggle ── */
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const icon  = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    input.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+
+/* ── Clear & show field-level error ── */
+function setFieldError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+}
+function clearAllErrors() {
+  setFieldError('pwError', '');
+  setFieldError('pwConfirmError', '');
+  showAlert('', '');
+}
+
+/* ── Password validation (edit mode — optional) ── */
+function validatePasswordFields(isEdit) {
+  clearAllErrors();
+  const pw       = document.getElementById('f-password').value;
+  const pwConfirm = document.getElementById('f-password-confirm').value;
+  let valid = true;
+
+  if (isEdit) {
+    // Edit mode: if either field is filled, both must match
+    const pwFilled       = pw.length > 0;
+    const pwConfirmFilled = pwConfirm.length > 0;
+
+    if (pwFilled && pw.length < 6) {
+      setFieldError('pwError', 'Mật khẩu phải tối thiểu 6 ký tự.');
+      valid = false;
+    }
+    if (pwFilled !== pwConfirmFilled) {
+      setFieldError('pwConfirmError', 'Vui lòng nhập đầy đủ cả hai trường mật khẩu.');
+      valid = false;
+    }
+    if (pwFilled && pwConfirmFilled && pw !== pwConfirm) {
+      setFieldError('pwConfirmError', 'Mật khẩu xác nhận không khớp.');
+      valid = false;
+    }
+  } else {
+    // Create mode: password required, min 6 chars, must match
+    if (pw.length === 0) {
+      setFieldError('pwError', 'Vui lòng nhập mật khẩu.');
+      valid = false;
+    } else if (pw.length < 6) {
+      setFieldError('pwError', 'Mật khẩu phải tối thiểu 6 ký tự.');
+      valid = false;
+    } else if (pw !== pwConfirm) {
+      setFieldError('pwConfirmError', 'Mật khẩu xác nhận không khớp.');
+      valid = false;
+    }
+  }
+  return valid;
+}
+
+/* ── Live validation on input ── */
+document.getElementById('f-password').addEventListener('input', () => {
+  if (document.getElementById('account_id').value) validatePasswordFields(true);
+});
+document.getElementById('f-password-confirm').addEventListener('input', () => {
+  if (document.getElementById('account_id').value) validatePasswordFields(true);
+});
 
 function filterTable() {
   const q = document.getElementById('search-account').value.toLowerCase();
@@ -224,16 +362,20 @@ function openCreate() {
   document.getElementById('f-username').disabled = false;
   document.getElementById('f-email').value = '';
   document.getElementById('f-password').value = '';
+  document.getElementById('f-password-confirm').value = '';
   document.getElementById('f-fullname').value = '';
   document.getElementById('f-phone').value = '';
   document.getElementById('f-address').value = '';
   document.getElementById('f-role').value = '1';
   document.getElementById('f-active').checked = true;
+  // Create mode — show full password section + mark required
   document.getElementById('passwordSection').style.display = 'grid';
-  document.getElementById('pwRequired').style.display = 'inline';
+  document.getElementById('pwHint').style.display = 'none';
+  document.getElementById('pwRequiredStar').style.display = 'inline';
+  document.getElementById('pwConfirmStar').style.display = 'inline';
   document.getElementById('f-password').required = true;
+  clearAllErrors();
   document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus me-2"></i>Thêm tài khoản';
-  showAlert('', '');
   document.getElementById('modal').classList.add('show');
 }
 
@@ -246,22 +388,28 @@ async function openEdit(id) {
     document.getElementById('account_id').value = a.account_id;
     document.getElementById('f-username').value = a.username;
     document.getElementById('f-username').disabled = true;
-    document.getElementById('f-email').value = a.email;
+    document.getElementById('f-email').value = a.email || '';
     document.getElementById('f-password').value = '';
+    document.getElementById('f-password-confirm').value = '';
     document.getElementById('f-fullname').value = a.full_name || '';
     document.getElementById('f-phone').value = a.phone || '';
     document.getElementById('f-address').value = a.address || '';
     document.getElementById('f-role').value = a.role_id;
     document.getElementById('f-active').checked = a.is_active;
-    document.getElementById('passwordSection').style.display = 'none';
+    // Edit mode — show password section but mark optional + show hint
+    document.getElementById('passwordSection').style.display = 'grid';
+    document.getElementById('pwHint').style.display = 'block';
+    document.getElementById('pwRequiredStar').style.display = 'none';
+    document.getElementById('pwConfirmStar').style.display = 'none';
     document.getElementById('f-password').required = false;
+    clearAllErrors();
     document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Sửa tài khoản';
-    showAlert('', '');
     document.getElementById('modal').classList.add('show');
   } catch(e) { alert('Lỗi kết nối!'); }
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
 function showAlert(msg, type) {
   const el = document.getElementById('alertBox');
   el.textContent = msg;
@@ -269,27 +417,53 @@ function showAlert(msg, type) {
   el.style.display = msg ? 'block' : 'none';
 }
 
+/* ── Main save handler ── */
 async function saveAccount(e) {
   e.preventDefault();
-  const id = document.getElementById('account_id').value;
+  const id     = document.getElementById('account_id').value;
   const isEdit = !!id;
+
+  // Client-side validation
+  if (!validatePasswordFields(isEdit)) return false;
+
   const fd = new FormData();
   fd.append('email', document.getElementById('f-email').value.trim());
   if (!isEdit) {
     fd.append('username', document.getElementById('f-username').value.trim());
     fd.append('password', document.getElementById('f-password').value);
+  } else {
+    const pw = document.getElementById('f-password').value;
+    if (pw.length > 0) fd.append('password', pw);
   }
   fd.append('full_name', document.getElementById('f-fullname').value.trim());
   fd.append('phone', document.getElementById('f-phone').value.trim());
   fd.append('address', document.getElementById('f-address').value.trim());
   fd.append('role_id', document.getElementById('f-role').value);
   fd.append('is_active', document.getElementById('f-active').checked ? 'true' : 'false');
+
   try {
-    const r = await fetch(isEdit ? API + '/' + id : API, { method: isEdit ? 'PUT' : 'POST', body: fd });
+    const r = await fetch(isEdit ? API + '/' + id : API, {
+      method: isEdit ? 'PUT' : 'POST',
+      body: fd
+    });
     const d = await r.json();
-    if (d.success) { closeModal(); location.reload(); }
-    else { showAlert(d.error || 'Đã xảy ra lỗi!', 'error'); }
-  } catch(e) { showAlert('Lỗi kết nối!', 'error'); }
+    if (d.success) {
+      closeModal();
+      if (typeof showNotification === 'function') {
+        showNotification(
+          isEdit ? 'Cập nhật tài khoản thành công!' : 'Tạo tài khoản thành công!',
+          'success'
+        );
+      } else {
+        alert(isEdit ? 'Cập nhật tài khoản thành công!' : 'Tạo tài khoản thành công!');
+      }
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showAlert(d.error || 'Đã xảy ra lỗi!', 'error');
+    }
+  } catch(e) {
+    showAlert('Lỗi kết nối!', 'error');
+  }
   return false;
 }
 
@@ -299,10 +473,12 @@ async function deleteAccount(id, name) {
     const r = await fetch(API + '/' + id, { method: 'DELETE' });
     const d = await r.json();
     if (d.success) {
-      if (d.message) alert(d.message);
-      location.reload();
+      if (typeof showNotification === 'function') {
+        showNotification('Xóa tài khoản thành công!', 'success');
+      }
+      setTimeout(() => location.reload(), 800);
     }
-    else { alert('Lỗi: ' + d.error); }
+    else { alert('Lỗi: ' + (d.error || 'Không thể xóa tài khoản.')); }
   } catch(e) { alert('Lỗi kết nối!'); }
 }
 </script>

@@ -153,9 +153,10 @@ class AccountService:
         phone: str = None,
         address: str = None,
         role_id: int = None,
-        is_active: bool = None
+        is_active: bool = None,
+        password: str = None,
     ) -> Optional[Account]:
-        """Cập nhật tài khoản"""
+        """Cập nhật tài khoản. Nếu password != None thì cập nhật mật khẩu."""
         account = self.get_account_by_id(account_id)
         if not account:
             return None
@@ -172,6 +173,8 @@ class AccountService:
             account.role_id = role_id
         if is_active is not None:
             account.is_active = is_active
+        if password is not None and password != "":
+            account.password_hash = self.hash_password(password)
 
         self.db.commit()
         self.db.refresh(account)
