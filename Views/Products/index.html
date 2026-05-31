@@ -1219,7 +1219,7 @@
                   >
                   {% endif %}
                   <img
-                    src="{{ product.image_url_normalized }}"
+                    src="{{ product.image_url | static_url }}"
                     alt="{{ product.name }}"
                     onerror="this.src='/static/images/no-image.png'"
                   />
@@ -1258,7 +1258,7 @@
                   <button
                     type="button"
                     class="product-add-btn"
-                    data-img="{{ product.image_url_normalized }}"
+                    data-img="{{ product.image_url | static_url }}"
                     data-name="{{ product.name | e }}"
                     data-price="{{ product.price }}"
                     onclick="openPmoModal(this, {{ product.product_id }})"
