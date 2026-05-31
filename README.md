@@ -187,7 +187,7 @@ python Data/Seed/seed_data.py
 ✓ Đã tạo dữ liệu danh mục
 ✓ Đã tạo dữ liệu nhà cung cấp
 ✓ Đã tạo dữ liệu sản phẩm
-✓ Đã tạo tài khoản admin (admin / admin123)
+✓ Đã tạo tài khoản admin (admin / admin123), staff01 (staff123), customer01 (customer123)
 ```
 
 **6️⃣ Chạy ứng dụng**

@@ -1510,8 +1510,10 @@
 
         function buildEvHeader(product, item) {
           var price = product.price ? Number(product.price).toLocaleString('vi-VN',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ' : '0 đ';
-          return '<div class="ev-header">' +
-            '<div class="ev-thumb"><img src="' + (product.image_url || '/static/images/no-image.png') + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
+          var img = (product.image_url || '/static/images/no-image.png');
+            if (img.startsWith('/images/')) img = '/static' + img;
+            return '<div class="ev-header">' +
+            '<div class="ev-thumb"><img src="' + img + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
             '<div class="ev-info"><div class="ev-name">' + escHtml(product.name) + '</div><div class="ev-price">' + price + '</div></div>' +
             '<button class="ev-close" onclick="evClose()" title="Đóng"><i class="fas fa-xmark"></i></button>' +
           '</div>';

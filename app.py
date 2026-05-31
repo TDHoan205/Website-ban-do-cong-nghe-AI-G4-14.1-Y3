@@ -129,6 +129,16 @@ views_path = os.path.join(os.path.dirname(__file__), "Views")
 templates = Jinja2Templates(directory=views_path)
 
 
+def static_url(path):
+    """Convert /images/... paths to /static/images/... so images are served correctly."""
+    if path and path.startswith("/images/"):
+        return "/static" + path
+    return path or "/static/images/no-image.png"
+
+
+templates.env.filters["static_url"] = static_url
+
+
 def normalize_vietnamese_display(value):
     if not isinstance(value, str):
         return value

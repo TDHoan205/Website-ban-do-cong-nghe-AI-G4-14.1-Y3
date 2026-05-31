@@ -252,7 +252,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
           <div class="img-gallery" id="product-img-gallery">
             {% for img in product_images %}
             <div class="img-thumb-wrap" data-id="{{ img.image_id }}" style="position:relative;display:inline-block;">
-              <img src="{{ img.image_url }}" class="product-img-thumb" onclick="toggleImgSelect(this, {{ img.image_id }})"/>
+              <img src="{{ img.image_url | static_url }}" class="product-img-thumb" onclick="toggleImgSelect(this, {{ img.image_id }})"/>
               {% if img.is_primary %}
               <span style="position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#4DA6FF;color:#152A45;padding:1px 4px;border-radius:3px;font-weight:700;">★</span>
               {% endif %}
@@ -310,7 +310,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
               <div class="var-img-gallery" id="var-gallery-{{ v.variant_id }}">
                 {% for img in v.images %}
                 <div class="var-img-item">
-                  <img src="{{ img.image_url }}" onclick="toggleVarImgSelect(this, {{ img.image_id }}, {{ v.variant_id }})" class="{% if img.is_primary %}selected{% endif %}"/>
+                  <img src="{{ img.image_url | static_url }}" onclick="toggleVarImgSelect(this, {{ img.image_id }}, {{ v.variant_id }})" class="{% if img.is_primary %}selected{% endif %}"/>
                   <button class="remove-img" onclick="removeVarImg({{ img.image_id }})">✕</button>
                 </div>
                 {% endfor %}
@@ -647,7 +647,7 @@ function addProdImgToGallery(img) {
   wrap.style.position = 'relative';
   wrap.style.display = 'inline-block';
   wrap.innerHTML = `
-    <img src="${img.image_url}" class="product-img-thumb" onclick="toggleImgSelect(this, ${img.image_id})" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #334155;"/>
+    <img src="/static${img.image_url}" class="product-img-thumb" onclick="toggleImgSelect(this, ${img.image_id})" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #334155;"/>
     <button onclick="removeProductImg(${img.image_id})" style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#ef4444;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:white;line-height:1;">✕</button>
   `;
   gal.appendChild(wrap);
@@ -709,7 +709,7 @@ async function uploadVarImg(input, variantId) {
       const newItem = document.createElement('div');
       newItem.className = 'var-img-item';
       newItem.innerHTML = `
-        <img src="${d.image.image_url}" onclick="toggleVarImgSelect(this, ${d.image.image_id}, ${variantId})"/>
+        <img src="/static${d.image.image_url}" onclick="toggleVarImgSelect(this, ${d.image.image_id}, ${variantId})"/>
         <button class="remove-img" onclick="removeVarImg(${d.image.image_id})">✕</button>
       `;
       gal.insertBefore(newItem, gal.lastElementChild);

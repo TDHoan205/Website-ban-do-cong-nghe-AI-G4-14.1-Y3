@@ -340,24 +340,24 @@
           {% set all_images = [] %}
           {# 1. Product-level images FIRST (these include the primary image) #}
           {% for img in product_images %}
-            {% set _ = all_images.append({'url': img.image_url, 'variant_id': None, 'is_primary': img.is_primary}) %}
+            {% set _ = all_images.append({'url': img.image_url | static_url, 'variant_id': None, 'is_primary': img.is_primary}) %}
           {% endfor %}
           {# 2. Variant images SECOND #}
           {% for v in variants %}
             {% for img in v.images %}
-              {% set _ = all_images.append({'url': img.image_url, 'variant_id': v.variant_id, 'is_primary': img.is_primary}) %}
+              {% set _ = all_images.append({'url': img.image_url | static_url, 'variant_id': v.variant_id, 'is_primary': img.is_primary}) %}
             {% endfor %}
           {% endfor %}
           {# 3. Fallback to product.image_url if no images at all #}
           {% if not all_images %}
-            {% set _ = all_images.append({'url': product.image_url, 'variant_id': None, 'is_primary': False}) %}
+            {% set _ = all_images.append({'url': product.image_url | static_url, 'variant_id': None, 'is_primary': False}) %}
           {% endif %}
           {# Find primary image: search product-level first, then any #}
           {% set primary_img_url = '' %}
           {# Check product-level images for primary first #}
           {% for img in product_images %}
             {% if img.is_primary %}
-              {% set primary_img_url = img.image_url %}
+              {% set primary_img_url = img.image_url | static_url %}
             {% endif %}
           {% endfor %}
           {# Fallback: first image overall, or product.image_url #}
@@ -365,7 +365,7 @@
             {% set primary_img_url = all_images[0].url %}
           {% endif %}
           {% if not primary_img_url %}
-            {% set primary_img_url = product.image_url or '/static/images/no-image.png' %}
+            {% set primary_img_url = (product.image_url | static_url) or '/static/images/no-image.png' %}
           {% endif %}
 
           <div class="gallery-main-wrap">
@@ -434,7 +434,7 @@
                 {% for v in variants %}
                 {% if v.color %}
                 <label class="variant-chip {% if loop.first %}selected{% endif %}" id="chip-color-{{ v.variant_id }}">
-                  <input type="radio" name="color" value="{{ v.variant_id }}" data-color="{{ v.color }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" data-stock="{{ v.stock_quantity | default(0) }}" data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}" onchange="selectVariant(this)" autocomplete="off" />
+                  <input type="radio" name="color" value="{{ v.variant_id }}" data-color="{{ v.color }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" data-stock="{{ v.stock_quantity | default(0) }}" data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url | static_url }}{% endif %}{% endfor %}" onchange="selectVariant(this)" autocomplete="off" />
                   {% if v.color_hex %}<span class="color-dot" style="background:{{ v.color_hex }}"></span>{% endif %}
                   {{ v.color }}
                 </label>

@@ -298,11 +298,16 @@ async function uploadImage(input) {
   }
 }
 
+function imgUrl(url) {
+  if (url && url.startsWith('/images/')) return '/static' + url;
+  return url || '/static/images/no-image.png';
+}
+
 function updateImagePreview(url) {
   const wrap = document.getElementById('image-preview-wrap');
   const img = document.getElementById('image-preview');
   if (url) {
-    img.src = url;
+    img.src = imgUrl(url);
     wrap.style.display = 'block';
   } else {
     wrap.style.display = 'none';

@@ -70,6 +70,12 @@ class Product(Base):
                 ] if images else [],
                 "product_image_url": self.image_url or ""
             })
+
+        def _static(url):
+            if url and url.startswith("/images/"):
+                return "/static" + url
+            return url or "/static/images/no-image.png"
+
         if images:
             sorted_imgs = sorted(images, key=lambda x: (not x.is_primary, x.display_order))
             for img in sorted_imgs:
@@ -77,8 +83,8 @@ class Product(Base):
                     _debug_log("ed9600", "H2", "Product.first_image_url:selected",
                         "first_image_url: selected image",
                         {"selected_image_id": img.image_id, "image_url": img.image_url, "is_primary": bool(img.is_primary)})
-                    return img.image_url
-        fallback = self.image_url or "/static/images/no-image.png"
+                    return _static(img.image_url)
+        fallback = _static(self.image_url)
         _debug_log("ed9600", "H2", "Product.first_image_url:fallback",
             "first_image_url: using fallback",
             {"fallback_url": fallback, "product_image_url": self.image_url or ""})
