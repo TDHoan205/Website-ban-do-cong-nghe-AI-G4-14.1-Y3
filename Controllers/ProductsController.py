@@ -389,14 +389,20 @@ async def add_to_cart(
         return RedirectResponse(url="/Auth/Login", status_code=303)
 
     cart_service = CartService(db)
-    cart_service.add_item(account.account_id, product_id, quantity, variant_id)
+    result = cart_service.add_item(account.account_id, product_id, quantity, variant_id)
     cart_count = cart_service.get_cart_item_count(account.account_id)
 
     if is_ajax_request(request):
-        return JSONResponse(
-            {"success": True, "message": "Đã thêm sản phẩm vào giỏ hàng.", "cart_count": cart_count},
-            status_code=200
-        )
+        if result.success:
+            return JSONResponse(
+                {"success": True, "message": result.message, "cart_count": cart_count},
+                status_code=200
+            )
+        else:
+            return JSONResponse(
+                {"success": False, "message": result.message},
+                status_code=400
+            )
 
     referer = request.headers.get("referer")
     return RedirectResponse(url=referer or f"/Products/{product_id}", status_code=303)

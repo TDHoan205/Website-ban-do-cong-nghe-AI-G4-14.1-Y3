@@ -434,7 +434,7 @@
                 {% for v in variants %}
                 {% if v.color %}
                 <label class="variant-chip {% if loop.first %}selected{% endif %}" id="chip-color-{{ v.variant_id }}">
-                  <input type="radio" name="color" value="{{ v.variant_id }}" data-color="{{ v.color }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}" onchange="selectVariant(this)" autocomplete="off" />
+                  <input type="radio" name="color" value="{{ v.variant_id }}" data-color="{{ v.color }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" data-stock="{{ v.stock_quantity | default(0) }}" data-img="{% for img in v.images %}{% if img.is_primary or loop.first %}{{ img.image_url }}{% endif %}{% endfor %}" onchange="selectVariant(this)" autocomplete="off" />
                   {% if v.color_hex %}<span class="color-dot" style="background:{{ v.color_hex }}"></span>{% endif %}
                   {{ v.color }}
                 </label>
@@ -455,7 +455,7 @@
                 {% if v.storage and v.storage not in seen_storages %}
                 {% set _ = seen_storages.append(v.storage) %}
                 <label class="variant-chip {% if loop.index == 1 %}selected{% endif %}" id="chip-storage-{{ v.variant_id }}">
-                  <input type="radio" name="storage" value="{{ v.variant_id }}" data-storage="{{ v.storage }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" onchange="selectVariant(this)" autocomplete="off" />
+                  <input type="radio" name="storage" value="{{ v.variant_id }}" data-storage="{{ v.storage }}" data-price="{% if v.price %}{{ "{:,.0f}".format(v.price | default(0) | float) }}{% endif %}" data-stock="{{ v.stock_quantity | default(0) }}" onchange="selectVariant(this)" autocomplete="off" />
                   {{ v.storage }}
                 </label>
                 {% endif %}
@@ -475,7 +475,7 @@
                 <span class="quantity-label">Số lượng</span>
                 <div class="qty-control">
                   <button type="button" class="qty-btn" onclick="decreaseQty()"><i class="fas fa-minus"></i></button>
-                  <input type="number" name="quantity" id="quantity" class="qty-input" value="1" min="1" />
+                  <input type="number" name="quantity" id="quantity" class="qty-input" value="1" min="1" max="{{ product.stock_quantity | default(0) }}" />
                   <button type="button" class="qty-btn" onclick="increaseQty()"><i class="fas fa-plus"></i></button>
                 </div>
               </div>
@@ -665,6 +665,25 @@
           var mainImg = document.getElementById('main-image');
           mainImg.src = imgUrl;
           document.querySelectorAll('.gallery-thumb').forEach(function(t) { t.classList.remove('active'); });
+        }
+
+        // Update stock limit when variant changes
+        var stockAttr = el.dataset.stock;
+        if (stockAttr) {
+          var stockVal = parseInt(stockAttr) || 0;
+          productStock = stockVal;
+          var qtyInput = document.getElementById('quantity');
+          qtyInput.max = stockVal;
+          if (parseInt(qtyInput.value) > stockVal) {
+            qtyInput.value = stockVal > 0 ? stockVal : 1;
+          }
+          if (stockVal <= 0) {
+            document.getElementById('add-cart-btn').disabled = true;
+            document.getElementById('add-cart-btn').textContent = 'Hết hàng';
+          } else {
+            document.getElementById('add-cart-btn').disabled = false;
+            document.getElementById('add-cart-btn').innerHTML = '<i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng';
+          }
         }
 
         // Update selected chip styling

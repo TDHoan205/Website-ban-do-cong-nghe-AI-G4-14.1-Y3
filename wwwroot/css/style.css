@@ -79,7 +79,7 @@ a:hover {
 }
 
 .main-content {
-    flex: 1;
+    /* removed flex:1 - this was causing the white gap when content is short */
     padding-bottom: 2rem;
 }
 
@@ -467,9 +467,8 @@ a:hover {
    ===================================================== */
 .main-footer {
     background: linear-gradient(180deg, var(--text-primary), #152a45);
-    padding: 32px 0 0;
+    padding: 24px 0 0;
     color: rgba(255,255,255,0.7);
-    margin-top: auto;
 }
 
 .footer-inner {

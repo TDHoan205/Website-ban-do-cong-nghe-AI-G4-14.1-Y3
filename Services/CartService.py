@@ -2,11 +2,20 @@
 Cart Service - Xử lý logic giỏ hàng
 Tương đương Services/CartService.cs trong C#
 """
+from dataclasses import dataclass
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from Models.Cart import Cart, CartItem
 from Models.Product import Product, ProductVariant
+
+class AddItemResult:
+    def __init__(self, item: Optional[CartItem], success: bool, message: str, added: int, exceeds: int = 0):
+        self.item = item
+        self.success = success
+        self.message = message
+        self.added = added
+        self.exceeds = exceeds
 
 
 class CartService:
@@ -39,14 +48,34 @@ class CartService:
             CartItem.cart_item_id == cart_item_id
         ).first()
 
+    def _get_available_stock(self, product_id: int, variant_id: Optional[int]) -> int:
+        """Lấy số lượng tồn khả dụng (trừ đi số lượng đã có trong cart)"""
+        if variant_id:
+            variant = self.db.query(ProductVariant).filter(
+                ProductVariant.variant_id == variant_id
+            ).first()
+            if variant:
+                available = variant.stock_quantity or 0
+            else:
+                product = self.db.query(Product).filter(
+                    Product.product_id == product_id
+                ).first()
+                available = product.stock_quantity if product else 0
+        else:
+            product = self.db.query(Product).filter(
+                Product.product_id == product_id
+            ).first()
+            available = product.stock_quantity if product else 0
+        return max(0, available)
+
     def add_item(
         self,
         account_id: int,
         product_id: int,
         quantity: int = 1,
         variant_id: Optional[int] = None
-    ) -> CartItem:
-        """Thêm sản phẩm vào giỏ hàng"""
+    ) -> AddItemResult:
+        """Thêm sản phẩm vào giỏ hàng, giới hạn bởi tồn kho"""
 
         cart = self.get_or_create_cart(account_id)
 
@@ -57,11 +86,34 @@ class CartService:
             CartItem.variant_id == variant_id
         ).first()
 
+        existing_qty = existing_item.quantity if existing_item else 0
+        available = self._get_available_stock(product_id, variant_id)
+        total_after_add = existing_qty + quantity
+
+        if total_after_add > available:
+            # Chỉ thêm tối đa phần còn lại
+            can_add = max(0, available - existing_qty)
+            if can_add <= 0:
+                return AddItemResult(
+                    item=None,
+                    success=False,
+                    message=f"Không thể thêm: đã có {existing_qty}/{available} sản phẩm trong giỏ, không còn đủ hàng.",
+                    added=0,
+                    exceeds=total_after_add - available,
+                )
+            quantity = can_add
+            total_after_add = existing_qty + quantity
+
         if existing_item:
             existing_item.quantity += quantity
             self.db.commit()
             self.db.refresh(existing_item)
-            return existing_item
+            return AddItemResult(
+                item=existing_item,
+                success=True,
+                message=f"Đã cập nhật số lượng: {existing_qty} → {total_after_add} (tồn: {available})",
+                added=quantity,
+            )
 
         # Thêm mới
         item = CartItem(
@@ -73,7 +125,12 @@ class CartService:
         self.db.add(item)
         self.db.commit()
         self.db.refresh(item)
-        return item
+        return AddItemResult(
+            item=item,
+            success=True,
+            message=f"Đã thêm {quantity} sản phẩm vào giỏ hàng (tồn: {available})",
+            added=quantity,
+        )
 
     def update_item_quantity(self, cart_item_id: int, quantity: int) -> Optional[CartItem]:
         """Cập nhật số lượng sản phẩm"""
