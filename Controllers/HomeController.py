@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from Data.database import get_db
+from Models import Product
 from Services.ProductService import ProductService
 from Services.CartService import CartService
 from Services.AuthService import AuthService
@@ -65,12 +66,26 @@ async def home_index(request: Request, db: Session = Depends(get_db)):
     cart_count = _get_cart_count(request, db)
     current_user = _get_current_user(request, db)
 
+    # Query banner products (prefer ID 1 first, then other hot products up to 5)
+    banner_products = []
+    prod_1 = db.query(Product).filter(Product.product_id == 1).first()
+    if prod_1:
+        banner_products.append(prod_1)
+    
+    other_products = db.query(Product).filter(
+        Product.product_id != 1,
+        Product.is_available == True,
+        Product.image_url != None
+    ).order_by(Product.is_hot.desc(), Product.created_at.desc()).limit(4).all()
+    banner_products.extend(other_products)
+
     _debug_log("ed9600", "H2", "HomeController.home_index:rendering",
         "Home page rendering - products passed to template",
         {
             "featured_count": len(featured_products) if featured_products else 0,
             "new_count": len(new_products) if new_products else 0,
             "categories_count": len(categories) if categories else 0,
+            "banner_products_count": len(banner_products),
             "featured_sample": [
                 {
                     "product_id": p.product_id,
@@ -111,6 +126,8 @@ async def home_index(request: Request, db: Session = Depends(get_db)):
             "categories": categories,
             "cart_count": cart_count,
             "current_user": current_user,
+            "banner_products": banner_products,
+            "banner_product": banner_products[0] if banner_products else None,
         }
     )
 
