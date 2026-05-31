@@ -6,6 +6,7 @@ import os
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from sqlalchemy.sql import func
 from Data.database import Base
 
 _LOG_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "debug-ed9600.log")
@@ -48,6 +49,20 @@ class Product(Base):
     supplier_id = Column(Integer, ForeignKey("Suppliers.supplier_id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Helper: chuẩn hóa URL ảnh — prepend /static/ nếu DB lưu /images/
+    @staticmethod
+    def _normalize_image_url(url: str) -> str:
+        if url and url.startswith("/images/"):
+            return "/static" + url
+        if url:
+            return url
+        return "/static/images/no-image.png"
+
+    @property
+    def image_url_normalized(self) -> str:
+        """Dùng trong template: trả về URL có /static/ prefix"""
+        return self._normalize_image_url(self.__dict__.get('image_url'))
 
     @property
     def is_deal(self) -> bool:
