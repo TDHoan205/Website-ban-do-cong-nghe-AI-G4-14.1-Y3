@@ -424,15 +424,65 @@
         text-decoration: none;
       }
       .hero-btn-secondary:hover { border-color: white; color: white; background: rgba(255,255,255,0.08); }
-      .hero-product {
+      .hero-product-wrapper {
+        position: relative;
         flex-shrink: 0;
         width: 340px;
+      }
+      .slider-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .hero-product-wrapper:hover .slider-arrow {
+        opacity: 0.7;
+        pointer-events: auto;
+      }
+      .slider-arrow:hover {
+        background: #4DA6FF;
+        border-color: #4DA6FF;
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+        opacity: 1 !important;
+      }
+      .prev-arrow {
+        left: -32px;
+      }
+      .next-arrow {
+        right: -32px;
+      }
+      .hero-product {
+        display: none;
+        width: 100%;
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 16px;
         padding: 24px;
         text-align: center;
         backdrop-filter: blur(10px);
+      }
+      .hero-product.active {
+        display: block;
+        animation: fadeInProduct 0.5s ease-in-out;
+      }
+      @keyframes fadeInProduct {
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
       }
       .hero-product-img {
         width: 200px;
@@ -447,6 +497,11 @@
       .hero-product-img i {
         font-size: 4rem;
         color: rgba(255,255,255,0.2);
+      }
+      .hero-product-img img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
       }
       .hero-product-name {
         font-size: 1.05rem;
@@ -1287,25 +1342,66 @@
               </a>
             </div>
           </div>
-          <div class="hero-product">
-            <div class="hero-product-img">
-              <i class="fas fa-mobile-alt"></i>
-            </div>
-            <div class="hero-product-name">iPhone 15 Pro Max</div>
-            <div class="hero-product-rating">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              &nbsp;5.0
-            </div>
-            <div class="hero-product-price">24.990.000 đ</div>
-            <div class="hero-product-original">27.990.000 đ</div>
-            <a href="/Products/" class="hero-product-btn">
-              <i class="fas fa-shopping-cart"></i>
-              Mua ngay
-            </a>
+          <div class="hero-product-wrapper">
+            <button class="slider-arrow prev-arrow" onclick="changeSlide(-1)" aria-label="Previous product">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            {% if banner_products %}
+              {% for product in banner_products %}
+              <div class="hero-product {% if loop.first %}active{% endif %}">
+                <div class="hero-product-img">
+                  <img
+                    src="{{ product.first_image_url }}"
+                    alt="{{ product.name }}"
+                    onerror="this.src='/static/images/no-image.png'"
+                  />
+                </div>
+                <div class="hero-product-name">{{ product.name }}</div>
+                <div class="hero-product-rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  &nbsp;{{ "%.1f"|format(product.rating | float) if product.rating else '5.0' }}
+                </div>
+                <div class="hero-product-price">{{ "{:,.0f}".format(product.price | float) }} đ</div>
+                {% if product.original_price and product.original_price > product.price %}
+                <div class="hero-product-original">{{ "{:,.0f}".format(product.original_price | float) }} đ</div>
+                {% endif %}
+                <a href="/Products/{{ product.product_id }}" class="hero-product-btn">
+                  <i class="fas fa-shopping-cart"></i>
+                  Mua ngay
+                </a>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="hero-product active">
+                <div class="hero-product-img">
+                  <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="hero-product-name">iPhone 15 Pro Max</div>
+                <div class="hero-product-rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  &nbsp;5.0
+                </div>
+                <div class="hero-product-price">24.990.000 đ</div>
+                <div class="hero-product-original">27.990.000 đ</div>
+                <a href="/Products/" class="hero-product-btn">
+                  <i class="fas fa-shopping-cart"></i>
+                  Mua ngay
+                </a>
+              </div>
+            {% endif %}
+
+            <button class="slider-arrow next-arrow" onclick="changeSlide(1)" aria-label="Next product">
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
         </div>
       </section>
@@ -1375,10 +1471,20 @@
             {% for cat in categories %}
             <a href="/Products/?category_id={{ cat.category_id }}" class="cat-card">
               <div class="cat-icon">
-                <i class="fas fa-mobile-alt"></i>
+                {% if cat.category_id == 1 or 'điện thoại' in cat.name.lower() %}
+                  <i class="fas fa-mobile-alt"></i>
+                {% elif cat.category_id == 2 or 'laptop' in cat.name.lower() or 'macbook' in cat.name.lower() %}
+                  <i class="fas fa-laptop"></i>
+                {% elif cat.category_id == 3 or 'máy tính bảng' in cat.name.lower() or 'tablet' in cat.name.lower() %}
+                  <i class="fas fa-tablet-alt"></i>
+                {% elif cat.category_id == 4 or 'phụ kiện' in cat.name.lower() or 'accessory' in cat.name.lower() or 'headphones' in cat.name.lower() %}
+                  <i class="fas fa-headphones"></i>
+                {% else %}
+                  <i class="fas fa-box"></i>
+                {% endif %}
               </div>
               <div class="cat-name">{{ cat.name }}</div>
-              <div class="cat-count">{{ cat.products | length if cat.products else '' }} sản phẩm</div>
+              <div class="cat-count">{{ cat.products | length if cat.products else '0' }} sản phẩm</div>
             </a>
             {% endfor %}
 
@@ -2425,6 +2531,43 @@
         d.textContent = s;
         return d.innerHTML;
       }
+
+      // Hero product banner slideshow (rotates every 4 seconds, supports manual controls)
+      (function initHeroProductSlider() {
+        var products = document.querySelectorAll('.hero-section .hero-product');
+        if (products.length <= 1) {
+          document.querySelectorAll('.hero-section .slider-arrow').forEach(function(el) {
+            el.style.display = 'none';
+          });
+          return;
+        }
+        var currentIndex = 0;
+        var slideInterval;
+
+        function showSlide(index) {
+          products[currentIndex].classList.remove('active');
+          currentIndex = (index + products.length) % products.length;
+          products[currentIndex].classList.add('active');
+        }
+
+        function nextSlide() {
+          showSlide(currentIndex + 1);
+        }
+
+        function startAutoplay() {
+          if (slideInterval) clearInterval(slideInterval);
+          slideInterval = setInterval(nextSlide, 4000);
+        }
+
+        // Global function for click handlers
+        window.changeSlide = function(delta) {
+          showSlide(currentIndex + delta);
+          startAutoplay(); // Reset timer
+        };
+
+        // Start initial auto-slide
+        startAutoplay();
+      })();
     })();
     </script>
   </body>

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -67,7 +67,8 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
 .lc-msg{display:flex;margin-bottom:12px;animation:lcFade .25s ease}
 @keyframes lcFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .lc-msg.staff{flex-direction:row-reverse}
-.lc-msg-bubble{max-width:75%;padding:10px 14px;border-radius:14px;font-size:.84rem;line-height:1.5;word-break:break-word}
+.lc-msg-wrap{max-width:75%}
+.lc-msg-bubble{width:100%;padding:10px 14px;border-radius:14px;font-size:.84rem;line-height:1.5;word-break:break-word}
 .lc-msg.customer .lc-msg-bubble{background:rgba(255,255,255,.08);color:#E6F2FF;border:1px solid rgba(255,255,255,.1);border-bottom-left-radius:4px}
 .lc-msg.staff .lc-msg-bubble{background:linear-gradient(135deg,#4DA6FF,#2196F3);color:#fff;border-bottom-right-radius:4px}
 .lc-msg.system .lc-msg-bubble{background:rgba(250,204,21,.08);color:#facc15;border:1px solid rgba(250,204,21,.15);font-size:.78rem;font-style:italic;margin:0 auto;text-align:center;max-width:90%}
@@ -211,7 +212,7 @@ async function lcPollMessages(){
 function lcAddMsg(m){
   var div=document.createElement('div');
   div.className='lc-msg '+m.sender_type;
-  div.innerHTML='<div><div class="lc-msg-bubble">'+lcEsc(m.content)+'</div><div class="lc-msg-time">'+lcEsc(m.created_at)+'</div></div>';
+  div.innerHTML='<div class="lc-msg-wrap"><div class="lc-msg-bubble">'+lcEsc(m.content)+'</div><div class="lc-msg-time">'+lcEsc(m.created_at)+'</div></div>';
   document.getElementById('lc-messages').appendChild(div);
 }
 
