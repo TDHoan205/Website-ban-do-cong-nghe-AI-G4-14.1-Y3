@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -130,7 +130,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
             {% elif 'processing' in s or 'dang xu ly' in s %}<span class="badge badge-processing"><i class="fas fa-cog"></i> Đang xử lý</span>
             {% elif 'shipped' in s or 'dang giao' in s %}<span class="badge badge-shipped"><i class="fas fa-truck"></i> Đang giao</span>
             {% elif 'delivered' in s or 'da giao' in s %}<span class="badge badge-delivered"><i class="fas fa-check-circle"></i> Đã giao</span>
-            {% elif 'cancelled' in s or 'huy' in s %}<span class="badge badge-cancelled"><i class="fas fa-times"></i> Đã hủy</span>
+            {% elif 'cancelled' in s or 'huy' in s %}<span class="badge badge-cancelled"><i class="fas fa-xmark"></i> Đã hủy</span>
             {% else %}<span class="badge badge-pending">{{ order.status or 'N/A' }}</span>{% endif %}
           </td>
           <td>
@@ -139,7 +139,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
             <button class="action-btn view" title="Duyệt đơn" onclick="approveOrder({{ order.order_id }})"><i class="fas fa-check"></i></button>
             {% endif %}
             <button class="action-btn edit" title="Sửa trạng thái" onclick="quickStatus({{ order.order_id }})"><i class="fas fa-edit"></i></button>
-            <button class="action-btn danger" title="Xóa" onclick="deleteOrder({{ order.order_id }})"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-btn danger" title="Xóa" onclick="deleteOrder({{ order.order_id }})"><i class="fas fa-trash"></i></button>
           </td>
         </tr>
         {% else %}

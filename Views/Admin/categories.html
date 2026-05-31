@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -102,7 +102,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
   <div class="table-responsive">
     <table class="admin-table" id="cat-table">
       <thead>
-        <tr><th>ID</th><th>Tên danh mục</th><th>Mô tả</th><th>Thứ tự</th><th>Trạng thái</th><th>Thao tác</th></tr>
+        <tr><th>ID</th><th>Tên danh mục</th><th>Mô tả</th><th>Trạng thái</th><th>Thao tác</th></tr>
       </thead>
       <tbody>
         {% for cat in categories %}
@@ -110,7 +110,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
           <td style="color:#4DA6FF;font-weight:700;">#{{ cat.category_id }}</td>
           <td><strong>{{ cat.name }}</strong></td>
           <td style="color:#64748b;">{{ cat.description or '—' }}</td>
-          <td>{{ cat.display_order or 0 }}</td>
           <td>
             {% if cat.is_active %}
               <span class="badge badge-active"><i class="fas fa-check-circle"></i> Hoạt động</span>
@@ -120,7 +119,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
           </td>
           <td>
             <button class="action-btn edit" title="Sửa" onclick="openEdit({{ cat.category_id }})"><i class="fas fa-edit"></i></button>
-            <button class="action-btn danger" title="Xóa" onclick="deleteCat({{ cat.category_id }}, '{{ cat.name | e }}')"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-btn danger" title="Xóa" onclick="deleteCat({{ cat.category_id }}, '{{ cat.name | e }}')"><i class="fas fa-trash"></i></button>
           </td>
         </tr>
         {% else %}
@@ -138,7 +137,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"><i class="fas fa-tag me-2"></i>Thêm danh mục</div>
-      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div id="alertBox" class="alert-msg"></div>
     <form id="catForm" onsubmit="return saveCat(event)">

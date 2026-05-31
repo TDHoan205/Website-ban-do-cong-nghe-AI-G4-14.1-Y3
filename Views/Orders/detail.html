@@ -1,4 +1,4 @@
-{% extends "Shared/base.html" %}
+﻿{% extends "Shared/base.html" %}
 
 {% block content %}
 <style>
@@ -46,7 +46,7 @@
 {% elif order.status == 'Delivered' %}
   {% set status_class = 'status-delivered' %}{% set status_text = 'Đã giao' %}{% set status_icon = 'fa-check-double' %}
 {% elif order.status == 'Cancelled' %}
-  {% set status_class = 'status-cancelled' %}{% set status_text = 'Đã hủy' %}{% set status_icon = 'fa-times-circle' %}
+  {% set status_class = 'status-cancelled' %}{% set status_text = 'Đã hủy' %}{% set status_icon = 'fa-xmark-circle' %}
 {% endif %}
 
 <div class="order-detail-page">

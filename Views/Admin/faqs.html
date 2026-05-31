@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -125,7 +125,7 @@
             <div class="page-card-title"><i class="fas fa-list"></i> Danh sách FAQ ({{ faqs|length }})</div>
             <div class="d-flex gap-2">
               <input type="text" id="search-faq" class="search-box" placeholder="Tìm câu hỏi..." oninput="filterTable()" />
-              <button class="page-btn btn-sync" onclick="syncAI()"><i class="fas fa-brain me-1"></i> Đồng bộ AI</button>
+              <button class="page-btn btn-sync" onclick="syncAI()"><i class="fas fa-brain" style="margin-right:4px"></i> Đồng bộ AI</button>
               <button class="page-btn" onclick="openModal()"><i class="fas fa-plus"></i> Thêm FAQ</button>
             </div>
           </div>
@@ -177,7 +177,7 @@
                   </td>
                   <td>
                     <button class="action-btn edit" title="Sửa" onclick="openEditModal({{ faq.faq_id }})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn danger" title="Xóa" onclick="deleteFAQ({{ faq.faq_id }}, '{{ faq_question | e }}')"><i class="fas fa-trash-alt"></i></button>
+                    <button class="action-btn danger" title="Xóa" onclick="deleteFAQ({{ faq.faq_id }}, '{{ faq_question | e }}')"><i class="fas fa-trash"></i></button>
                   </td>
                 </tr>
                 {% else %}
@@ -195,7 +195,7 @@
       <div class="modal-box">
         <div class="modal-header">
           <div class="modal-title" id="modalTitle"><i class="fas fa-question-circle me-2"></i>Thêm FAQ</div>
-          <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+          <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
         </div>
         <div id="modalAlert" class="alert-msg"></div>
         <form id="faqForm" onsubmit="return saveFAQ(event)">

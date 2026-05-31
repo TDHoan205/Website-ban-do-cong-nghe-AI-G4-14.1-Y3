@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="vi">
   <head>
@@ -171,7 +172,7 @@
           </div>
           <div style="padding: 16px 20px;">
             <p style="color:#80C7FF;font-size:0.85rem;margin-bottom:12px;">Thao tác này sẽ chuyển đơn hàng sang trạng thái Cancelled và hoàn kho nếu cần. Hệ thống không hỗ trợ xóa cứng lịch sử giao dịch.</p>
-            <button class="btn btn-danger" onclick="deleteOrder({{ order.order_id }})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:7px 16px;border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;">
+            <button class="action-btn danger" onclick="deleteOrder({{ order.order_id }})" style="width:auto;padding:7px 16px;gap:6px;font-size:0.82rem;">
               <i class="fas fa-ban"></i> Chuyển sang Cancelled
             </button>
           </div>

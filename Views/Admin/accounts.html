@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -133,7 +133,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
           <td>
             <button class="action-btn edit" title="Sửa" onclick="openEdit({{ account.account_id }})"><i class="fas fa-edit"></i></button>
             {% if account.account_id != admin.account_id %}
-            <button class="action-btn danger" title="Xóa" onclick="deleteAccount({{ account.account_id }}, '{{ account.username | e }}')"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-btn danger" title="Xóa" onclick="deleteAccount({{ account.account_id }}, '{{ account.username | e }}')"><i class="fas fa-trash"></i></button>
             {% endif %}
           </td>
         </tr>
@@ -152,7 +152,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"><i class="fas fa-user-plus me-2"></i>Thêm tài khoản</div>
-      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div id="alertBox" class="alert-msg"></div>
     <form id="accountForm" onsubmit="return saveAccount(event)">

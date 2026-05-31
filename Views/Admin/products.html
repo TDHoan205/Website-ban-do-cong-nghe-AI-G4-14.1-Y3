@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -148,7 +148,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
           <td>
             <a href="/Products/{{ product.product_id }}" target="_blank" class="action-btn view" title="Xem"><i class="fas fa-external-link-alt"></i></a>
             <a href="/Admin/Products/{{ product.product_id }}/edit" class="action-btn edit" title="Sửa chi tiết"><i class="fas fa-edit"></i></a>
-            <button class="action-btn danger" title="Xóa" onclick="deleteProduct({{ product.product_id }}, '{{ product.name | e }}')"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-btn danger" title="Xóa" onclick="deleteProduct({{ product.product_id }}, '{{ product.name | e }}')"><i class="fas fa-trash"></i></button>
           </td>
         </tr>
         {% else %}
@@ -166,7 +166,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#152A45;color:#FFFFFF;mi
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"><i class="fas fa-plus me-2"></i>Thêm sản phẩm</div>
-      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div id="alertBox" class="alert-msg"></div>
     <form id="productForm" onsubmit="return saveProduct(event)">

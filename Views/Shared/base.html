@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/static/css/style.css?v=9" />
+    <link rel="stylesheet" href="/static/css/style.css?v=10" />
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
 
     {% block extra_head %}{% endblock %}
@@ -89,10 +89,10 @@
           <div class="header-user-menu">
             <div class="header-action header-user-action">
               <div class="header-action-icon">
-                <i class="fas fa-user-check" style="color:#16a34a;"></i>
+                <i class="fas fa-circle-check user-logged-in-icon"></i>
               </div>
               <div class="header-action-text">
-                <span class="header-action-label" style="color:#16a34a;">{{ layout_user.full_name or layout_user.username }}</span>
+                <span class="header-action-label user-logged-in-name">{{ layout_user.full_name or layout_user.username }}</span>
               </div>
             </div>
             <div class="header-user-dropdown">
@@ -102,7 +102,7 @@
               <a href="/Admin/Dashboard" class="dropdown-item"><i class="fas fa-cog"></i> Quản lý Admin</a>
               {% endif %}
               <div class="dropdown-divider"></div>
-              <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+              <a href="/Auth/Logout" class="dropdown-item dropdown-item-red"><i class="fas fa-right-from-bracket"></i> Đăng xuất</a>
             </div>
           </div>
           {% else %}
@@ -188,7 +188,7 @@
           <div>
             <h4 class="footer-col-title">Liên hệ</h4>
             <div class="footer-contact-item">
-              <i class="fas fa-map-marker-alt"></i>
+              <i class="fas fa-location-dot"></i>
               <span>Tầng 5, Tòa nhà ABC Tower,<br />123 Nguyễn Huệ, Q.1, TP.HCM</span>
             </div>
             <div class="footer-contact-item">

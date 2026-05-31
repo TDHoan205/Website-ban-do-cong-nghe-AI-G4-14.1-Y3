@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -127,7 +127,7 @@
                   </td>
                   <td>
                     <button class="action-btn edit" title="Sửa" onclick="openEditModal({{ sup.supplier_id }})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn danger" title="Xóa" onclick="deleteSupplier({{ sup.supplier_id }}, '{{ sup.name | e }}')"><i class="fas fa-trash-alt"></i></button>
+                    <button class="action-btn danger" title="Xóa" onclick="deleteSupplier({{ sup.supplier_id }}, '{{ sup.name | e }}')"><i class="fas fa-trash"></i></button>
                   </td>
                 </tr>
                 {% else %}
@@ -145,7 +145,7 @@
       <div class="modal-box">
         <div class="modal-header">
           <div class="modal-title" id="modalTitle"><i class="fas fa-truck me-2"></i>Thêm nhà cung cấp</div>
-          <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+          <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
         </div>
         <div id="modalAlert" class="alert-msg"></div>
         <form id="supplierForm" onsubmit="return saveSupplier(event)">

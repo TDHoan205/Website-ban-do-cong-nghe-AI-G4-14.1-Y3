@@ -1,4 +1,4 @@
-{% set finance_data = finance if finance is defined else {} %}
+﻿{% set finance_data = finance if finance is defined else {} %}
 {% set stats_data = stats if stats is defined else {} %}
 {% set nav_stats = admin_nav_stats if admin_nav_stats is defined else stats if stats is defined else {} %}
 {% set livechat_count = nav_stats.livechat_count | default(0) %}
@@ -438,7 +438,7 @@
       <h4>Trợ thủ Tài chính AI</h4>
       <p>Dữ liệu realtime từ hệ thống</p>
     </div>
-    <button class="admin-finance-close" id="admin-finance-close"><i class="fas fa-times"></i></button>
+    <button class="admin-finance-close" id="admin-finance-close"><i class="fas fa-xmark"></i></button>
   </div>
   <div class="admin-finance-body" id="admin-finance-body">
     <div class="admin-finance-msg">
@@ -463,8 +463,8 @@
       <p><span id="admin-livechat-count">0</span> cuộc đang chờ</p>
     </div>
     <div class="admin-livechat-header-actions">
-      <button class="admin-livechat-expand" id="admin-livechat-expand" title="Mở trang Live Chat"><i class="fas fa-expand-alt"></i></button>
-      <button class="admin-livechat-close" id="admin-livechat-close" title="Đóng"><i class="fas fa-times"></i></button>
+      <button class="admin-livechat-expand" id="admin-livechat-expand" title="Mở trang Live Chat"><i class="fas fa-up-right-from-square"></i></button>
+      <button class="admin-livechat-close" id="admin-livechat-close" title="Đóng"><i class="fas fa-xmark"></i></button>
     </div>
   </div>
   <div class="admin-livechat-content">

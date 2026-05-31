@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -652,7 +652,7 @@
             <div><div class="sc-value">{{ "{:,.0f}".format(finance.avg_order_value) }} đ</div><div class="sc-label">Giá trị TB / đơn</div></div>
           </div>
           <div class="sales-card">
-            <div class="sc-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-times-circle"></i></div>
+            <div class="sc-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-xmark-circle"></i></div>
             <div><div class="sc-value">{{ finance.cancel_rate }}%</div><div class="sc-label">Tỷ lệ hủy ({{ finance.cancelled_orders }} đơn)</div></div>
           </div>
           <div class="sales-card">
@@ -758,7 +758,7 @@
                     {% elif 'processing' in s or 'dang' in s %}<span class="status-badge status-shipped"><i class="fas fa-cog"></i> Đang xử lý</span>
                     {% elif 'shipped' in s or 'giao' in s %}<span class="status-badge status-shipped"><i class="fas fa-truck"></i> Đang giao</span>
                     {% elif 'delivered' in s or 'da giao' in s %}<span class="status-badge status-delivered"><i class="fas fa-check-circle"></i> Đã giao</span>
-                    {% elif 'cancelled' in s or 'huy' in s %}<span class="status-badge status-cancelled"><i class="fas fa-times"></i> Đã hủy</span>
+                    {% elif 'cancelled' in s or 'huy' in s %}<span class="status-badge status-cancelled"><i class="fas fa-xmark"></i> Đã hủy</span>
                     {% else %}<span class="status-badge status-pending">{{ order.status or 'N/A' }}</span>{% endif %}
                   </td>
                   <td>

@@ -6,25 +6,25 @@
   <title>Hết hạn - Tech Store AI</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/css/checkout.css" />
 </head>
-<body style="background:#f0f2f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
-  <div class="text-center" style="max-width:480px">
-    <div style="width:80px;height:80px;border-radius:50%;background:#fffbeb;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2.5rem;color:#f59e0b;">
+<body class="checkout-status-page">
+  <div class="checkout-status-card">
+    <div class="checkout-status-icon warning">
       <i class="fas fa-clock"></i>
     </div>
-    <h2 style="font-weight:800;color:#111827;margin-bottom:10px">Mã thanh toán đã hết hạn</h2>
-    <p style="color:#6b7280;margin-bottom:28px">
+    <h2 class="checkout-status-title">Mã thanh toán đã hết hạn</h2>
+    <p class="checkout-status-msg">
       Mã thanh toán cho đơn hàng <strong>{{ order_id }}</strong> đã hết hiệu lực.
       Vui lòng tạo mã thanh toán mới.
     </p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="/Checkout/" class="btn-continue" style="display:inline-block">
-        <i class="fas fa-redo me-1"></i> Tạo mã thanh toán mới
+    <div class="checkout-status-actions">
+      <a href="/Checkout/" class="checkout-status-btn checkout-status-btn-primary">
+        <i class="fas fa-redo"></i> Tạo mã thanh toán mới
       </a>
-      <a href="/Cart/" class="btn-continue" style="display:inline-block;background:#6b7280;box-shadow:none">
-        <i class="fas fa-shopping-cart me-1"></i> Quay lại giỏ hàng
+      <a href="/" class="checkout-status-btn checkout-status-btn-secondary">
+        <i class="fas fa-shopping-cart"></i> Quay lại giỏ hàng
       </a>
     </div>
   </div>

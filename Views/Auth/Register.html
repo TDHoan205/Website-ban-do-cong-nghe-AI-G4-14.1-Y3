@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -31,7 +31,7 @@
       body {
         font-family: 'Be Vietnam Pro', sans-serif;
         min-height: 100vh;
-        background: linear-gradient(135deg, #4DA6FF 0%, #0d47a1 50%, #4DA6FF 100%);
+        background: linear-gradient(135deg, #4DA6FF 0%, #2196F3 50%, #1565c0 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -97,11 +97,11 @@
         border-radius: 4px;
       }
 
-      /* Icon - green */
+      /* Icon */
       .auth-icon {
         width: 64px;
         height: 64px;
-        background: linear-gradient(135deg, #4DA6FF, #15803d);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         border-radius: 16px;
         display: flex;
         align-items: center;
@@ -151,7 +151,7 @@
       .auth-alert-success {
         background: #f0fdf4;
         border: 1px solid #86efac;
-        color: #4DA6FF;
+        color: #22c55e;
       }
 
       /* Form */
@@ -199,7 +199,11 @@
         outline: none;
         font-family: 'Be Vietnam Pro', sans-serif;
       }
-
+      .auth-form-input:focus-visible {
+        border-color: #4DA6FF;
+        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.15);
+        background: white;
+      }
       .auth-form-input:focus {
         border-color: #4DA6FF;
         background: white;
@@ -266,11 +270,11 @@
         text-decoration: underline;
       }
 
-      /* Submit button - green */
+      /* Submit button */
       .auth-submit-btn {
         width: 100%;
         padding: 13px;
-        background: linear-gradient(135deg, #4DA6FF, #15803d);
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
         color: white;
         border: none;
         border-radius: 10px;
@@ -287,7 +291,7 @@
       }
 
       .auth-submit-btn:hover {
-        background: linear-gradient(135deg, #15803d, #166534);
+        background: linear-gradient(135deg, #1565c0, #0a3570);
         transform: translateY(-1px);
         box-shadow: 0 4px 15px rgba(77, 166, 255, 0.4);
       }
@@ -517,7 +521,7 @@
               placeholder="Nhập địa chỉ của bạn"
               autocomplete="street-address"
             />
-            <i class="fas fa-map-marker-alt auth-input-icon"></i>
+            <i class="fas fa-location-dot auth-input-icon"></i>
           </div>
         </div>
 

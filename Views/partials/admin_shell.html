@@ -1,7 +1,14 @@
-{% set nav_stats = admin_nav_stats if admin_nav_stats is defined else stats if stats is defined else {} %}
+﻿{% set nav_stats = admin_nav_stats if admin_nav_stats is defined else stats if stats is defined else {} %}
 {% set active_page = active_admin_page if active_admin_page is defined else '' %}
 
 <style>
+  *:focus-visible {
+    outline: 2px solid #4DA6FF;
+    outline-offset: 2px;
+  }
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
   .admin-topbar .admin-logo {
     display: flex;
     align-items: center;
@@ -196,7 +203,7 @@
       </div>
     </div>
     <a href="/Auth/Logout" class="topbar-btn btn-red">
-      <i class="fas fa-sign-out-alt"></i> Đăng xuất
+      <i class="fas fa-right-from-bracket"></i> Đăng xuất
     </a>
   </div>
 </div>
@@ -246,16 +253,7 @@
       </a>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Phân tích</div>
-      <a href="/Admin/Statistics" class="sidebar-link{% if active_page == 'statistics' %} active{% endif %}">
-        <i class="fas fa-chart-line"></i> Thống kê
-      </a>
-    </div>
-    <div class="sidebar-section">
       <div class="sidebar-section-title">Hệ thống</div>
-      <a href="/Admin/Chatbot" class="sidebar-link{% if active_page == 'chatbot' %} active{% endif %}">
-        <i class="fas fa-robot"></i> AI Chatbot
-      </a>
       <a href="/Admin/Chats" class="sidebar-link{% if active_page == 'chats' %} active{% endif %}">
         <i class="fas fa-comments"></i> Lịch sử Chat
         {% if (nav_stats.total_chats | default(0)) >= 1 %}

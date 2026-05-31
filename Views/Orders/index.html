@@ -1,134 +1,65 @@
-{% extends "Shared/base.html" %}
+﻿{% extends "Shared/base.html" %}
 
 {% block content %}
 <style>
-  body { min-height: 100vh; overflow-x: hidden; }
-  .orders-full-page {
-    min-height: 100vh;
-    background: #f0f2f5;
-    font-family: 'Be Vietnam Pro', sans-serif;
-    display: flex;
-    flex-direction: column;
+  .orders-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
   }
 
-  /* ── PAGE HEADER ── */
   .orders-page-header {
-    background: white;
-    border-bottom: 1px solid #e8e8e8;
-    padding: 18px 0 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    margin-bottom: 24px;
   }
-  .orders-page-header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 16px;
-  }
-  .orders-page-header-topbar {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 6px 16px;
-    background: #2d3436;
-    color: rgba(255,255,255,0.7);
-    font-size: 0.78rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .orders-topbar-left, .orders-topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .orders-topbar-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .orders-topbar-item i { color: #ff6b00; font-size: 0.75rem; }
-  .orders-topbar-divider { color: rgba(255,255,255,0.2); }
-
-  /* Page title row */
-  .orders-title-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 14px 0 16px;
-    flex-wrap: wrap;
-  }
-  .orders-title-group {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .orders-title-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #0d6efd, #0a58ca);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.15rem;
-    box-shadow: 0 4px 12px rgba(13,110,253,0.35);
-  }
-  .orders-title-main {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: #1a1a2e;
-    margin: 0 0 2px;
-    line-height: 1.2;
-  }
-  .orders-title-sub {
-    font-size: 0.82rem;
-    color: #9ca3af;
-    margin: 0;
-  }
-  .orders-count-pill {
-    background: linear-gradient(135deg, #0d6efd, #0a58ca);
-    color: white;
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(13,110,253,0.3);
-    white-space: nowrap;
-  }
-
-  /* ── BREADCRUMB ── */
   .orders-breadcrumb {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: #9ca3af;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   .orders-breadcrumb a {
-    color: #0d6efd;
+    color: #4DA6FF;
     text-decoration: none;
     display: flex;
     align-items: center;
     gap: 4px;
   }
-  .orders-breadcrumb a:hover { color: #0a58ca; }
-  .orders-breadcrumb .sep { color: #d1d5db; font-size: 0.65rem; }
-  .orders-breadcrumb .current { color: #6b7280; }
-
-  /* ── MAIN CONTENT ── */
-  .orders-main {
-    flex: 1;
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 24px 16px 48px;
+  .orders-breadcrumb a:hover { color: #1565c0; }
+  .orders-breadcrumb .sep { font-size: 0.6rem; }
+  .orders-breadcrumb .current { color: #374151; font-weight: 500; }
+  .orders-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .orders-title-group { display: flex; align-items: center; gap: 14px; }
+  .orders-title-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #4DA6FF, #1565c0);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.15rem;
+    box-shadow: 0 4px 12px rgba(77,166,255,0.35);
+    flex-shrink: 0;
+  }
+  .orders-title-main {
+    font-size: 1.4rem; font-weight: 800; color: #1a1a2e;
+    margin: 0 0 2px; line-height: 1.2;
+  }
+  .orders-title-sub { font-size: 0.82rem; color: #9ca3af; margin: 0; }
+  .orders-count-pill {
+    background: linear-gradient(135deg, #4DA6FF, #1565c0);
+    color: white; font-size: 0.8rem; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(77,166,255,0.3);
+    white-space: nowrap;
   }
 
-  /* ── STATS ROW ── */
+  /* ── PAGE HEADER ── */
   .orders-stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -146,8 +77,8 @@
     transition: all 0.2s;
   }
   .orders-stat-card:hover {
-    border-color: #0d6efd;
-    box-shadow: 0 4px 12px rgba(13,110,253,0.08);
+    border-color: #4DA6FF;
+    box-shadow: 0 4px 12px rgba(77,166,255,0.08);
     transform: translateY(-1px);
   }
   .orders-stat-icon {
@@ -197,8 +128,8 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }
   .order-card:hover {
-    border-color: #0d6efd;
-    box-shadow: 0 6px 24px rgba(13,110,253,0.12);
+    border-color: #4DA6FF;
+    box-shadow: 0 6px 24px rgba(77,166,255,0.12);
     transform: translateY(-2px);
   }
 
@@ -227,7 +158,7 @@
     font-weight: 700;
     color: #1a1a2e;
   }
-  .order-id-badge i { color: #0d6efd; font-size: 0.85rem; }
+  .order-id-badge i { color: #4DA6FF; font-size: 0.85rem; }
   .order-date-badge {
     display: flex;
     align-items: center;
@@ -344,7 +275,7 @@
     text-align: center;
     padding: 8px 0 4px;
     font-size: 0.78rem;
-    color: #0d6efd;
+    color: #4DA6FF;
     font-weight: 600;
     cursor: pointer;
   }
@@ -370,7 +301,7 @@
     align-items: center;
     gap: 5px;
   }
-  .order-summary-label i { color: #0d6efd; font-size: 0.68rem; }
+  .order-summary-label i { color: #4DA6FF; font-size: 0.68rem; }
   .order-summary-value {
     font-size: 1.05rem;
     font-weight: 800;
@@ -405,7 +336,7 @@
     font-size: 0.78rem;
     color: #9ca3af;
   }
-  .order-footer-hint i { color: #0d6efd; }
+  .order-footer-hint i { color: #4DA6FF; }
   .order-footer-hint.success i { color: #16a34a; }
   .order-footer-hint.danger i { color: #dc2626; }
   .order-footer-actions { display: flex; gap: 8px; flex-shrink: 0; }
@@ -414,7 +345,7 @@
     align-items: center;
     gap: 6px;
     padding: 8px 18px;
-    background: #0d6efd;
+    background: #4DA6FF;
     color: white;
     border: none;
     border-radius: 8px;
@@ -426,10 +357,10 @@
     transition: all 0.2s;
   }
   .btn-detail:hover {
-    background: #0a58ca;
+    background: #1565c0;
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+    box-shadow: 0 4px 12px rgba(77,166,255,0.3);
   }
 
   /* ── EMPTY STATE ── */
@@ -491,7 +422,7 @@
     align-items: center;
     gap: 8px;
     padding: 13px 32px;
-    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    background: linear-gradient(135deg, #4DA6FF, #1565c0);
     color: white;
     border-radius: 10px;
     font-size: 0.95rem;
@@ -499,12 +430,12 @@
     font-family: 'Be Vietnam Pro', sans-serif;
     text-decoration: none;
     transition: all 0.25s;
-    box-shadow: 0 4px 16px rgba(13,110,253,0.4);
+    box-shadow: 0 4px 16px rgba(77,166,255,0.4);
     margin-bottom: 40px;
   }
   .btn-shop-now:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(13,110,253,0.5);
+    box-shadow: 0 8px 28px rgba(77,166,255,0.5);
     color: white;
   }
   .orders-empty-features {
@@ -527,7 +458,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #0d6efd;
+    color: #4DA6FF;
     font-size: 1rem;
   }
   .orders-empty-feature-text {
@@ -582,9 +513,9 @@
     font-family: 'Be Vietnam Pro', sans-serif;
   }
   .page-btn:hover, .page-btn.active {
-    background: #0d6efd;
+    background: #4DA6FF;
     color: white;
-    border-color: #0d6efd;
+    border-color: #4DA6FF;
   }
 
   /* ── RESPONSIVE ── */
@@ -612,69 +543,42 @@
   }
 </style>
 
-<!-- ── PAGE WRAPPER ── -->
-<div class="orders-full-page">
+<div class="orders-page">
 
-  <!-- ── PAGE HEADER ── -->
+  <!-- ── PAGE TITLE ── -->
   <div class="orders-page-header">
-    <div class="orders-page-header-topbar">
-      <div class="orders-topbar-left">
-        <span class="orders-topbar-item"><i class="fas fa-phone"></i> 1800.6601</span>
-        <span class="orders-topbar-divider">|</span>
-        <span class="orders-topbar-item"><i class="fas fa-envelope"></i> hotro@techstore.com</span>
-      </div>
-      <div class="orders-topbar-right">
-        <span class="orders-topbar-item"><i class="fas fa-truck"></i> Miễn phí vận chuyển</span>
-        <span class="orders-topbar-divider">|</span>
-        <span class="orders-topbar-item"><i class="fas fa-shield-alt"></i> Bảo hành chính hãng</span>
-      </div>
-    </div>
-    <div class="orders-page-header-inner">
-      <nav class="orders-breadcrumb">
-        <a href="/"><i class="fas fa-home"></i> Trang chủ</a>
-        <span class="sep"><i class="fas fa-chevron-right"></i></span>
-        <span class="current">Đơn hàng của tôi</span>
-      </nav>
-      <div class="orders-title-section">
-        <div class="orders-title-group">
-          <div class="orders-title-icon">
-            <i class="fas fa-shopping-bag"></i>
-          </div>
-          <div>
-            <h1 class="orders-title-main">Đơn hàng của tôi</h1>
-            <p class="orders-title-sub">Theo dõi và quản lý các đơn hàng bạn đã đặt</p>
-          </div>
+    <nav class="orders-breadcrumb">
+      <a href="/"><i class="fas fa-home"></i> Trang chủ</a>
+      <span class="sep"><i class="fas fa-chevron-right"></i></span>
+      <span class="current">Đơn hàng của tôi</span>
+    </nav>
+    <div class="orders-title-row">
+      <div class="orders-title-group">
+        <div class="orders-title-icon">
+          <i class="fas fa-shopping-bag"></i>
         </div>
-        {% if orders and orders | length > 0 %}
-        <div class="orders-count-pill">
-          <i class="fas fa-box"></i> {{ orders | length }} đơn hàng
+        <div>
+          <h1 class="orders-title-main">Đơn hàng của tôi</h1>
+          <p class="orders-title-sub">Theo dõi và quản lý các đơn hàng bạn đã đặt</p>
         </div>
-        {% endif %}
       </div>
+      {% if orders and orders | length > 0 %}
+      <div class="orders-count-pill">
+        <i class="fas fa-box"></i> {{ order_stats.total }} đơn hàng
+      </div>
+      {% endif %}
     </div>
   </div>
 
-  <!-- ── MAIN CONTENT ── -->
-  <main class="orders-main">
-
-    {% if orders and orders | length > 0 %}
-    <!-- ── STATS ROW ── -->
-    {% set total = orders | length %}
-    {% set pending_count = 0 %}
-    {% set delivered_count = 0 %}
-    {% set cancelled_count = 0 %}
-    {% for o in orders %}
-      {% if o.status == 'Pending' %}{% set pending_count = pending_count + 1 %}{% endif %}
-      {% if o.status == 'Delivered' %}{% set delivered_count = delivered_count + 1 %}{% endif %}
-      {% if o.status == 'Cancelled' %}{% set cancelled_count = cancelled_count + 1 %}{% endif %}
-    {% endfor %}
+  {% if orders and orders | length > 0 %}
+  <!-- ── STATS ROW ── -->
     <div class="orders-stats-row">
       <div class="orders-stat-card">
         <div class="orders-stat-icon orders-stat-icon-blue">
           <i class="fas fa-boxes-stacked"></i>
         </div>
         <div class="orders-stat-info">
-          <div class="orders-stat-value">{{ orders | length }}</div>
+          <div class="orders-stat-value">{{ order_stats.total }}</div>
           <div class="orders-stat-label">Tổng đơn hàng</div>
         </div>
       </div>
@@ -683,7 +587,7 @@
           <i class="fas fa-clock"></i>
         </div>
         <div class="orders-stat-info">
-          <div class="orders-stat-value">{{ pending_count }}</div>
+          <div class="orders-stat-value">{{ (order_stats.pending or 0) + (order_stats.confirmed or 0) + (order_stats.processing or 0) + (order_stats.shipped or 0) }}</div>
           <div class="orders-stat-label">Chờ xác nhận</div>
         </div>
       </div>
@@ -692,7 +596,7 @@
           <i class="fas fa-check-double"></i>
         </div>
         <div class="orders-stat-info">
-          <div class="orders-stat-value">{{ delivered_count }}</div>
+          <div class="orders-stat-value">{{ order_stats.delivered or 0 }}</div>
           <div class="orders-stat-label">Đã giao hàng</div>
         </div>
       </div>
@@ -701,7 +605,7 @@
           <i class="fas fa-ban"></i>
         </div>
         <div class="orders-stat-info">
-          <div class="orders-stat-value">{{ cancelled_count }}</div>
+          <div class="orders-stat-value">{{ order_stats.cancelled or 0 }}</div>
           <div class="orders-stat-label">Đã hủy</div>
         </div>
       </div>
@@ -726,18 +630,19 @@
 
           {% set status_class = '' %}
           {% set status_icon = '' %}
-          {% if order.status == 'Pending' %}
+          {% set s = order.status | lower %}
+          {% if s == 'pending' %}
             {% set status_class = 'status-pending' %}{% set status_icon = 'fa-clock' %}
-          {% elif order.status == 'Confirmed' %}
+          {% elif s == 'confirmed' %}
             {% set status_class = 'status-confirmed' %}{% set status_icon = 'fa-check-circle' %}
-          {% elif order.status == 'Processing' %}
+          {% elif s == 'processing' %}
             {% set status_class = 'status-processing' %}{% set status_icon = 'fa-cog fa-spin' %}
-          {% elif order.status == 'Shipped' %}
+          {% elif s == 'shipped' %}
             {% set status_class = 'status-shipped' %}{% set status_icon = 'fa-truck' %}
-          {% elif order.status == 'Delivered' %}
+          {% elif s == 'delivered' %}
             {% set status_class = 'status-delivered' %}{% set status_icon = 'fa-check-double' %}
-          {% elif order.status == 'Cancelled' %}
-            {% set status_class = 'status-cancelled' %}{% set status_icon = 'fa-times-circle' %}
+          {% elif s == 'cancelled' %}
+            {% set status_class = 'status-cancelled' %}{% set status_icon = 'fa-xmark-circle' %}
           {% endif %}
           <span class="order-status-badge {{ status_class }}">
             <i class="fas {{ status_icon }}"></i>
@@ -787,7 +692,7 @@
             </div>
             {% if order.customer_address %}
             <div class="order-summary-item">
-              <span class="order-summary-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ</span>
+              <span class="order-summary-label"><i class="fas fa-location-dot"></i> Địa chỉ</span>
               <span class="order-summary-address">{{ order.customer_address }}</span>
             </div>
             {% endif %}
@@ -802,18 +707,18 @@
 
         <!-- Card Footer -->
         <div class="order-card-footer">
-          <div class="order-footer-hint {% if order.status == 'Delivered' %}success{% elif order.status == 'Cancelled' %}danger{% endif %}">
-            {% if order.status == 'Pending' %}
+          <div class="order-footer-hint {% if s == 'delivered' %}success{% elif s == 'cancelled' %}danger{% endif %}">
+            {% if s == 'pending' %}
               <i class="fas fa-info-circle"></i> Vui lòng chờ shop xác nhận đơn
-            {% elif order.status == 'Confirmed' %}
+            {% elif s == 'confirmed' %}
               <i class="fas fa-check-circle"></i> Đơn đã được xác nhận, đang chờ xử lý
-            {% elif order.status == 'Processing' %}
+            {% elif s == 'processing' %}
               <i class="fas fa-box"></i> Đang được chuẩn bị
-            {% elif order.status == 'Shipped' %}
+            {% elif s == 'shipped' %}
               <i class="fas fa-truck"></i> Đang được giao đến bạn
-            {% elif order.status == 'Delivered' %}
+            {% elif s == 'delivered' %}
               <i class="fas fa-check-double"></i> Đơn hàng đã giao thành công
-            {% elif order.status == 'Cancelled' %}
+            {% elif s == 'cancelled' %}
               <i class="fas fa-ban"></i> Đơn hàng đã bị hủy
             {% endif %}
           </div>
@@ -863,6 +768,5 @@
     </div>
     {% endif %}
 
-  </main>
 </div>
 {% endblock %}

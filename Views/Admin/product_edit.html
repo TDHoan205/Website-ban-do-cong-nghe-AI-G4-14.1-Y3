@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
@@ -303,7 +303,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
                   <div class="variant-stock">{{ v.stock_quantity }} trong kho</div>
                   <div class="variant-img-count"><i class="fas fa-image"></i> {{ v.images|length }}</div>
                   <button class="action-btn-sm edit" onclick="openVariantModal({{ v.variant_id }})" title="Sửa"><i class="fas fa-edit"></i></button>
-                  <button class="action-btn-sm danger" onclick="deleteVariant({{ v.variant_id }})" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                  <button class="action-btn-sm danger" onclick="deleteVariant({{ v.variant_id }})" title="Xóa"><i class="fas fa-trash"></i></button>
                 </div>
               </div>
               <!-- Ảnh theo variant -->
@@ -351,7 +351,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title" id="variantModalTitle"><i class="fas fa-plus me-2"></i>Thêm phân loại</div>
-      <button class="modal-close" onclick="closeVariantModal(event)"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeVariantModal(event)"><i class="fas fa-xmark"></i></button>
     </div>
     <div id="alertVariant" class="alert-msg"></div>
     <form id="variantForm" onsubmit="return saveVariant(event)">
@@ -428,7 +428,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
   <div class="modal-box" style="width:400px;" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title"><i class="fas fa-link me-2"></i>Nhập URL ảnh</div>
-      <button class="modal-close" onclick="closeImgUrlModal(event)"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeImgUrlModal(event)"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="form-group">
       <label class="form-label">URL ảnh</label>
@@ -674,19 +674,18 @@ function toggleImgSelect(el, imageId) {
   });
   el.classList.add('selected');
   // Set as primary
+  const fd = new FormData();
+  fd.append('is_primary', 'true');
   fetch(IMG_API + '/' + imageId, {
     method: 'PUT',
-    body: new FormData().append('is_primary', 'true')
+    body: fd
   }).then(r => r.json()).then(d => {
     if (d.success) {
       const wrap = el.closest('.img-thumb-wrap') || el.parentElement;
       const star = document.createElement('span');
-      star.style.cssText = 'position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#4DA6FF;color:#152A45;padding:1px 4px;border-radius:3px;font-weight:700;';
-      star.textContent = '★';
+      star.style.cssText = 'position:absolute;bottom:2px;left:2px;font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 4px;border-radius:3px;font-weight:700;';
+      star.textContent = '★ Chính';
       wrap.style.position = 'relative';
-      const star = document.createElement('span');
-      star.style.cssText = 'position:absolute;bottom:32px;left:2px;font-size:0.6rem;background:#ffd700;color:#0f172a;padding:1px 4px;border-radius:3px;font-weight:700;';
-      star.textContent = '★ Chinh';
       wrap.insertBefore(star, wrap.firstChild);
     }
   });
@@ -733,9 +732,11 @@ async function removeVarImg(imageId) {
 }
 
 function toggleVarImgSelect(el, imageId, variantId) {
+  const fd = new FormData();
+  fd.append('is_primary', 'true');
   fetch(IMG_API + '/' + imageId, {
     method: 'PUT',
-    body: new FormData().append('is_primary', 'true')
+    body: fd
   }).then(r => r.json()).then(d => {
     if (d.success) {
       document.querySelectorAll(`#var-gallery-${variantId} img`).forEach(i => i.classList.remove('selected'));
