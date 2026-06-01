@@ -3,11 +3,14 @@ Auth Service - Xac thuc nguoi dung
 Tuong duong Services/AuthService.cs trong ASP.NET Core
 """
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func as sql_func
 import bcrypt
 from typing import Optional
 from datetime import datetime, timedelta
 from jose import jwt
 from Models.Account import Account, Role
+from Models.Order import Order
+from Models.Wishlist import Wishlist
 import uuid
 
 # Cau hinh JWT
@@ -171,6 +174,71 @@ class AuthService:
         account.reset_token_expiry = None
         self.db.commit()
         return True
+
+    def update_password(self, account_id: int, current_password: str, new_password: str) -> tuple[bool, str]:
+        """
+        Cap nhat mat khau moi cho tai khoan.
+        Tra ve (True, "") neu thanh cong.
+        Tra ve (False, message) neu that bai.
+        """
+        account = self.get_account_by_id(account_id)
+        if not account:
+            return False, "Tài khoản không tồn tại."
+
+        if not account.is_active:
+            return False, "Tài khoản đã bị khóa."
+
+        pwd_hash = account.password_hash or ""
+        if not self.verify_password(current_password, pwd_hash):
+            return False, "Mật khẩu hiện tại không chính xác."
+
+        if self.verify_password(new_password, pwd_hash):
+            return False, "Mật khẩu mới không được trùng với mật khẩu hiện tại."
+
+        account.password_hash = self.hash_password(new_password)
+        account.updated_at = datetime.utcnow()
+        self.db.commit()
+        return True, ""
+
+    def get_user_statistics(self, account_id: int) -> dict:
+        """
+        Lay thong ke tai khoan nguoi dung.
+        Chi tinh don hang da giao thanh cong (Delivered).
+        """
+
+        # Dem so don hang da giao thanh cong
+        delivered_count = self.db.query(sql_func.count(Order.order_id)).filter(
+            Order.account_id == account_id,
+            Order.status == "Delivered"
+        ).scalar() or 0
+
+        # Tong chi tieu tu don hang da giao thanh cong
+        total = self.db.query(sql_func.sum(Order.total_amount)).filter(
+            Order.account_id == account_id,
+            Order.status == "Delivered"
+        ).scalar() or 0
+
+        # Convert Decimal to int/float
+        if hasattr(total, '__float__'):
+            total_spent = int(total)
+        elif total is None:
+            total_spent = 0
+        else:
+            try:
+                total_spent = int(total)
+            except (ValueError, TypeError):
+                total_spent = 0
+
+        # Dem so san pham yeu thich
+        wishlist_count = self.db.query(sql_func.count(Wishlist.wishlist_id)).filter(
+            Wishlist.account_id == account_id
+        ).scalar() or 0
+
+        return {
+            "total_orders": delivered_count,
+            "total_spent": total_spent,
+            "wishlist_count": wishlist_count,
+        }
 
     def seed_roles(self):
         """Tao 2 role mac dinh neu chua ton tai"""

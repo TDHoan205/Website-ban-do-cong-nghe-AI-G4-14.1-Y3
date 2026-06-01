@@ -811,6 +811,20 @@ def ensure_runtime_schema_compatibility():
             )
         END
         """,
+        """
+        IF OBJECT_ID('Wishlists', 'U') IS NULL
+        BEGIN
+            CREATE TABLE Wishlists (
+                wishlist_id INT IDENTITY(1,1) PRIMARY KEY,
+                account_id INT NOT NULL,
+                product_id INT NOT NULL,
+                created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                CONSTRAINT FK_Wishlists_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id),
+                CONSTRAINT FK_Wishlists_Products FOREIGN KEY (product_id) REFERENCES Products(product_id),
+                CONSTRAINT UX_Wishlists_Account_Product UNIQUE (account_id, product_id)
+            )
+        END
+        """,
     ]
 
     try:

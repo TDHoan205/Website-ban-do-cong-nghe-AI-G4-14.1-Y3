@@ -440,6 +440,11 @@ async function saveAccount(e) {
   fd.append('address', document.getElementById('f-address').value.trim());
   fd.append('role_id', document.getElementById('f-role').value);
   fd.append('is_active', document.getElementById('f-active').checked ? 'true' : 'false');
+  // Send password confirmation field (used by backend for validation)
+  if (isEdit) {
+    const pw = document.getElementById('f-password').value;
+    if (pw.length > 0) fd.append('password_confirm', document.getElementById('f-password-confirm').value);
+  }
 
   try {
     const r = await fetch(isEdit ? API + '/' + id : API, {

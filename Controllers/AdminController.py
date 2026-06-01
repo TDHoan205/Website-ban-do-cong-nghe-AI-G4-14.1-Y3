@@ -1108,6 +1108,24 @@ async def api_update_account(
         return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
     is_active = form.get("is_active", "true").lower() == "true"
 
+    # === PASSWORD HANDLING ===
+    raw_password = form.get("password", "")
+    new_password = raw_password.strip() if raw_password else ""
+    confirm_password = form.get("password_confirm", "").strip()
+
+    if new_password:
+        # Password provided — validate
+        if len(new_password) < 6:
+            return JSONResponse(
+                {"success": False, "error": "Mật khẩu mới phải có tối thiểu 6 ký tự."},
+                status_code=400
+            )
+        if new_password != confirm_password:
+            return JSONResponse(
+                {"success": False, "error": "Mật khẩu xác nhận không khớp."},
+                status_code=400
+            )
+
     # Check email conflict
     existing = db.query(Account).filter(
         Account.email == email,
@@ -1122,6 +1140,25 @@ async def api_update_account(
     account.address = address
     account.role_id = role_id
     account.is_active = is_active
+
+    # Update password only when provided
+    if new_password:
+        auth_svc = AuthService(db)
+        account.password_hash = auth_svc.hash_password(new_password)
+        _debug_log(
+            "ed9600", "H4",
+            "AdminController.api_update_account:password_changed",
+            f"Admin '{admin.username}' changed password for account_id={account_id}",
+            {"account_id": account_id, "changed_by": admin.username}
+        )
+    else:
+        _debug_log(
+            "ed9600", "H4",
+            "AdminController.api_update_account:no_password_change",
+            f"Account {account_id} updated without password change",
+            {"account_id": account_id, "changed_by": admin.username}
+        )
+
     account.updated_at = datetime.now()
     try:
         db.commit()
