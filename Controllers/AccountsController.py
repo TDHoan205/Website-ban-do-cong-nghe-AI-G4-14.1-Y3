@@ -55,6 +55,7 @@ class AccountUpdate(BaseModel):
     address: Optional[str] = None
     role_id: Optional[int] = None
     is_active: Optional[bool] = None
+    password: Optional[str] = None   # optional — only update if provided
 
 
 @router.get("")
@@ -143,6 +144,8 @@ def update_account(
 ):
     _require_admin(db, actor_account_id)
     service = AccountService(db)
+
+    # Validate email uniqueness
     if payload.email:
         payload.email = payload.email.strip()
         exists = db.query(Account).filter(
@@ -151,6 +154,8 @@ def update_account(
         ).first()
         if exists:
             raise HTTPException(status_code=400, detail="Email already exists")
+
+    # Validate phone uniqueness
     if payload.phone:
         exists = db.query(Account).filter(
             Account.phone == payload.phone,
@@ -158,10 +163,18 @@ def update_account(
         ).first()
         if exists:
             raise HTTPException(status_code=400, detail="Phone already exists")
+
+    # Validate role exists
     if payload.role_id is not None:
         role = db.query(Role).filter(Role.role_id == payload.role_id).first()
         if not role:
             raise HTTPException(status_code=400, detail="Role not found")
+
+    # Validate password if provided
+    if payload.password is not None and payload.password != "":
+        if len(payload.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
     account = service.update_account(
         account_id=account_id,
         email=payload.email,
@@ -170,6 +183,7 @@ def update_account(
         address=payload.address,
         role_id=payload.role_id,
         is_active=payload.is_active,
+        password=payload.password,   # None = keep old; non-empty = update
     )
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")

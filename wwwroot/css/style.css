@@ -657,7 +657,7 @@ a:hover {
 }
 
 /* =====================================================
-   PRODUCT CARD
+   PRODUCT CARD — height/min-height removed to prevent stretch
    ===================================================== */
 .product-card {
     background: var(--card-bg);
@@ -667,6 +667,8 @@ a:hover {
     transition: all 0.25s;
     display: flex;
     flex-direction: column;
+    /* height: 100% removed — was causing card stretch */
+    /* min-height: 420px removed — was causing extra whitespace */
 }
 
 .product-card:hover {
@@ -1600,3 +1602,8 @@ body.admin-page .cb-popup { width: 320px; max-height: 480px; bottom: 100px; righ
   .cb-popup { width: calc(100vw - 20px); right: 10px; bottom: 96px; height: min(620px, calc(100vh - 116px)); }
 }
 
+/* =====================================================
+   PRODUCTS GRID — handled by inline styles in Products/index.html
+   All product grid/card styles are defined inline in each view.
+   This prevents cascade conflicts between multiple CSS files.
+   ===================================================== */

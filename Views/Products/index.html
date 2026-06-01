@@ -24,6 +24,830 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/style.css?v=7" />
 
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Be Vietnam Pro", sans-serif;
+        background: #f0f2f5;
+      }
+      a {
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      a:hover {
+        color: #4DA6FF;
+      }
+      .main-content {
+        padding-bottom: 0;
+      }
+
+      /* ===== TOP BAR ===== */
+      .top-bar {
+        background: #1E3A5F;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.78rem;
+        padding: 6px 0;
+      }
+      .top-bar-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .top-bar-left,
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .top-bar-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .top-bar-item i {
+        color: #4DA6FF;
+        font-size: 0.8rem;
+      }
+      .top-bar-item:hover {
+        color: white;
+      }
+      .top-bar-divider {
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* ===== HEADER ===== */
+      .main-header {
+        background: white;
+        padding: 14px 0;
+        border-bottom: 1px solid #e8e8e8;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        position: sticky;
+        top: 0;
+        z-index: 999;
+      }
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+      .header-logo-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #4DA6FF, #2196F3);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+      }
+      .header-logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .header-logo-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a1a2e;
+      }
+      .header-logo-sub {
+        font-size: 0.68rem;
+        color: #9ca3af;
+      }
+      .header-search {
+        flex: 1;
+        max-width: 520px;
+      }
+      .header-search-form {
+        display: flex;
+        border: 2px solid #4DA6FF;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+      }
+      .header-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        background: transparent;
+      }
+      .header-search-input::placeholder {
+        color: #9ca3af;
+      }
+      .header-search-btn {
+        background: #4DA6FF;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Be Vietnam Pro", sans-serif;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      .header-search-btn:hover {
+        background: #2196F3;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-shrink: 0;
+      }
+      .header-action {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .header-action:hover {
+        color: #4DA6FF;
+      }
+      .header-action-icon {
+        position: relative;
+        font-size: 1.4rem;
+        color: #374151;
+      }
+      .header-action-badge {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: #4DA6FF;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .header-action-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .header-action-label {
+        font-size: 0.68rem;
+        color: #9ca3af;
+      }
+
+      /* User dropdown */
+      .header-user-menu {
+        position: relative;
+      }
+      .header-user-action {
+        cursor: pointer;
+      }
+      .header-user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        min-width: 180px;
+        padding: 6px 0;
+        z-index: 1000;
+        display: none;
+        margin-top: 8px;
+      }
+      .header-user-dropdown .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        color: #374151;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s;
+      }
+      .header-user-dropdown .dropdown-item:hover {
+        background: #f3f4f6;
+        color: #4DA6FF;
+      }
+      .header-user-dropdown .dropdown-item i {
+        width: 16px;
+        text-align: center;
+      }
+      .header-user-dropdown .dropdown-item-red {
+        color: #dc2626;
+      }
+      .header-user-dropdown .dropdown-item-red:hover {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      .header-user-dropdown .dropdown-divider {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 4px 0;
+      }
+
+      /* ===== NAV BAR ===== */
+      .nav-bar {
+        background: #4DA6FF;
+        position: sticky;
+        top: 72px;
+        z-index: 998;
+      }
+      .nav-bar-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+      }
+      .nav-categories-btn {
+        background: #4DA6FF;
+        color: white;
+        border: none;
+        padding: 11px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Be Vietnam Pro", sans-serif;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        flex: 1;
+        overflow-x: auto;
+      }
+      .nav-links li a {
+        display: block;
+        padding: 11px 16px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.2s;
+        border-bottom: 3px solid transparent;
+      }
+      .nav-links li a:hover,
+      .nav-links li a.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom-color: #4DA6FF;
+      }
+      .nav-links li a.nav-new {
+        color: #ffd700;
+      }
+      .nav-links li a.nav-hot {
+        color: #ff4757;
+      }
+      .nav-support {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+        color: white;
+        font-size: 0.82rem;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .nav-support i {
+        color: #ffd700;
+      }
+
+      /* ===== PAGE TITLE ===== */
+      .page-title-bar {
+        background: white;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .page-title-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .page-title-left h1 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 4px;
+      }
+      .page-title-left p {
+        font-size: 0.85rem;
+        color: #9ca3af;
+        margin: 0;
+      }
+      .page-title-left p span {
+        color: #4DA6FF;
+        font-weight: 600;
+      }
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: #9ca3af;
+      }
+      .breadcrumb a {
+        color: #4DA6FF;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb-sep {
+        color: #d1d5db;
+      }
+
+      /* ===== PRODUCTS PAGE LAYOUT ===== */
+      .products-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+      .products-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      /* ===== SIDEBAR FILTERS ===== */
+      .filter-sidebar {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        position: sticky;
+        top: 130px;
+      }
+      .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px;
+        background: #fafafa;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .filter-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .filter-title i {
+        color: #4DA6FF;
+      }
+      .filter-clear {
+        font-size: 0.82rem;
+        color: #dc2626;
+        cursor: pointer;
+        font-weight: 600;
+        background: none;
+        border: none;
+        font-family: "Be Vietnam Pro", sans-serif;
+      }
+      .filter-clear:hover {
+        text-decoration: underline;
+      }
+      .filter-section {
+        padding: 16px 18px;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .filter-section:last-child {
+        border-bottom: none;
+      }
+      .filter-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .filter-search {
+        position: relative;
+      }
+      .filter-search-input {
+        width: 100%;
+        padding: 9px 12px 9px 36px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        outline: none;
+        transition: border-color 0.2s;
+        background: white;
+      }
+      .filter-search-input:focus {
+        border-color: #4DA6FF;
+      }
+      .filter-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 0.85rem;
+      }
+      .filter-select {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        background: white;
+        outline: none;
+        cursor: pointer;
+        appearance: auto;
+      }
+      .price-range {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .price-input {
+        flex: 1;
+        padding: 9px 12px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-family: "Be Vietnam Pro", sans-serif;
+        color: #374151;
+        outline: none;
+        width: 100%;
+      }
+      .price-input:focus {
+        border-color: #4DA6FF;
+      }
+      .price-sep {
+        color: #9ca3af;
+        font-size: 0.82rem;
+        flex-shrink: 0;
+      }
+      .filter-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .filter-checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .filter-checkbox-item input[type="checkbox"] {
+        accent-color: #4DA6FF;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+      .filter-checkbox-label {
+        font-size: 0.85rem;
+        color: #374151;
+        flex: 1;
+      }
+      .filter-checkbox-count {
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
+      .filter-btn {
+        width: 100%;
+        padding: 11px;
+        background: #4DA6FF;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        font-family: "Be Vietnam Pro", sans-serif;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .filter-btn:hover {
+        background: #1565c0;
+      }
+
+      /* Quick discovery */
+      .quick-categories {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .quick-cat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1.5px solid #f0f0f0;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .quick-cat-item:hover {
+        border-color: #4DA6FF;
+        background: #eff6ff;
+        color: #4DA6FF;
+      }
+      .quick-cat-item i {
+        color: #4DA6FF;
+        font-size: 0.85rem;
+        width: 16px;
+        text-align: center;
+      }
+      .quick-cat-item.active {
+        border-color: #4DA6FF;
+        background: #eff6ff;
+        color: #4DA6FF;
+      }
+
+      /* ═══════════════════════════════════════════════════
+         PRODUCTS GRID — TMĐT layout (override all external CSS)
+         Root cause: external CSS has:
+           static/css/style.css → align-items:stretch, height:100%, min-height:420px, flex:1
+           wwwroot/css/style.css → align-items:stretch, height:100%, min-height:420px, flex:1
+         Fix: use !important to ensure inline style wins cascade
+         ═══════════════════════════════════════════════════ */
+
+      /* ── GRID CONTAINER ── */
+      .products-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 16px !important;
+        align-items: start !important;   /* NO stretch — let cards auto-height */
+      }
+
+      /* ── PRODUCT CARD ── */
+      .product-card {
+        background: #fff !important;
+        border: 1px solid #ececec !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        height: auto !important;        /* NO 100% height */
+        min-height: unset !important;   /* NO min 420px */
+        align-self: start !important;    /* NO stretch */
+        transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease !important;
+      }
+      .product-card:hover {
+        border-color: #4DA6FF !important;
+        box-shadow: 0 8px 24px rgba(77,166,255,0.18) !important;
+        transform: translateY(-5px) !important;
+      }
+
+      /* ── IMAGE AREA ── */
+      .product-img-wrap {
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        height: 180px !important;
+        background: #fff !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+        text-decoration: none !important;
+      }
+      .product-img-wrap img {
+        display: block !important;
+        width: 100% !important;
+        height: 180px !important;
+        object-fit: contain !important;
+        transition: transform 0.2s ease !important;
+        max-width: none !important;      /* override external max-width */
+      }
+      .product-card:hover .product-img-wrap img {
+        transform: scale(1.03) !important;
+      }
+
+      /* ── BADGES ── */
+      .product-badge {
+        position: absolute !important;
+        padding: 3px 8px !important;
+        border-radius: 4px !important;
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.3px !important;
+        z-index: 1 !important;
+        line-height: 1.4 !important;
+      }
+      .badge-new { background: #16a34a !important; color: #fff !important; top: 8px !important; left: 8px !important; }
+      .badge-hot { background: #dc2626 !important; color: #fff !important; top: 8px !important; left: 8px !important; }
+      .badge-sale { background: #dc2626 !important; color: #fff !important; top: 8px !important; right: 8px !important; }
+      .product-discount {
+        position: absolute !important; top: 8px !important; right: 8px !important;
+        background: #dc2626 !important; color: #fff !important;
+        font-size: 0.68rem !important; font-weight: 700 !important;
+        padding: 3px 8px !important; border-radius: 0 4px 0 4px !important; z-index: 1 !important;
+      }
+
+      /* ── CARD BODY ── NO flex:1, NO margin-top:auto ── */
+      .product-info {
+        padding: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: unset !important;          /* override external flex:1 */
+        height: auto !important;
+        min-height: unset !important;
+      }
+      .product-info > form {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: none !important;
+        display: block !important;
+      }
+
+      /* ── PRODUCT NAME ── fixed 2-line height ── */
+      .product-name {
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: #222 !important;
+        line-height: 1.4 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        text-decoration: none !important;
+        margin-bottom: 6px !important;
+        height: 2.8em !important;
+        min-height: 2.8em !important;
+      }
+      .product-name:hover { color: #4DA6FF !important; }
+
+      /* ── RATING ── */
+      .product-rating {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin-bottom: 5px !important;
+        font-size: 0.75rem !important;
+      }
+      .product-stars { color: #f59e0b !important; font-size: 0.7rem !important; }
+      .product-reviews { color: #9ca3af !important; font-size: 0.72rem !important; }
+
+      /* ── PRICE ── */
+      .product-price-wrap {
+        display: flex !important;
+        align-items: baseline !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+        margin-bottom: 8px !important;
+      }
+      .product-price { font-size: 1rem !important; font-weight: 700 !important; color: #dc2626 !important; line-height: 1 !important; }
+      .product-price-original { font-size: 0.75rem !important; color: #9ca3af !important; text-decoration: line-through !important; }
+
+      /* ── ADD-TO-CART BUTTON ── NO margin-top:auto ── */
+      .product-add-btn {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        background: #4DA6FF !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 8px 10px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        font-family: "Be Vietnam Pro", sans-serif !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        transition: background 0.15s ease !important;
+        box-sizing: border-box !important;
+        line-height: 1.4 !important;
+        margin-top: 0 !important;         /* override external margin-top:auto */
+      }
+      .product-add-btn:hover { background: #2196F3 !important; color: #fff !important; }
+      .product-add-btn:active { background: #1565c0 !important; transform: scale(0.99) !important; }
+
+      /* ── EMPTY STATE ── */
+      .product-empty {
+        grid-column: 1 / -1 !important;
+        text-align: center !important;
+        padding: 60px 20px !important;
+      }
+      .product-empty i { font-size: 3rem !important; color: #e5e7eb !important; margin-bottom: 12px !important; }
+      .product-empty p { font-size: 1rem !important; color: #9ca3af !important; }
+
+      /* ── PAGINATION ── */
+      .pagination-wrap {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        margin-top: 32px !important;
+        flex-wrap: wrap !important;
+      }
+      .page-btn {
+        min-width: 36px !important;
+        height: 36px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 6px !important;
+        border: 1px solid #e5e7eb !important;
+        background: #fff !important;
+        color: #6b7280 !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        text-decoration: none !important;
+        padding: 0 10px !important;
+      }
+      .page-btn.active, .page-btn:hover {
+        background: #4DA6FF !important;
+        color: #fff !important;
+        border-color: #4DA6FF !important;
+      }
+      .page-btn.disabled { opacity: 0.4 !important; pointer-events: none !important; }
+
+      /* ── RESPONSIVE ── */
+      @media (max-width: 1200px) {
+        .products-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 14px !important; }
+      }
+      @media (max-width: 1024px) {
+        .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+      }
+      @media (max-width: 768px) {
+        .top-bar { display: none !important; }
+        .header-search { display: none !important; }
+        .nav-support { display: none !important; }
+        .products-layout { grid-template-columns: 1fr !important; }
+        .filter-sidebar { position: static !important; }
+        .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+        .product-img-wrap, .product-img-wrap img { height: 160px !important; }
+        .footer-grid { grid-template-columns: 1fr !important; }
+        .footer-bottom { flex-direction: column !important; text-align: center !important; }
+      }
+      @media (max-width: 480px) {
+        .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+        .product-img-wrap, .product-img-wrap img { height: 130px !important; }
+        .product-info { padding: 10px !important; }
+        .product-name { font-size: 0.8rem !important; }
+        .product-price { font-size: 0.9rem !important; }
+        .product-add-btn { font-size: 0.75rem !important; padding: 7px 8px !important; }
+      }
+    </style>
   </head>
   <body>
     <!-- ===== TOP BAR ===== -->
