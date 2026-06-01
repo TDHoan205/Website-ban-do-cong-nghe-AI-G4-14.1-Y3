@@ -4,37 +4,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="/static/css/checkout.css" />
-<style>
-  body { background: var(--bg); }
-  .checkout-page { padding: 36px 0 48px; }
-  .checkout-page .container { max-width: 1180px; }
-  .checkout-page .payment-layout { align-items: start; }
-  body .nav-bar { position: static; }
-  .payment-layout .order-summary-card.sticky-top {
-    position: relative !important;
-    top: 0 !important;
-  }
-  .checkout-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 22px;
-    text-decoration: none;
-  }
-  .checkout-back-link:hover { color: var(--primary-color); }
-  .step-badge {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--primary-color); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
-  }
-  @media (max-width: 900px) {
-    .payment-layout .order-summary-card.sticky-top { position: relative !important; top: 0 !important; }
-  }
-</style>
+<link rel="stylesheet" href="/static/css/checkout_page.css" />
 {% endblock %}
 
 {% block content %}

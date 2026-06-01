@@ -1,0 +1,180 @@
+/* CSS extracted from Views/partials/admin_shell.html */
+
+*:focus-visible {
+    outline: 2px solid #4DA6FF;
+    outline-offset: 2px;
+  }
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .admin-topbar .admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #FFFFFF;
+  }
+  .admin-topbar .admin-logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #4DA6FF, #2196F3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #152A45;
+    flex-shrink: 0;
+  }
+  .admin-topbar .admin-logo-text {
+    line-height: 1.2;
+  }
+  .admin-topbar .admin-logo-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    white-space: nowrap;
+  }
+  .admin-topbar .admin-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 18px;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: #4DA6FF;
+    color: #152A45;
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .admin-sidebar {
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-sidebar .admin-shell-count {
+    margin-left: auto;
+    min-width: 32px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(239,68,68,0.18);
+    color: #ef4444;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .admin-sidebar .sidebar-link.active .admin-shell-count {
+    background: rgba(239,68,68,0.22);
+    color: #ef4444;
+  }
+  .admin-sidebar-website {
+    margin-top: auto;
+    padding: 16px 20px 20px;
+  }
+  .admin-sidebar-website-btn {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid rgba(77,166,255,0.36);
+    border-radius: 10px;
+    background: rgba(77,166,255,0.08);
+    color: #4DA6FF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 800;
+    transition: all 0.18s ease;
+  }
+  .admin-sidebar-website-btn:hover {
+    background: rgba(77,166,255,0.16);
+    border-color: rgba(77,166,255,0.62);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+  }
+  .admin-main {
+    padding-bottom: 92px !important;
+  }
+  .admin-main > .page-card:last-of-type,
+  .admin-main > .admin-table-card:last-of-type {
+    margin-bottom: 16px;
+  }
+  .admin-table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.015);
+    color: #80C7FF;
+    font-size: 0.78rem;
+    min-height: 58px;
+  }
+  .admin-table-page-info {
+    color: #80C7FF;
+    font-weight: 600;
+  }
+  .admin-table-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .admin-table-page-btn {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #2D4A6F;
+    background: rgba(255,255,255,0.04);
+    color: #80C7FF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Be Vietnam Pro', sans-serif;
+  }
+  .admin-table-page-btn:hover:not(:disabled) {
+    background: rgba(77,166,255,0.12);
+    border-color: rgba(77,166,255,0.45);
+    color: #FFFFFF;
+  }
+  .admin-table-page-btn.active {
+    background: #4DA6FF;
+    border-color: #4DA6FF;
+    color: #152A45;
+  }
+  .admin-table-page-btn.page-indicator {
+    min-width: 56px;
+    cursor: default;
+    pointer-events: none;
+  }
+  .admin-table-page-btn:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+  @media (max-width: 640px) {
+    .admin-main {
+      padding-bottom: 104px !important;
+    }
+    .admin-table-pagination {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .admin-table-page-actions {
+      justify-content: flex-start;
+    }
+  }
