@@ -989,7 +989,7 @@
           ? productPrice.toLocaleString('vi-VN', {minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ'
           : productPrice + ' đ';
         return '<div class="pmo-header">' +
-          '<div class="pmo-thumb"><img src="' + (productImg || '/static/images/no-image.png') + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
+          '<div class="pmo-thumb"><img src="' + (productImg && productImg.startsWith('/images/') ? '/static' + productImg : (productImg || '/static/images/no-image.png')) + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
           '<div class="pmo-header-info">' +
             '<div class="pmo-product-name">' + escHtml(productName) + '</div>' +
             '<div class="pmo-price">' + priceStr + '</div>' +
@@ -1126,7 +1126,10 @@
           if (thumbImg && matched.images && matched.images.length > 0) {
             var primary = matched.images.find(function(i){ return i.is_primary; });
             var imgUrl = primary ? primary.image_url : matched.images[0].image_url;
-            if (imgUrl) thumbImg.src = imgUrl;
+            if (imgUrl) {
+              imgUrl = imgUrl.startsWith('/images/') ? '/static' + imgUrl : imgUrl;
+              thumbImg.src = imgUrl;
+            }
           }
           // Update variant_id on selected color
           if (colorBtn) colorBtn.dataset.variantId = matched.variant_id;

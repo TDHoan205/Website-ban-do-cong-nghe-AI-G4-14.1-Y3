@@ -8,19 +8,50 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from Data.database import Base
 
+# ── Image URL normalization helpers ──────────────────────────────────────────
+
+def _image_file_exists(static_url: str) -> bool:
+    if not static_url:
+        return False
+    filename = static_url.lstrip("/").replace("static/", "", 1)
+    full_path = os.path.join(os.path.dirname(__file__), os.pardir, "wwwroot",
+                             filename.replace("/", os.sep))
+    return os.path.isfile(full_path)
+
+def _normalize_image_url(url: str) -> str:
+    """Chuẩn hóa URL ảnh — dùng chung cho Product và ProductImage.
+
+    DB lưu: /images/products/Name.png hoặc /images/products/Name__01.jpg
+    File thực tế trong wwwroot: Name__01.jpg, Name__02.jpg, Name.jpg...
+    """
+    if not url:
+        return "/static/images/no-image.png"
+    if url.startswith("http://") or url.startswith("https://") or url.startswith("/static/"):
+        return url
+    if url.startswith("/images/"):
+        normalized = "/static" + url
+        if _image_file_exists(normalized):
+            return normalized
+        # DB lưu .png nhưng file thực tế là .jpg với suffix __01
+        basename = url.replace("/images/products/", "").rsplit(".", 1)[0]
+        for ext in ["__01.jpg", "__02.jpg", "__01.png", ".jpg", ".png", ".webp"]:
+            candidate = f"/static/images/products/{basename}{ext}"
+            if _image_file_exists(candidate):
+                return candidate
+        return normalized
+    return url
+
+# ── Debug logging ─────────────────────────────────────────────────────────────
+
 _LOG_PATH = os.path.join(os.path.dirname(__file__), os.pardir, "debug-ed9600.log")
 
 def _debug_log(session_id: str, hypothesis_id: str, location: str, message: str, data: dict):
     try:
         import json, time
         log_entry = {
-            "sessionId": session_id,
-            "id": f"log_{int(time.time() * 1000)}",
-            "timestamp": int(time.time() * 1000),
-            "location": location,
-            "message": message,
-            "data": data,
-            "hypothesisId": hypothesis_id
+            "sessionId": session_id, "id": f"log_{int(time.time()*1000)}",
+            "timestamp": int(time.time()*1000), "location": location,
+            "message": message, "data": data, "hypothesisId": hypothesis_id
         }
         with open(_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
@@ -49,6 +80,16 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    # Helper: chuẩn hóa URL ảnh — prepend /static/ nếu DB lưu /images/
+    @staticmethod
+    def _normalize(url: str) -> str:
+        return _normalize_image_url(url)
+
+    @property
+    def image_url_normalized(self) -> str:
+        """Dùng trong template: trả về URL có /static/ prefix, tự tìm file đúng"""
+        return _normalize_image_url(self.__dict__.get('image_url'))
+
     @property
     def is_deal(self) -> bool:
         return self.discount_percent > 0 or (
@@ -57,38 +98,8 @@ class Product(Base):
 
     @property
     def first_image_url(self) -> str:
-        images = self.product_images
-        _debug_log("ed9600", "H2", "Product.first_image_url",
-            "first_image_url called",
-            {
-                "product_id": self.product_id,
-                "name": self.name[:40] if self.name else "",
-                "product_images_count": len(images) if images else 0,
-                "product_images": [
-                    {"image_id": i.image_id, "image_url": i.image_url, "is_primary": bool(i.is_primary), "display_order": i.display_order}
-                    for i in (images or [])
-                ] if images else [],
-                "product_image_url": self.image_url or ""
-            })
-
-        def _static(url):
-            if url and url.startswith("/images/"):
-                return "/static" + url
-            return url or "/static/images/no-image.png"
-
-        if images:
-            sorted_imgs = sorted(images, key=lambda x: (not x.is_primary, x.display_order))
-            for img in sorted_imgs:
-                if img.image_url:
-                    _debug_log("ed9600", "H2", "Product.first_image_url:selected",
-                        "first_image_url: selected image",
-                        {"selected_image_id": img.image_id, "image_url": img.image_url, "is_primary": bool(img.is_primary)})
-                    return _static(img.image_url)
-        fallback = _static(self.image_url)
-        _debug_log("ed9600", "H2", "Product.first_image_url:fallback",
-            "first_image_url: using fallback",
-            {"fallback_url": fallback, "product_image_url": self.image_url or ""})
-        return fallback
+        """Lấy URL ảnh đầu tiên (dùng chung logic normalize)"""
+        return self.image_url_normalized
 
     category = relationship("Category", back_populates="products")
     supplier = relationship("Supplier", back_populates="products")
@@ -143,6 +154,11 @@ class ProductImage(Base):
 
     product = relationship("Product", back_populates="product_images")
     variant = relationship("ProductVariant", back_populates="variant_images")
+
+    @property
+    def image_url_normalized(self) -> str:
+        """Chuẩn hóa URL ảnh — dùng chung logic với Product"""
+        return _normalize_image_url(self.__dict__.get('image_url'))
 
     def __repr__(self):
         return f"<ProductImage(product_id={self.product_id})>"
