@@ -169,6 +169,7 @@ async def get_cart_item_variant_data(item_id: int, db: Session = Depends(get_db)
             "name": item.product.name,
             "price": float(item.product.price),
             "image_url": item.product.image_url,
+            "first_image_url": item.product.first_image_url,
         }
 
     return JSONResponse({

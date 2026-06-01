@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 import random
 
-OUTPUT_DIR = r"d:\Website-ban-do-cong-nghe-AI-G4-14.1-Y3\wwwroot\images\products"
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wwwroot", "images", "products")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Color palette for product categories

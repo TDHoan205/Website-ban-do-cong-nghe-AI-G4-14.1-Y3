@@ -2,7 +2,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 
-OUTPUT_DIR = r"d:\Website-ban-do-cong-nghe-AI-G4-14.1-Y3\wwwroot\images"
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wwwroot", "images")
 
 def create_cat_image(filename, color1, color2, icon_char, width=400, height=300):
     img = Image.new('RGB', (width, height))

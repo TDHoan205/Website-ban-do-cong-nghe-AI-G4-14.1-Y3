@@ -1349,7 +1349,7 @@
 
             {% if banner_products %}
               {% for product in banner_products %}
-              <div class="hero-product {% if loop.first %}active{% endif %}">
+                <div class="hero-product {% if loop.first %}active{% endif %}">
                 <div class="hero-product-img">
                   <img
                     src="{{ product.first_image_url }}"
@@ -2373,7 +2373,7 @@
           ? productPrice.toLocaleString('vi-VN', {minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ'
           : productPrice + ' đ';
         return '<div class="pmo-header">' +
-          '<div class="pmo-thumb"><img src="' + (productImg && productImg.startsWith('/images/') ? '/static' + productImg : (productImg || '/static/images/no-image.png')) + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
+          '<div class="pmo-thumb"><img src="' + (productImg ? (productImg.startsWith('/images/') ? '/static' + productImg : productImg.startsWith('/static/uploads/') ? productImg.replace('/static/uploads/', '/static/images/') : productImg) : '/static/images/no-image.png') + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
           '<div class="pmo-header-info">' +
             '<div class="pmo-product-name">' + escHtml(productName) + '</div>' +
             '<div class="pmo-price">' + priceStr + '</div>' +
@@ -2511,7 +2511,7 @@
             var primary = matched.images.find(function(i){ return i.is_primary; });
             var imgUrl = primary ? primary.image_url : matched.images[0].image_url;
             if (imgUrl) {
-              imgUrl = imgUrl.startsWith('/images/') ? '/static' + imgUrl : imgUrl;
+              imgUrl = imgUrl.startsWith('/images/') ? '/static' + imgUrl : imgUrl.startsWith('/static/uploads/') ? imgUrl.replace('/static/uploads/', '/static/images/') : imgUrl;
               thumbImg.src = imgUrl;
             }
           }

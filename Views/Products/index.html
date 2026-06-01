@@ -1219,7 +1219,7 @@
                   >
                   {% endif %}
                   <img
-                    src="{{ product.image_url | static_url }}"
+                    src="{{ product.first_image_url }}"
                     alt="{{ product.name }}"
                     onerror="this.src='/static/images/no-image.png'"
                   />
@@ -1258,7 +1258,7 @@
                   <button
                     type="button"
                     class="product-add-btn"
-                    data-img="{{ product.image_url | static_url }}"
+                    data-img="{{ product.first_image_url }}"
                     data-name="{{ product.name | e }}"
                     data-price="{{ product.price }}"
                     onclick="openPmoModal(this, {{ product.product_id }})"
@@ -1764,7 +1764,7 @@
           ? productPrice.toLocaleString('vi-VN', {minimumFractionDigits:0,maximumFractionDigits:0}) + ' đ'
           : productPrice + ' đ';
         var imgSrc = productImg
-          ? (productImg.startsWith('/images/') ? '/static' + productImg : productImg)
+          ? (productImg.startsWith('/images/') ? '/static' + productImg : productImg.startsWith('/static/uploads/') ? productImg.replace('/static/uploads/', '/static/images/') : productImg)
           : '/static/images/no-image.png';
         return '<div class="pmo-header">' +
           '<div class="pmo-thumb"><img src="' + imgSrc + '" onerror="this.src=\'/static/images/no-image.png\'" alt=""></div>' +
@@ -1894,7 +1894,9 @@
             var primary = matched.images.find(function(i){ return i.is_primary; });
             var imgUrl  = primary ? primary.image_url : matched.images[0].image_url;
             if (imgUrl) {
-              imgUrl = imgUrl.startsWith('/images/') ? '/static' + imgUrl : imgUrl;
+              // Chuẩn hóa: /images/... → /static/images/..., /static/uploads/... → /static/images/...
+              if (imgUrl.startsWith('/images/')) imgUrl = '/static' + imgUrl;
+              else if (imgUrl.startsWith('/static/uploads/')) imgUrl = imgUrl.replace('/static/uploads/', '/static/images/');
               thumbImg.src = imgUrl;
             }
           }
