@@ -28,6 +28,10 @@ class LiveChatMessageRequest(BaseModel):
 @router.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request, session_id: str = None, db: Session = Depends(get_db)):
     """Trang chatbot toàn màn hình"""
+    if templates is None:
+        from fastapi.responses import Response
+        return Response("Templates chưa được khởi tạo", status_code=503)
+
     chat_service = ChatService(db)
     session = chat_service.get_or_create_session(session_id)
 

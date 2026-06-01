@@ -147,9 +147,14 @@ class ChatService:
         }
 
     def _find_direct_faq_answer(self, user_message: str) -> Optional[str]:
-        """Ưu tiên trả lời FAQ nội bộ trước khi gọi LLM để tiết kiệm token."""
+        """
+        Ưu tiên trả lời FAQ nội bộ trước khi gọi LLM.
+        Threshold cao (0.80) để tránh false positive — chỉ match khi câu hỏi
+        thực sự rất gần với FAQ, không dùng cho câu hỏi mơ hồ.
+        """
         user_tokens = self._tokens(user_message)
-        if not user_tokens:
+        # Bỏ qua nếu câu quá ngắn (< 3 tokens) — dễ match nhầm
+        if len(user_tokens) < 3:
             return None
 
         faqs = self.db.query(FAQ).filter(FAQ.is_active == True).all()
@@ -158,25 +163,39 @@ class ChatService:
 
         for faq in faqs:
             question_tokens = self._tokens(faq.question)
+            if not question_tokens:
+                continue
+
             answer_tokens = self._tokens(faq.answer)
             faq_tokens = question_tokens | answer_tokens
-            if not faq_tokens:
-                continue
 
             overlap = len(user_tokens & faq_tokens)
             question_overlap = len(user_tokens & question_tokens)
-            score = (overlap / max(len(user_tokens), 1)) + (question_overlap / max(len(question_tokens), 1))
 
+            # Phải match ít nhất 2 token trong câu hỏi FAQ
+            if question_overlap < 2:
+                continue
+
+            score = (
+                (overlap / max(len(user_tokens), 1))
+                + (question_overlap / max(len(question_tokens), 1))
+            )
+
+            # Bonus nếu câu hỏi gần giống hệt
             normalized_question = self._normalize_text(faq.question)
             normalized_user = self._normalize_text(user_message)
-            if normalized_question and (normalized_question in normalized_user or normalized_user in normalized_question):
+            if normalized_question and (
+                normalized_question in normalized_user
+                or normalized_user in normalized_question
+            ):
                 score += 1.0
 
             if score > best_score:
                 best_score = score
                 best_faq = faq
 
-        if best_faq and best_score >= 0.62:
+        # Threshold 0.80 (tăng từ 0.62) — chỉ trả lời thẳng khi khớp rất cao
+        if best_faq and best_score >= 0.80:
             return best_faq.answer
         return None
 

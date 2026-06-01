@@ -2446,6 +2446,9 @@ async def api_sync_faq_ai(request: Request, db: Session = Depends(get_db)):
 
         db.commit()
 
+        # Invalidate VectorStore cache để RAGEngine dùng FAQ mới ngay
+        store.invalidate_cache()
+
         return JSONResponse({
             "success": True,
             "message": f"Đã đồng bộ {synced}/{len(faqs)} câu hỏi FAQ vào AI." + (f" Bỏ qua {failed} câu lỗi embedding." if failed else ""),

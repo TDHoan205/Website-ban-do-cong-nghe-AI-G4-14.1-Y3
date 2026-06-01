@@ -53,7 +53,7 @@ class EmbeddingService:
     def embed_text(self, text: str) -> Optional[List[float]]:
         """
         Embed 1 đoạn text (cho document/chunk).
-        task_type=RETRIEVAL_DOCUMENT tối ưu cho lưu trữ.
+        Lưu ý: gemini-embedding-2 KHÔNG hỗ trợ task_type — chỉ dùng output_dimensionality.
         """
         if not self.is_available() or not text.strip():
             return None
@@ -63,7 +63,6 @@ class EmbeddingService:
                 model=self.model,
                 contents=text,
                 config=types.EmbedContentConfig(
-                    task_type="RETRIEVAL_DOCUMENT",
                     output_dimensionality=self.DIMENSION,
                 ),
             )
@@ -75,7 +74,7 @@ class EmbeddingService:
     def embed_query(self, query: str) -> Optional[List[float]]:
         """
         Embed query từ user.
-        task_type=RETRIEVAL_QUERY tối ưu cho tìm kiếm.
+        Lưu ý: gemini-embedding-2 KHÔNG hỗ trợ task_type — chỉ dùng output_dimensionality.
         """
         if not self.is_available() or not query.strip():
             return None
@@ -85,7 +84,6 @@ class EmbeddingService:
                 model=self.model,
                 contents=query,
                 config=types.EmbedContentConfig(
-                    task_type="RETRIEVAL_QUERY",
                     output_dimensionality=self.DIMENSION,
                 ),
             )

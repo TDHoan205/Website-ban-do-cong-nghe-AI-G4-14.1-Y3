@@ -117,8 +117,11 @@ class RAGEngine:
         if any(kw in msg for kw in compare_kws):
             return "product_compare"
 
-        price_kws = ["giá", "bao nhiêu", "price", "cost", "rẻ", "đắt", "tầm giá", "khoảng giá", "budget"]
-        if any(kw in msg for kw in price_kws):
+        # Dùng regex để phát hiện giá tiền chính xác hơn (xử lý “20 tr” cuối câu không có space)
+        HAS_PRICE_RE = r"\d+\s*(?:triệu|trieu|tr\b|củ|cu\b|lít|lit\b|nghìn|ngàn|k\b)"
+        price_kws_strict = ["giá", "bao nhiêu", "price", "cost", "rẻ", "đắt", "tầm giá", "khoảng giá",
+                            "budget", "tầm tiền", "trong khoảng", "dưới", "muốn mua", "cần mua"]
+        if re.search(HAS_PRICE_RE, msg) or any(kw in msg for kw in price_kws_strict):
             return "price_query"
 
         deal_kws = ["giảm giá", "khuyến mãi", "sale", "deal", "hot", "nổi bật", "bán chạy"]
@@ -139,8 +142,11 @@ class RAGEngine:
         if any(kw in msg for kw in product_kws):
             return "product_query"
 
-        greet_kws = ["xin chào", "hello", "hi", "chào", "hey"]
-        if any(kw in msg for kw in greet_kws):
+        greet_kws = [
+            "xin chào", "hello", "helo", "hela", "hola", "hi ", "hi!", "chào", "hey",
+            "alo", "olà", "good morning", "good afternoon", "sớm", "tối",
+        ]
+        if any(kw in msg for kw in greet_kws) or msg.strip() in ["hi", "helo", "hello", "alo", "hey"]:
             return "greeting"
 
         policy_kws = ["bảo hành", "đổi trả", "hoàn tiền", "chính sách", "ship", "vận chuyển", "thanh toán", "trả góp"]
@@ -222,8 +228,12 @@ class RAGEngine:
 
         elif intent == "greeting":
             hot = self.knowledge.get_hot_products(3)
+            if not hot:
+                # Fallback: lấy bất kỳ sản phẩm nào đang có
+                hot = self.knowledge.get_price_range(limit=3)
             if hot:
-                context_parts.append("Sản phẩm nổi bật:\n" + self.knowledge.build_product_context(hot))
+                context_parts.append("=== SẢN PHẨM NỔI BẬT CỦA CỬA HÀNG ===\n"
+                              + self.knowledge.build_product_context(hot))
 
         else:
             # General
@@ -274,13 +284,62 @@ class RAGEngine:
         return ""
 
     def _handle_price_query(self, message: str) -> str:
-        numbers = re.findall(r"(\d+(?:\.\d+)?)\s*(?:triệu|tr)", message.lower())
-        if numbers:
-            prices = [float(n) * 1_000_000 for n in numbers]
+        msg = message.lower()
+
+        # ── Phát hiện category từ câu hỏi — map sang keyword tìm DB ──
+        # DB categories: "Điện thoại di động", "Laptop & Macbook", "Máy tính bảng", "Phụ kiện"
+        CATEGORY_MAP = [
+            ("di động",       ["điện thoại", "phone", "iphone", "samsung", "xiaomi", "oppo", "vivo", "realme", "di động"]),
+            ("laptop",        ["laptop", "máy tính xách tay", "macbook", "dell", "asus", "hp", "lenovo", "acer"]),
+            ("máy tính bảng", ["máy tính bảng", "tablet", "ipad"]),
+            ("phụ kiện",      ["tai nghe", "airpods", "earphone", "headphone", "sạc", "ốp lưng", "cáp", "chuột", "bàn phím", "phụ kiện"]),
+        ]
+        detected_cat = None
+        for db_keyword, triggers in CATEGORY_MAP:
+            if any(kw in msg for kw in triggers):
+                detected_cat = db_keyword
+                break
+
+        # ── Pattern 1: Dạng khoảng "X-Y triệu" hoặc "X đến Y triệu" ──
+        UNIT = r"(?:triệu|trieu|tr(?![a-z])|củ|cu|lít|lit)"
+        RANGE_RE = r"(\d+(?:[.,]\d+)?)\s*[-–~đến tới to]+\s*(\d+(?:[.,]\d+)?)\s*" + UNIT
+        range_match = re.search(RANGE_RE, msg)
+        if range_match:
+            lo = float(range_match.group(1).replace(",", ".")) * 1_000_000
+            hi = float(range_match.group(2).replace(",", ".")) * 1_000_000
+            # Tìm theo category + khoảng giá trước
+            if detected_cat:
+                products = self.knowledge.get_price_range_by_category(
+                    category_keyword=detected_cat, min_price=min(lo, hi), max_price=max(lo, hi), limit=5
+                )
+                if products:
+                    return self.knowledge.build_product_context(products)
+            # Fallback: tìm theo giá không filter category
+            products = self.knowledge.get_price_range(min(lo, hi), max(lo, hi), 8)
+            if products:
+                return self.knowledge.build_product_context(products)
+
+        # ── Pattern 2: Từng số riêng lẻ có đơn vị ──
+        MILLION_RE = r"(\d+(?:[.,]\d+)?)\s*(?:triệu|trieu|tr(?![a-z])|củ|cu|lít|lit)"
+        THOUSAND_RE = r"(\d+(?:[.,]\d+)?)\s*(?:nghìn|nghìn đồng|ngàn|k(?![a-z]))"
+        mil_matches = re.findall(MILLION_RE, msg)
+        tho_matches = re.findall(THOUSAND_RE, msg)
+
+        prices = [float(n.replace(",", ".")) * 1_000_000 for n in mil_matches] + \
+                 [float(n.replace(",", ".")) * 1_000 for n in tho_matches]
+
+        if prices:
             if len(prices) >= 2:
-                products = self.knowledge.get_price_range(min(prices), max(prices), 5)
+                mn, mx = min(prices), max(prices)
             else:
-                products = self.knowledge.get_price_range(max_price=prices[0] * 1.2, limit=5)
+                mn, mx = None, prices[0] * 1.2
+            if detected_cat:
+                products = self.knowledge.get_price_range_by_category(
+                    category_keyword=detected_cat, min_price=mn, max_price=mx, limit=5
+                )
+                if products:
+                    return self.knowledge.build_product_context(products)
+            products = self.knowledge.get_price_range(mn, mx, 8)
             if products:
                 return self.knowledge.build_product_context(products)
 

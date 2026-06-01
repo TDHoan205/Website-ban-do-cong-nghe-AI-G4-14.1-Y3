@@ -114,6 +114,33 @@ class KnowledgeService:
         products = query.order_by(Product.price).limit(limit).all()
         return [self._fmt(p) for p in products]
 
+    def get_price_range_by_category(
+        self,
+        category_keyword: str,
+        min_price: float = None,
+        max_price: float = None,
+        limit: int = 5,
+    ) -> List[Dict]:
+        """Tìm sản phẩm theo khoảng giá + lọc category (fuzzy match tên)"""
+        cat = self.db.query(Category).filter(
+            func.lower(Category.name).like(f"%{category_keyword.lower()}%")
+        ).first()
+        if not cat:
+            return []
+        query = (
+            self.db.query(Product)
+            .options(joinedload(Product.category))
+            .filter(Product.is_available == True)
+            .filter(Product.category_id == cat.category_id)
+        )
+        if min_price is not None:
+            query = query.filter(Product.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Product.price <= max_price)
+        products = query.order_by(Product.price).limit(limit).all()
+        return [self._fmt(p) for p in products]
+
+
     def lookup_order(self, order_id: int) -> Optional[Dict]:
         order = self.db.query(Order).filter(Order.order_id == order_id).first()
         if not order:
