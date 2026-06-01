@@ -128,9 +128,9 @@
               {% set _ = all_images.append({'url': img.image_url | static_url, 'variant_id': v.variant_id, 'is_primary': img.is_primary}) %}
             {% endfor %}
           {% endfor %}
-          {# 3. Fallback to product.image_url if no images at all #}
+          {# 3. Fallback to first_image_url if no images at all #}
           {% if not all_images %}
-            {% set _ = all_images.append({'url': product.image_url | static_url, 'variant_id': None, 'is_primary': False}) %}
+            {% set _ = all_images.append({'url': product.first_image_url, 'variant_id': None, 'is_primary': False}) %}
           {% endif %}
           {# Find primary image: search product-level first, then any #}
           {% set primary_img_url = '' %}
@@ -145,7 +145,7 @@
             {% set primary_img_url = all_images[0].url %}
           {% endif %}
           {% if not primary_img_url %}
-            {% set primary_img_url = (product.image_url | static_url) or '/static/images/no-image.png' %}
+            {% set primary_img_url = product.first_image_url or '/static/images/no-image.png' %}
           {% endif %}
 
           <div class="gallery-main-wrap">

@@ -234,6 +234,11 @@ async def profile(request: Request, db: Session = Depends(get_db)):
         user = require_account(request, db)
     except HTTPException:
         return RedirectResponse(url="/Auth/Login", status_code=303)
+
+    # Lay thong ke nguoi dung (don hang, chi tieu, yeu thich)
+    auth_service = AuthService(db)
+    stats = auth_service.get_user_statistics(user.account_id)
+
     return templates.TemplateResponse(
         "Auth/Profile.html",
         {
@@ -241,7 +246,123 @@ async def profile(request: Request, db: Session = Depends(get_db)):
             "page_title": "Thong tin ca nhan",
             "user": user,
             "current_user": user,
+            "orders_count": stats["total_orders"],
+            "total_spent": stats["total_spent"],
+            "wishlist_count": stats["wishlist_count"],
         }
+    )
+
+
+@router.post("/ChangePassword")
+async def change_password(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Xu ly doi mat khau"""
+    # Lay user hien tai
+    try:
+        user = require_account(request, db)
+    except HTTPException:
+        return RedirectResponse(url="/Auth/Login", status_code=303)
+
+    auth_service = AuthService(db)
+
+    # Lay thong ke nguoi dung
+    stats = auth_service.get_user_statistics(user.account_id)
+
+    # Server-side validation
+    if not current_password:
+        return templates.TemplateResponse(
+            "Auth/Profile.html",
+            {
+                "request": request,
+                "page_title": "Thong tin ca nhan",
+                "user": user,
+                "current_user": user,
+                "orders_count": stats["total_orders"],
+                "total_spent": stats["total_spent"],
+                "wishlist_count": stats["wishlist_count"],
+                "error_msg": "Vui lòng nhập mật khẩu hiện tại.",
+                "active_tab": "password",
+            },
+            status_code=400,
+        )
+
+    if not new_password or len(new_password) < 8:
+        return templates.TemplateResponse(
+            "Auth/Profile.html",
+            {
+                "request": request,
+                "page_title": "Thong tin ca nhan",
+                "user": user,
+                "current_user": user,
+                "orders_count": stats["total_orders"],
+                "total_spent": stats["total_spent"],
+                "wishlist_count": stats["wishlist_count"],
+                "error_msg": "Mật khẩu mới phải có ít nhất 8 ký tự.",
+                "active_tab": "password",
+            },
+            status_code=400,
+        )
+
+    if new_password != confirm_password:
+        return templates.TemplateResponse(
+            "Auth/Profile.html",
+            {
+                "request": request,
+                "page_title": "Thong tin ca nhan",
+                "user": user,
+                "current_user": user,
+                "orders_count": stats["total_orders"],
+                "total_spent": stats["total_spent"],
+                "wishlist_count": stats["wishlist_count"],
+                "error_msg": "Xác nhận mật khẩu không khớp.",
+                "active_tab": "password",
+            },
+            status_code=400,
+        )
+
+    # Goi service doi mat khau
+    success, error_msg = auth_service.update_password(
+        user.account_id,
+        current_password,
+        new_password
+    )
+
+    if not success:
+        return templates.TemplateResponse(
+            "Auth/Profile.html",
+            {
+                "request": request,
+                "page_title": "Thong tin ca nhan",
+                "user": user,
+                "current_user": user,
+                "orders_count": stats["total_orders"],
+                "total_spent": stats["total_spent"],
+                "wishlist_count": stats["wishlist_count"],
+                "error_msg": error_msg,
+                "active_tab": "password",
+            },
+            status_code=400,
+        )
+
+    return templates.TemplateResponse(
+        "Auth/Profile.html",
+        {
+            "request": request,
+            "page_title": "Thong tin ca nhan",
+            "user": user,
+            "current_user": user,
+            "orders_count": stats["total_orders"],
+            "total_spent": stats["total_spent"],
+            "wishlist_count": stats["wishlist_count"],
+            "success_msg": "Đổi mật khẩu thành công.",
+            "active_tab": "password",
+        },
+        status_code=200,
     )
 
 

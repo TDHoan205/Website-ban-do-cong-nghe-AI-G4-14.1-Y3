@@ -1,115 +1,1539 @@
 <link rel="stylesheet" href="/static/css/auth/profile.css" />
-﻿{% extends "Shared/base.html" %}
+﻿{% extends "Shared/base.html" %} {% block title %}Thông tin tài khoản - Tech
+Store AI{% endblock %} {% block extra_head %}
+<style>
+  :root {
+    --p-primary: #4da6ff;
+    --p-primary-dark: #1565c0;
+    --p-accent: #7c3aed;
+    --p-success: #10b981;
+    --p-danger: #ef4444;
+    --p-warning: #f59e0b;
+    --p-bg: #f0f4ff;
+  }
 
-{% block title %}Thông tin tài khoản - Tech Store AI{% endblock %}
+  body {
+    background: var(--p-bg) !important;
+  }
+  .profile-page {
+    padding-bottom: 60px;
+  }
 
-{% block extra_head %}
+  /* ===== HERO ===== */
+  .profile-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #1565c0 100%);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;
+  }
+  .profile-hero::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(
+      circle,
+      rgba(77, 166, 255, 0.15) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+  }
+  .profile-hero::after {
+    content: "";
+    position: absolute;
+    bottom: -30%;
+    left: 5%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      rgba(124, 58, 237, 0.12) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+  }
+  .profile-hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 28px;
+  }
+  .profile-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .profile-avatar {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      rgba(77, 166, 255, 0.4),
+      rgba(124, 58, 237, 0.4)
+    );
+    border: 4px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .profile-avatar-badge {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: var(--p-success);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 3px solid #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: white;
+  }
+  .profile-hero-info {
+    padding-bottom: 8px;
+  }
+  .profile-hero-name {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .profile-hero-sub {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .profile-hero-sub span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .profile-hero-sub i {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .profile-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+  .profile-hero-badge.is-admin {
+    background: rgba(245, 158, 11, 0.25);
+    color: #fcd34d;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  .profile-hero-badge.is-customer {
+    background: rgba(77, 166, 255, 0.25);
+    color: #93c5fd;
+    border: 1px solid rgba(77, 166, 255, 0.3);
+  }
 
-{% endblock %}
+  /* ===== STATS BAR ===== */
+  .profile-stats-bar {
+    background: white;
+    border-bottom: 1px solid #e8f0fe;
+  }
+  .profile-stats-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+  }
+  .profile-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px 18px 0;
+    border-right: 1px solid #e8f0fe;
+    flex: 1;
+  }
+  .profile-stat-item:last-child {
+    border-right: none;
+  }
+  .profile-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .profile-stat-icon.blue {
+    background: rgba(77, 166, 255, 0.1);
+    color: #4da6ff;
+  }
+  .profile-stat-icon.green {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  .profile-stat-icon.purple {
+    background: rgba(124, 58, 237, 0.1);
+    color: #7c3aed;
+  }
+  .profile-stat-icon.orange {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+  .profile-stat-num {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+  }
+  .profile-stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 2px;
+  }
 
-{% block content %}
+  /* ===== CONTENT ===== */
+  .profile-content {
+    max-width: 1100px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+  }
+
+  /* ===== TABS ===== */
+  .profile-tabs {
+    display: flex;
+    gap: 4px;
+    background: white;
+    border-radius: 14px;
+    padding: 6px;
+    box-shadow: 0 4px 24px rgba(77, 166, 255, 0.06);
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .profile-tab {
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    border: none;
+    background: transparent;
+    font-family: "Be Vietnam Pro", sans-serif;
+  }
+  .profile-tab i {
+    font-size: 0.85rem;
+  }
+  .profile-tab:hover {
+    color: #1e3a5f;
+    background: #f0f4ff;
+  }
+  .profile-tab.active {
+    background: linear-gradient(135deg, #4da6ff, #1565c0);
+    color: white;
+    box-shadow: 0 4px 12px rgba(77, 166, 255, 0.3);
+  }
+  .profile-tab-content {
+    display: none;
+  }
+  .profile-tab-content.active {
+    display: block;
+  }
+
+  /* ===== GRID & CARDS ===== */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .profile-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(77, 166, 255, 0.06);
+    padding: 28px;
+    transition:
+      box-shadow 0.25s,
+      transform 0.25s;
+  }
+  .profile-card:hover {
+    box-shadow: 0 8px 32px rgba(77, 166, 255, 0.12);
+    transform: translateY(-2px);
+  }
+  .profile-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #f0f4ff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .profile-card-title i {
+    color: var(--p-primary);
+  }
+  .profile-card-title .icon-purple {
+    color: var(--p-accent);
+  }
+  .profile-card-title .icon-green {
+    color: var(--p-success);
+  }
+  .profile-card-title .icon-orange {
+    color: var(--p-warning);
+  }
+  .profile-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* ===== INFO LIST ===== */
+  .profile-info-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .profile-info-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 13px 0;
+    border-bottom: 1px solid #f0f4ff;
+    gap: 14px;
+  }
+  .profile-info-item:last-child {
+    border-bottom: none;
+  }
+  .profile-info-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f0f4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--p-primary);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .profile-info-icon.icon-purple {
+    background: rgba(124, 58, 237, 0.08);
+    color: var(--p-accent);
+  }
+  .profile-info-icon.icon-green {
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--p-success);
+  }
+  .profile-info-icon.icon-orange {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--p-warning);
+  }
+  .profile-info-body {
+    flex: 1;
+  }
+  .profile-info-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .profile-info-value {
+    font-size: 0.92rem;
+    color: #1f2937;
+    font-weight: 500;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .profile-info-value.empty {
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  /* ===== STATUS BADGE ===== */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .status-badge.active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  .status-badge.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+  .status-badge.admin {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  .status-badge.customer {
+    background: rgba(77, 166, 255, 0.1);
+    color: #4da6ff;
+    border: 1px solid rgba(77, 166, 255, 0.2);
+  }
+
+  /* ===== ACTION BUTTONS ===== */
+  .profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-profile {
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-family: "Be Vietnam Pro", sans-serif;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+  }
+  .btn-profile:hover {
+    transform: translateY(-2px);
+  }
+  .btn-profile i {
+    font-size: 0.9rem;
+  }
+  .btn-profile-primary {
+    background: linear-gradient(135deg, #4da6ff, #1565c0);
+    color: white;
+    box-shadow: 0 4px 16px rgba(77, 166, 255, 0.3);
+  }
+  .btn-profile-primary:hover {
+    box-shadow: 0 8px 24px rgba(77, 166, 255, 0.4);
+    color: white;
+  }
+  .btn-profile-admin {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  }
+  .btn-profile-admin:hover {
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+    color: white;
+  }
+  .btn-profile-outline {
+    background: white;
+    color: #1e3a5f;
+    border: 2px solid #e8f0fe;
+  }
+  .btn-profile-outline:hover {
+    background: #f0f4ff;
+    border-color: #4da6ff;
+    color: #1565c0;
+    box-shadow: 0 4px 16px rgba(77, 166, 255, 0.1);
+  }
+  .btn-profile-danger {
+    background: white;
+    color: #ef4444;
+    border: 2px solid #fee2e2;
+  }
+  .btn-profile-danger:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+  }
+
+  /* ===== QUICK LINKS ===== */
+  .quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .quick-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1f2937;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .quick-link:hover {
+    background: #f0f4ff;
+    border-color: #4da6ff;
+    color: #1565c0;
+    transform: translateY(-1px);
+  }
+  .quick-link i {
+    font-size: 1rem;
+    color: var(--p-primary);
+  }
+
+  /* ===== PASSWORD CHANGE SECTION (TAB) ===== */
+  .password-section {
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  .password-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(77, 166, 255, 0.06);
+    padding: 36px;
+  }
+  .password-card:hover {
+    transform: none;
+    box-shadow: 0 4px 24px rgba(77, 166, 255, 0.06);
+  }
+  .password-form-group {
+    margin-bottom: 22px;
+    position: relative;
+  }
+  .password-form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .password-input-wrap {
+    position: relative;
+  }
+  .password-input-wrap input {
+    width: 100%;
+    padding: 12px 46px 12px 16px;
+    border: 2px solid #e8f0fe;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-family: "Be Vietnam Pro", sans-serif;
+    color: #1f2937;
+    background: #fafbff;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .password-input-wrap input:focus {
+    border-color: #4da6ff;
+    box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.12);
+    background: white;
+  }
+  .password-input-wrap input.is-invalid {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+  .password-input-wrap input.is-valid {
+    border-color: #10b981;
+    background: #f0fdf4;
+  }
+  .password-toggle-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1rem;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .password-toggle-btn:hover {
+    color: #4da6ff;
+  }
+  .password-error {
+    display: none;
+    font-size: 0.78rem;
+    color: #ef4444;
+    font-weight: 600;
+    margin-top: 5px;
+    align-items: center;
+    gap: 4px;
+  }
+  .password-error.show {
+    display: flex;
+  }
+  .password-hint {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 5px;
+  }
+  .password-strength {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .password-strength-bar {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+    background: #e8f0fe;
+    transition: background 0.3s;
+  }
+  .password-strength-bar.weak {
+    background: #ef4444;
+  }
+  .password-strength-bar.medium {
+    background: #f59e0b;
+  }
+  .password-strength-bar.strong {
+    background: #10b981;
+  }
+  .password-strength-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .password-strength-label.weak {
+    color: #ef4444;
+  }
+  .password-strength-label.medium {
+    color: #f59e0b;
+  }
+  .password-strength-label.strong {
+    color: #10b981;
+  }
+  .btn-change-password {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4da6ff, #1565c0);
+    color: white;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: "Be Vietnam Pro", sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(77, 166, 255, 0.3);
+    margin-top: 8px;
+  }
+  .btn-change-password:hover {
+    box-shadow: 0 8px 24px rgba(77, 166, 255, 0.4);
+    transform: translateY(-2px);
+  }
+  .btn-change-password:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .password-tips {
+    background: #f0f4ff;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .password-tips-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .password-tips-title i {
+    color: #4da6ff;
+  }
+  .password-tips ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+  .password-tips li {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  /* ===== SUCCESS/ERROR ALERT ===== */
+  .profile-alert {
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .profile-alert.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  .profile-alert.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  /* ===== SECURITY INFO ===== */
+  .security-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .security-info-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #f0f4ff;
+  }
+  .security-info-item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: var(--p-primary);
+    flex-shrink: 0;
+    border: 1px solid #e8f0fe;
+  }
+  .security-info-item-body {
+    flex: 1;
+  }
+  .security-info-item-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .security-info-item-desc {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 2px;
+  }
+  .security-info-item-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+  .security-info-item-status.ok {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  .security-info-item-status.no {
+    background: rgba(239, 68, 68, 0.08);
+    color: #9ca3af;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .profile-grid {
+      grid-template-columns: 1fr;
+    }
+    .profile-hero-inner {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-top: 32px;
+    }
+    .profile-hero-sub {
+      justify-content: center;
+    }
+    .profile-stats-inner {
+      flex-wrap: wrap;
+    }
+    .profile-stat-item {
+      flex: 1 1 45%;
+      border-right: none;
+      border-bottom: 1px solid #e8f0fe;
+    }
+    .password-card {
+      padding: 24px;
+    }
+  }
+  @media (max-width: 480px) {
+    .profile-tabs {
+      flex-direction: column;
+      gap: 2px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
 <section class="profile-page">
-  <div class="profile-header">
-    <div class="profile-header-inner">
-      <div class="profile-avatar">
-        <i class="fas fa-user"></i>
+  {# ===== HERO HEADER ===== #}
+  <div class="profile-hero">
+    <div class="profile-hero-inner">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar">
+          {{ (user.full_name or user.username or 'U')[0] | upper }}
+        </div>
+        <div class="profile-avatar-badge">
+          <i class="fas fa-check"></i>
+        </div>
       </div>
-      <h4 class="profile-username">{{ user.full_name or user.username }}</h4>
-      <div class="profile-role">
-        <span class="role-badge {{ 'role-admin' if user.role_name == 'Admin' else 'role-customer' }}">
-          {% if user.role_name == 'Admin' %}
-            <i class="fas fa-user-shield"></i> Quản trị viên
-          {% else %}
-            <i class="fas fa-user"></i> Khách hàng
-          {% endif %}
-        </span>
+      <div class="profile-hero-info">
+        <h2 class="profile-hero-name">{{ user.full_name or user.username }}</h2>
+        <div class="profile-hero-sub">
+          <span
+            ><i class="fas fa-envelope"></i> {{ user.email or 'Chưa cập nhật'
+            }}</span
+          >
+          <span
+            ><i class="fas fa-phone"></i> {{ user.phone or 'Chưa cập nhật'
+            }}</span
+          >
+          <span
+            ><i class="fas fa-calendar"></i> Tham gia {{
+            user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A'
+            }}</span
+          >
+        </div>
+        {% if user.role_name == 'Admin' %}
+        <div class="profile-hero-badge is-admin">
+          <i class="fas fa-user-shield"></i> Quản trị viên
+        </div>
+        {% else %}
+        <div class="profile-hero-badge is-customer">
+          <i class="fas fa-user"></i> Khách hàng
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
 
-  <div class="profile-content">
-    <div class="profile-grid">
-      <div class="profile-col">
-        <div class="profile-card">
-          <h5><i class="fas fa-id-card"></i> Thông tin tài khoản</h5>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Tên đăng nhập</span>
-            <span class="profile-info-value">{{ user.username }}</span>
-          </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Email</span>
-            <span class="profile-info-value">{{ user.email or 'Chưa cập nhật' }}</span>
-          </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Họ và tên</span>
-            <span class="profile-info-value">{{ user.full_name or 'Chưa cập nhật' }}</span>
-          </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Số điện thoại</span>
-            <span class="profile-info-value">{{ user.phone or 'Chưa cập nhật' }}</span>
-          </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Địa chỉ</span>
-            <span class="profile-info-value">{{ user.address or 'Chưa cập nhật' }}</span>
-          </div>
+  {# ===== STATS BAR ===== #}
+  <div class="profile-stats-bar">
+    <div class="profile-stats-inner">
+      <div class="profile-stat-item">
+        <div class="profile-stat-icon blue"><i class="fas fa-receipt"></i></div>
+        <div>
+          <div class="profile-stat-num">{{ orders_count }}</div>
+          <div class="profile-stat-label">Đơn hàng</div>
         </div>
       </div>
+      <div class="profile-stat-item">
+        <div class="profile-stat-icon green">
+          <i class="fas fa-box-open"></i>
+        </div>
+        <div>
+          <div class="profile-stat-num">
+            {{ "{:,}".format(total_spent | int) if total_spent else '0' }} đ
+          </div>
+          <div class="profile-stat-label">Tổng chi tiêu</div>
+        </div>
+      </div>
+      <div class="profile-stat-item">
+        <div class="profile-stat-icon purple"><i class="fas fa-heart"></i></div>
+        <div>
+          <div class="profile-stat-num">{{ wishlist_count }}</div>
+          <div class="profile-stat-label">Yêu thích</div>
+        </div>
+      </div>
+      <div class="profile-stat-item">
+        <div class="profile-stat-icon orange">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div>
+          <div class="profile-stat-num">
+            {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else
+            'N/A' }}
+          </div>
+          <div class="profile-stat-label">Ngày tham gia</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <div class="profile-col">
+  {# ===== MAIN CONTENT ===== #}
+  <div class="profile-content">
+    {# ===== TABS ===== #}
+    <div class="profile-tabs">
+      <button
+        class="profile-tab {{ 'active' if active_tab != 'password' else '' }}"
+        id="tab-btn-info"
+      >
+        <i class="fas fa-user"></i> Thông tin cá nhân
+      </button>
+      <button
+        class="profile-tab {{ 'active' if active_tab == 'password' else '' }}"
+        id="tab-btn-password"
+      >
+        <i class="fas fa-key"></i> Đổi mật khẩu
+      </button>
+    </div>
+
+    {# ===== TAB: THÔNG TIN CÁ NHÂN ===== #}
+    <div
+      class="profile-tab-content {{ 'active' if active_tab != 'password' else '' }}"
+      id="tab-info"
+    >
+      <div class="profile-grid">
+        {# CARD: Thông tin cơ bản #}
         <div class="profile-card">
-          <h5><i class="fas fa-shield-alt"></i> Trạng thái tài khoản</h5>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Vai trò</span>
-            <span class="profile-info-value">
-              <span class="role-badge {{ 'role-admin' if user.role_name == 'Admin' else 'role-customer' }}">
-                {% if user.role_name == 'Admin' %}
-                  <i class="fas fa-user-shield"></i> Quản trị viên
-                {% else %}
-                  <i class="fas fa-user"></i> Khách hàng
-                {% endif %}
-              </span>
-            </span>
+          <div class="profile-card-title">
+            <i class="fas fa-id-card"></i> Thông tin cơ bản
           </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Trạng thái</span>
-            <span class="profile-info-value">
-              {% if user.is_active %}
-                <span class="profile-badge profile-badge-success"><i class="fas fa-check-circle"></i> Hoạt động</span>
-              {% else %}
-                <span class="profile-badge profile-badge-muted"><i class="fas fa-ban"></i> Bị khóa</span>
-              {% endif %}
-            </span>
-          </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Ngày tham gia</span>
-            <span class="profile-info-value">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</span>
-          </div>
-          <div class="profile-info-item">
-            <span class="profile-info-label">Mã tài khoản</span>
-            <span class="profile-info-value">
-              <span class="text-muted">#{{ user.account_id }}</span>
-            </span>
+          <div class="profile-info-list">
+            <div class="profile-info-item">
+              <div class="profile-info-icon"><i class="fas fa-user"></i></div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Tên đăng nhập</div>
+                <div class="profile-info-value">{{ user.username | e }}</div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon icon-purple">
+                <i class="fas fa-user-tag"></i>
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Họ và tên</div>
+                <div
+                  class="profile-info-value {{ 'empty' if not user.full_name }}"
+                >
+                  {{ user.full_name | e if user.full_name else 'Chưa cập nhật'
+                  }}
+                </div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon icon-orange">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Email</div>
+                <div class="profile-info-value {{ 'empty' if not user.email }}">
+                  {{ user.email | e if user.email else 'Chưa cập nhật' }}
+                </div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon icon-green">
+                <i class="fas fa-phone"></i>
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Số điện thoại</div>
+                <div class="profile-info-value {{ 'empty' if not user.phone }}">
+                  {{ user.phone | e if user.phone else 'Chưa cập nhật' }}
+                </div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Địa chỉ</div>
+                <div
+                  class="profile-info-value {{ 'empty' if not user.address }}"
+                >
+                  {{ user.address | e if user.address else 'Chưa cập nhật' }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
+        {# CARD: Trạng thái tài khoản #}
         <div class="profile-card">
-          <h5><i class="fas fa-bolt"></i> Thao tác nhanh</h5>
+          <div class="profile-card-title">
+            <i class="fas fa-shield-alt icon-green"></i> Trạng thái tài khoản
+          </div>
+          <div class="profile-info-list">
+            <div class="profile-info-item">
+              <div class="profile-info-icon icon-purple">
+                {% if user.role_name == 'Admin' %}<i
+                  class="fas fa-user-shield"
+                ></i
+                >{% else %}<i class="fas fa-user"></i>{% endif %}
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Vai trò</div>
+                <div class="profile-info-value">
+                  <span
+                    class="status-badge {{ 'admin' if user.role_name == 'Admin' else 'customer' }}"
+                  >
+                    {% if user.role_name == 'Admin' %}<i
+                      class="fas fa-user-shield"
+                    ></i>
+                    Quản trị viên{% else %}<i class="fas fa-user"></i> Khách
+                    hàng{% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon icon-green">
+                {% if user.is_active %}<i class="fas fa-check-circle"></i>{%
+                else %}<i class="fas fa-ban"></i>{% endif %}
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Trạng thái</div>
+                <div class="profile-info-value">
+                  {% if user.is_active %}
+                  <span class="status-badge active"
+                    ><i class="fas fa-check-circle"></i> Hoạt động</span
+                  >
+                  {% else %}
+                  <span class="status-badge inactive"
+                    ><i class="fas fa-ban"></i> Bị khóa</span
+                  >
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Ngày tạo tài khoản</div>
+                <div class="profile-info-value">
+                  {{ user.created_at.strftime('%d/%m/%Y') if user.created_at
+                  else 'N/A' }}
+                </div>
+              </div>
+            </div>
+            <div class="profile-info-item">
+              <div class="profile-info-icon icon-orange">
+                <i class="fas fa-hashtag"></i>
+              </div>
+              <div class="profile-info-body">
+                <div class="profile-info-label">Mã tài khoản</div>
+                <div class="profile-info-value">#{{ user.account_id }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# CARD: Bảo mật #}
+        <div class="profile-card">
+          <div class="profile-card-title">
+            <i class="fas fa-lock icon-purple"></i> Bảo mật
+          </div>
+          <div class="security-info">
+            <div class="security-info-item">
+              <div class="security-info-item-icon">
+                <i class="fas fa-key"></i>
+              </div>
+              <div class="security-info-item-body">
+                <div class="security-info-item-title">Mật khẩu</div>
+                <div class="security-info-item-desc">
+                  Được mã hóa bằng bcrypt, bảo vệ an toàn
+                </div>
+              </div>
+              <div class="security-info-item-status ok">
+                <i class="fas fa-check"></i> Đã đặt
+              </div>
+            </div>
+            <div class="security-info-item">
+              <div class="security-info-item-icon" style="color: #7c3aed">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="security-info-item-body">
+                <div class="security-info-item-title">Xác minh Email</div>
+                <div class="security-info-item-desc">
+                  Bảo vệ tài khoản tốt hơn
+                </div>
+              </div>
+              {% if user.email %}
+              <div class="security-info-item-status ok">
+                <i class="fas fa-check"></i> Đã xác minh
+              </div>
+              {% else %}
+              <div class="security-info-item-status no">
+                <i class="fas fa-times"></i> Chưa xác minh
+              </div>
+              {% endif %}
+            </div>
+            <div class="security-info-item">
+              <div class="security-info-item-icon" style="color: #10b981">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <div class="security-info-item-body">
+                <div class="security-info-item-title">Số điện thoại</div>
+                <div class="security-info-item-desc">
+                  Xác minh danh tính qua SMS
+                </div>
+              </div>
+              {% if user.phone %}
+              <div class="security-info-item-status ok">
+                <i class="fas fa-check"></i> Đã liên kết
+              </div>
+              {% else %}
+              <div class="security-info-item-status no">
+                <i class="fas fa-times"></i> Chưa liên kết
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {# CARD: Thao tác nhanh #}
+        <div class="profile-card">
+          <div class="profile-card-title">
+            <i class="fas fa-bolt icon-orange"></i> Thao tác nhanh
+          </div>
           <div class="profile-actions">
             {% if user.role_name == 'Admin' %}
             <a href="/Admin/Dashboard" class="btn-profile btn-profile-admin">
-              <i class="fas fa-cog"></i> Trang quản trị
+              <i class="fas fa-cogs"></i> Trang quản trị
             </a>
             {% endif %}
-            <a href="/" class="btn-profile btn-profile-outline">
+            <a href="/" class="btn-profile btn-profile-primary">
               <i class="fas fa-home"></i> Về trang chủ
             </a>
-            <a href="/Auth/Logout" class="btn-profile btn-profile-danger-outline">
+            <a href="/Auth/Logout" class="btn-profile btn-profile-danger">
               <i class="fas fa-right-from-bracket"></i> Đăng xuất
             </a>
           </div>
+        </div>
+
+        {# CARD: Liên kết nhanh #}
+        <div class="profile-card full-width">
+          <div class="profile-card-title">
+            <i class="fas fa-link icon-purple"></i> Liên kết nhanh
+          </div>
+          <div class="quick-links">
+            <a href="/Products/" class="quick-link"
+              ><i class="fas fa-store"></i> Cửa hàng</a
+            >
+            <a href="/Cart/" class="quick-link"
+              ><i class="fas fa-shopping-cart"></i> Giỏ hàng</a
+            >
+            <a href="/Checkout/" class="quick-link"
+              ><i class="fas fa-credit-card"></i> Thanh toán</a
+            >
+            <a href="#" class="quick-link"
+              ><i class="fas fa-heart"></i> Yêu thích</a
+            >
+            <a href="#" class="quick-link"
+              ><i class="fas fa-file-invoice"></i> Đơn hàng</a
+            >
+            <a href="#" class="quick-link"
+              ><i class="fas fa-bell"></i> Thông báo</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ===== TAB: ĐỔI MẬT KHẨU ===== #}
+    <div
+      class="profile-tab-content {{ 'active' if active_tab == 'password' else '' }}"
+      id="tab-password"
+    >
+      <div class="password-section">
+        <div class="password-card">
+          {# ALERT MESSAGES #} {% if success_msg %}
+          <div class="profile-alert success" id="alert-success">
+            <i class="fas fa-check-circle"></i> {{ success_msg | e }}
+          </div>
+          {% endif %} {% if error_msg %}
+          <div class="profile-alert error" id="alert-error">
+            <i class="fas fa-exclamation-circle"></i> {{ error_msg | e }}
+          </div>
+          {% endif %}
+
+          <div
+            class="profile-card-title"
+            style="border-bottom: none; margin-bottom: 24px"
+          >
+            <i class="fas fa-key"></i> Đổi mật khẩu
+          </div>
+
+          {# TIPS #}
+          <div class="password-tips">
+            <div class="password-tips-title">
+              <i class="fas fa-info-circle"></i> Lưu ý khi đặt mật khẩu
+            </div>
+            <ul>
+              <li>Mật khẩu mới phải có ít nhất <strong>8 ký tự</strong>.</li>
+              <li>Không đặt mật khẩu trùng với mật khẩu hiện tại.</li>
+              <li>
+                Nên sử dụng kết hợp chữ hoa, chữ thường, số và ký tự đặc biệt.
+              </li>
+              <li>Tuyệt đối không chia sẻ mật khẩu cho người khác.</li>
+            </ul>
+          </div>
+
+          <form
+            method="POST"
+            action="/Auth/ChangePassword"
+            id="change-password-form"
+            novalidate
+          >
+            {# Current Password #}
+            <div class="password-form-group">
+              <label for="current_password">
+                <i class="fas fa-lock"></i> Mật khẩu hiện tại
+              </label>
+              <div class="password-input-wrap">
+                <input
+                  type="password"
+                  id="current_password"
+                  name="current_password"
+                  placeholder="Nhập mật khẩu hiện tại"
+                  autocomplete="current-password"
+                  required
+                />
+                <button type="button" class="password-toggle-btn">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="password-error" id="err-current_password">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Vui lòng nhập mật khẩu hiện tại.</span>
+              </div>
+            </div>
+
+            {# New Password #}
+            <div class="password-form-group">
+              <label for="new_password">
+                <i class="fas fa-key"></i> Mật khẩu mới
+              </label>
+              <div class="password-input-wrap">
+                <input
+                  type="password"
+                  id="new_password"
+                  name="new_password"
+                  placeholder="Nhập mật khẩu mới (tối thiểu 8 ký tự)"
+                  autocomplete="new-password"
+                  required
+                />
+                <button type="button" class="password-toggle-btn">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="password-error" id="err-new_password">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Mật khẩu mới phải có ít nhất 8 ký tự.</span>
+              </div>
+              <div class="password-strength" id="password-strength">
+                <div class="password-strength-bar" id="str-bar-1"></div>
+                <div class="password-strength-bar" id="str-bar-2"></div>
+                <div class="password-strength-bar" id="str-bar-3"></div>
+                <div class="password-strength-bar" id="str-bar-4"></div>
+              </div>
+              <div class="password-strength-label" id="str-label"></div>
+            </div>
+
+            {# Confirm Password #}
+            <div class="password-form-group">
+              <label for="confirm_password">
+                <i class="fas fa-key"></i> Xác nhận mật khẩu mới
+              </label>
+              <div class="password-input-wrap">
+                <input
+                  type="password"
+                  id="confirm_password"
+                  name="confirm_password"
+                  placeholder="Nhập lại mật khẩu mới"
+                  autocomplete="new-password"
+                  required
+                />
+                <button type="button" class="password-toggle-btn">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="password-error" id="err-confirm_password">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Xác nhận mật khẩu không khớp.</span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn-change-password"
+              id="btn-submit-password"
+            >
+              <i class="fas fa-save"></i> Lưu mật khẩu mới
+            </button>
+          </form>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // ===== TAB SWITCHING (addEventListener — no inline onclick) =====
+    function showTab(tabId) {
+      document.querySelectorAll(".profile-tab").forEach(function (t) {
+        t.classList.remove("active");
+      });
+      document.querySelectorAll(".profile-tab-content").forEach(function (c) {
+        c.classList.remove("active");
+      });
+      var tabBtn = document.getElementById("tab-btn-" + tabId);
+      var tabContent = document.getElementById("tab-" + tabId);
+      if (tabBtn) tabBtn.classList.add("active");
+      if (tabContent) tabContent.classList.add("active");
+
+      var successAlert = document.getElementById("alert-success");
+      var errorAlert = document.getElementById("alert-error");
+      if (successAlert) successAlert.style.display = "none";
+      if (errorAlert) errorAlert.style.display = "none";
+    }
+
+    // Bind tab buttons via addEventListener (no inline onclick)
+    document.querySelectorAll(".profile-tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var tabId = this.id.replace("tab-btn-", "");
+        showTab(tabId);
+      });
+    });
+
+    // Init correct tab on page load
+    var activeTab = "{{ 'password' if active_tab == 'password' else 'info' }}";
+    showTab(activeTab);
+
+    // ===== PASSWORD VISIBILITY TOGGLE =====
+    function togglePassword(inputId, btn) {
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      var icon = btn.querySelector("i");
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
+    }
+
+    // Bind toggle buttons via addEventListener
+    document.querySelectorAll(".password-toggle-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var inputId = this.closest(".password-input-wrap").querySelector(
+          "input",
+        ).id;
+        togglePassword(inputId, this);
+      });
+    });
+
+    // ===== PASSWORD STRENGTH METER =====
+    function getPasswordStrength(pwd) {
+      if (!pwd) return 0;
+      var score = 0;
+      if (pwd.length >= 8) score++;
+      if (pwd.length >= 12) score++;
+      if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+      if (/[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) score++;
+      return Math.min(score, 4);
+    }
+
+    function updateStrengthUI(score) {
+      var labels = ["", "Yếu", "Trung bình", "Khá mạnh", "Mạnh"];
+      var labelClass = ["", "weak", "medium", "medium", "strong"];
+      for (var i = 1; i <= 4; i++) {
+        var bar = document.getElementById("str-bar-" + i);
+        if (!bar) continue;
+        bar.className = "password-strength-bar";
+        if (i <= score) bar.classList.add(labelClass[score]);
+      }
+      var lbl = document.getElementById("str-label");
+      if (lbl) {
+        lbl.textContent = score > 0 ? labels[score] : "";
+        lbl.className =
+          "password-strength-label " + (score > 0 ? labelClass[score] : "");
+      }
+    }
+
+    // ===== VALIDATION HELPERS =====
+    function showError(inputId, msg) {
+      var input = document.getElementById(inputId);
+      var err = document.getElementById("err-" + inputId);
+      if (input) {
+        input.classList.add("is-invalid");
+        input.classList.remove("is-valid");
+      }
+      if (err) {
+        err.classList.add("show");
+        var span = err.querySelector("span");
+        if (span && msg) span.textContent = msg;
+      }
+    }
+
+    function clearError(inputId) {
+      var input = document.getElementById(inputId);
+      var err = document.getElementById("err-" + inputId);
+      if (input) input.classList.remove("is-invalid");
+      if (err) err.classList.remove("show");
+    }
+
+    function setValid(inputId) {
+      var input = document.getElementById(inputId);
+      if (input) {
+        input.classList.add("is-valid");
+        input.classList.remove("is-invalid");
+      }
+      clearError(inputId);
+    }
+
+    function validateCurrentPassword() {
+      var v = document.getElementById("current_password").value;
+      if (!v) {
+        showError("current_password", "Vui lòng nhập mật khẩu hiện tại.");
+        return false;
+      }
+      setValid("current_password");
+      return true;
+    }
+
+    function validateNewPassword() {
+      var v = document.getElementById("new_password").value;
+      if (!v) {
+        showError("new_password", "Vui lòng nhập mật khẩu mới.");
+        return false;
+      }
+      if (v.length < 8) {
+        showError("new_password", "Mật khẩu mới phải có ít nhất 8 ký tự.");
+        return false;
+      }
+      var cur = document.getElementById("current_password").value;
+      if (cur && v === cur) {
+        showError(
+          "new_password",
+          "Mật khẩu mới không được trùng mật khẩu hiện tại.",
+        );
+        return false;
+      }
+      setValid("new_password");
+      return true;
+    }
+
+    function validateConfirmPassword() {
+      var pwd = document.getElementById("new_password").value;
+      var confirm = document.getElementById("confirm_password").value;
+      if (!confirm) {
+        showError("confirm_password", "Vui lòng xác nhận mật khẩu mới.");
+        return false;
+      }
+      if (confirm !== pwd) {
+        showError("confirm_password", "Xác nhận mật khẩu không khớp.");
+        return false;
+      }
+      setValid("confirm_password");
+      return true;
+    }
+
+    var submitted = false;
+
+    // Real-time strength meter
+    var newPwdInput = document.getElementById("new_password");
+    if (newPwdInput) {
+      newPwdInput.addEventListener("input", function () {
+        var strength = getPasswordStrength(this.value);
+        updateStrengthUI(strength);
+        if (submitted) validateNewPassword();
+      });
+    }
+
+    // Bind form inputs
+    var form = document.getElementById("change-password-form");
+    if (form) {
+      form.querySelectorAll("input").forEach(function (input) {
+        input.addEventListener("input", function () {
+          if (submitted) {
+            var id = this.id;
+            if (id === "current_password") validateCurrentPassword();
+            if (id === "new_password") validateNewPassword();
+            if (id === "confirm_password") validateConfirmPassword();
+          }
+        });
+
+        input.addEventListener("paste", function (e) {
+          e.preventDefault();
+        });
+
+        input.addEventListener("blur", function () {
+          this.value = this.value.trim();
+        });
+      });
+
+      // Form submit
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        submitted = true;
+
+        var valid = true;
+        if (!validateCurrentPassword()) valid = false;
+        if (!validateNewPassword()) valid = false;
+        if (!validateConfirmPassword()) valid = false;
+        if (!valid) return;
+
+        var btn = document.getElementById("btn-submit-password");
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        }
+
+        form.submit();
+      });
+    }
+
+    // Auto-hide alerts after 5 seconds
+    ["alert-success", "alert-error"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        setTimeout(function () {
+          el.style.transition = "opacity 0.5s";
+          el.style.opacity = "0";
+          setTimeout(function () {
+            el.remove();
+          }, 500);
+        }, 5000);
+      }
+    });
+  }); // end DOMContentLoaded
+</script>
 {% endblock %}

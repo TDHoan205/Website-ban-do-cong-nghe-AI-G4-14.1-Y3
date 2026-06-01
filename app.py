@@ -130,10 +130,16 @@ templates = Jinja2Templates(directory=views_path)
 
 
 def static_url(path):
-    """Convert /images/... paths to /static/images/... so images are served correctly."""
-    if path and path.startswith("/images/"):
+    """Ensure image path has /static/ prefix.
+    Only handles legacy /images/... prefix. All other paths passed through.
+    """
+    if not path:
+        return "/static/images/no-image.png"
+    if path.startswith("/images/"):
         return "/static" + path
-    return path or "/static/images/no-image.png"
+    if path.startswith("/static/"):
+        return path
+    return "/static/images/no-image.png"
 
 
 templates.env.filters["static_url"] = static_url
@@ -802,6 +808,20 @@ def ensure_runtime_schema_compatibility():
                 created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
                 CONSTRAINT FK_LCMsg_Conv_RT FOREIGN KEY (conversation_id) REFERENCES LiveChatConversations(conversation_id) ON DELETE CASCADE,
                 CONSTRAINT FK_LCMsg_Acct_RT FOREIGN KEY (sender_account_id) REFERENCES Accounts(account_id)
+            )
+        END
+        """,
+        """
+        IF OBJECT_ID('Wishlists', 'U') IS NULL
+        BEGIN
+            CREATE TABLE Wishlists (
+                wishlist_id INT IDENTITY(1,1) PRIMARY KEY,
+                account_id INT NOT NULL,
+                product_id INT NOT NULL,
+                created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                CONSTRAINT FK_Wishlists_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(account_id),
+                CONSTRAINT FK_Wishlists_Products FOREIGN KEY (product_id) REFERENCES Products(product_id),
+                CONSTRAINT UX_Wishlists_Account_Product UNIQUE (account_id, product_id)
             )
         END
         """,

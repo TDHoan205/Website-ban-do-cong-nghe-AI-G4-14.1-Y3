@@ -199,6 +199,17 @@ async def index(
         is_hot=is_hot,
         storage=storage,
     )
+
+    # Debug: print first few products' image_url
+    for p in (products or [])[:3]:
+        img = p.image_url
+        normalized = img if (img and img.startswith("/static/")) else f"/static/images/{img}" if img else None
+        print(f"  [Products/index] DEBUG: name={p.name!r}")
+        print(f"    image_url (raw)     = {img!r}")
+        print(f"    first_image_url     = {p.first_image_url!r}")
+        print(f"    static_url(image_url) = {normalized!r}")
+        pi = p.product_images
+        print(f"    product_images count = {len(pi) if pi else 0}")
     categories = product_service.get_all_categories()
     storage_counts = product_service.get_storage_counts(category_id=category_id_int)
 

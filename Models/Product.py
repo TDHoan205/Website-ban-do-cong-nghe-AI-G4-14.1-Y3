@@ -21,24 +21,22 @@ def _image_file_exists(static_url: str) -> bool:
 def _normalize_image_url(url: str) -> str:
     """Chuẩn hóa URL ảnh — dùng chung cho Product và ProductImage.
 
-    DB lưu: /images/products/Name.png hoặc /images/products/Name__01.jpg
-    File thực tế trong wwwroot: Name__01.jpg, Name__02.jpg, Name.jpg...
+    Chuẩn duy nhất: /static/images/products/
+    Hỗ trợ legacy: /images/... (prepend /static/)
+    Tất cả ảnh upload mới: /static/images/products/... (trả ngay, không check file)
     """
     if not url:
         return "/static/images/no-image.png"
+
+    # URL đã đúng format hoặc full URL → trả ngay
     if url.startswith("http://") or url.startswith("https://") or url.startswith("/static/"):
         return url
+
+    # Legacy: /images/... → /static/images/...
     if url.startswith("/images/"):
-        normalized = "/static" + url
-        if _image_file_exists(normalized):
-            return normalized
-        # DB lưu .png nhưng file thực tế là .jpg với suffix __01
-        basename = url.replace("/images/products/", "").rsplit(".", 1)[0]
-        for ext in ["__01.jpg", "__02.jpg", "__01.png", ".jpg", ".png", ".webp"]:
-            candidate = f"/static/images/products/{basename}{ext}"
-            if _image_file_exists(candidate):
-                return candidate
-        return normalized
+        return "/static" + url
+
+    # Fallback
     return url
 
 # ── Debug logging ─────────────────────────────────────────────────────────────
@@ -98,8 +96,38 @@ class Product(Base):
 
     @property
     def first_image_url(self) -> str:
-        """Lấy URL ảnh đầu tiên (dùng chung logic normalize)"""
-        return self.image_url_normalized
+        """Lấy URL ảnh đầu tiên cho sản phẩm.
+
+        Ưu tiên:
+        1. product.image_url (đã normalized)
+        2. Ảnh đầu tiên trong ProductImages table (variant_id=None, is_primary=True)
+        3. Ảnh đầu tiên bất kỳ trong ProductImages table
+        4. Fallback: no-image.png
+        """
+        # Ưu tiên 1: image_url của product
+        url = self.__dict__.get('image_url')
+        if url:
+            return _normalize_image_url(url)
+
+        # Ưu tiên 2: Lấy từ ProductImages (lazy load)
+        try:
+            imgs = self.product_images
+            if imgs:
+                # Tìm ảnh chính trước (is_primary=True)
+                primary = [i for i in imgs if getattr(i, 'is_primary', False)]
+                if primary:
+                    return _normalize_image_url(primary[0].image_url)
+                # Tìm ảnh không thuộc variant nào (variant_id=None)
+                no_variant = [i for i in imgs if not getattr(i, 'variant_id', None)]
+                if no_variant:
+                    return _normalize_image_url(no_variant[0].image_url)
+                # Lấy ảnh đầu tiên bất kỳ
+                return _normalize_image_url(imgs[0].image_url)
+        except Exception:
+            pass
+
+        # Fallback
+        return "/static/images/no-image.png"
 
     category = relationship("Category", back_populates="products")
     supplier = relationship("Supplier", back_populates="products")
@@ -133,7 +161,7 @@ class ProductVariant(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product", back_populates="variants")
-    variant_images = relationship("ProductImage", back_populates="variant", cascade="all, delete-orphan")
+    product_images = relationship("ProductImage", back_populates="variant", cascade="all, delete-orphan")
     order_items = relationship("OrderItem", back_populates="variant")
     cart_items = relationship("CartItem", back_populates="variant")
 
@@ -153,7 +181,7 @@ class ProductImage(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product", back_populates="product_images")
-    variant = relationship("ProductVariant", back_populates="variant_images")
+    variant = relationship("ProductVariant", back_populates="product_images")
 
     @property
     def image_url_normalized(self) -> str:

@@ -30,6 +30,7 @@ from Models.Chat import ChatSession, ChatMessage, LiveChatConversation, LiveChat
 from fastapi.templating import Jinja2Templates
 import json
 import os
+import re
 import shutil
 import uuid
 
@@ -204,7 +205,7 @@ def _is_allowed_image_extension(filename: str) -> bool:
 
 
 def _is_local_product_upload(image_url: str) -> bool:
-    return bool(image_url) and image_url.startswith("/static/uploads/products/")
+    return bool(image_url) and image_url.startswith("/static/images/products/")
 
 
 def _product_upload_path_from_url(image_url: str) -> str | None:
@@ -1107,6 +1108,24 @@ async def api_update_account(
         return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
     is_active = form.get("is_active", "true").lower() == "true"
 
+    # === PASSWORD HANDLING ===
+    raw_password = form.get("password", "")
+    new_password = raw_password.strip() if raw_password else ""
+    confirm_password = form.get("password_confirm", "").strip()
+
+    if new_password:
+        # Password provided — validate
+        if len(new_password) < 6:
+            return JSONResponse(
+                {"success": False, "error": "Mật khẩu mới phải có tối thiểu 6 ký tự."},
+                status_code=400
+            )
+        if new_password != confirm_password:
+            return JSONResponse(
+                {"success": False, "error": "Mật khẩu xác nhận không khớp."},
+                status_code=400
+            )
+
     # Check email conflict
     existing = db.query(Account).filter(
         Account.email == email,
@@ -1121,6 +1140,25 @@ async def api_update_account(
     account.address = address
     account.role_id = role_id
     account.is_active = is_active
+
+    # Update password only when provided
+    if new_password:
+        auth_svc = AuthService(db)
+        account.password_hash = auth_svc.hash_password(new_password)
+        _debug_log(
+            "ed9600", "H4",
+            "AdminController.api_update_account:password_changed",
+            f"Admin '{admin.username}' changed password for account_id={account_id}",
+            {"account_id": account_id, "changed_by": admin.username}
+        )
+    else:
+        _debug_log(
+            "ed9600", "H4",
+            "AdminController.api_update_account:no_password_change",
+            f"Account {account_id} updated without password change",
+            {"account_id": account_id, "changed_by": admin.username}
+        )
+
     account.updated_at = datetime.now()
     try:
         db.commit()
@@ -1381,13 +1419,24 @@ async def api_upload_image(
         return JSONResponse({"success": False, "error": "Dinh dang anh khong hop le"}, status_code=400)
 
     # Create directory if not exists
-    upload_dir = os.path.join("wwwroot", "uploads", "products")
+    upload_dir = os.path.join("wwwroot", "images", "products")
     os.makedirs(upload_dir, exist_ok=True)
 
-    # Generate unique filename
-    ext = os.path.splitext(file.filename)[1].lower()
-    filename = f"{uuid.uuid4()}{ext}"
+    # Keep original filename, sanitize for safety
+    original_name = file.filename or "image"
+    safe_name = re.sub(r"[^\w\-.]", "_", original_name)
+    safe_name = safe_name[:200]
+    ext = os.path.splitext(safe_name)[1].lower() or ".jpg"
+    basename = os.path.splitext(safe_name)[0]
+    filename = f"{basename}{ext}"
     filepath = os.path.join(upload_dir, filename)
+
+    # If file already exists, just use it (don't re-upload)
+    if os.path.exists(filepath):
+        return JSONResponse({
+            "success": True,
+            "image_url": f"/static/images/products/{filename}"
+        })
 
     # Save file
     try:
@@ -1398,8 +1447,33 @@ async def api_upload_image(
 
     return JSONResponse({
         "success": True,
-        "image_url": f"/static/uploads/products/{filename}"
+        "image_url": f"/static/images/products/{filename}"
     })
+
+
+@router.get("/API/Images/List")
+async def api_list_images(request: Request, db: Session = Depends(get_db)):
+    """Trả về danh sách ảnh có sẵn trong thư mục static/images/products/"""
+    try:
+        _check_admin(request, db)
+    except HTTPException:
+        return JSONResponse({"success": False, "error": "Unauthorized"}, status_code=401)
+
+    upload_dir = os.path.join("wwwroot", "images", "products")
+    images = []
+    if os.path.isdir(upload_dir):
+        for filename in os.listdir(upload_dir):
+            filepath = os.path.join(upload_dir, filename)
+            if os.path.isfile(filepath) and _is_allowed_image_extension(filename):
+                stat = os.stat(filepath)
+                images.append({
+                    "filename": filename,
+                    "url": f"/static/images/products/{filename}",
+                    "size": stat.st_size,
+                })
+    # Sort by name
+    images.sort(key=lambda x: x["filename"])
+    return JSONResponse({"success": True, "images": images})
 
 
 # =====================================================================
@@ -1883,17 +1957,24 @@ async def api_upload_product_image(request: Request, db: Session = Depends(get_d
             return JSONResponse({"success": False, "error": "Chi chap nhan file hinh anh"}, status_code=400)
         if not _is_allowed_image_extension(file.filename):
             return JSONResponse({"success": False, "error": "Dinh dang anh khong hop le"}, status_code=400)
-        upload_dir = os.path.join("wwwroot", "uploads", "products")
+        upload_dir = os.path.join("wwwroot", "images", "products")
         os.makedirs(upload_dir, exist_ok=True)
-        ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".jpg"
-        filename = f"{uuid.uuid4()}{ext}"
+        # Keep original filename, sanitize for safety
+        original_name = getattr(file, "filename", "image")
+        safe_name = re.sub(r"[^\w\-.]", "_", original_name)
+        safe_name = safe_name[:200]
+        ext = os.path.splitext(safe_name)[1].lower() or ".jpg"
+        basename = os.path.splitext(safe_name)[0]
+        filename = f"{basename}{ext}"
         filepath = os.path.join(upload_dir, filename)
-        try:
-            with open(filepath, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-        except OSError:
-            return JSONResponse({"success": False, "error": "Khong the luu file anh len server"}, status_code=500)
-        image_url = f"/static/uploads/products/{filename}"
+        # If file already exists, use it directly (no re-upload)
+        if not os.path.exists(filepath):
+            try:
+                with open(filepath, "wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
+            except OSError:
+                return JSONResponse({"success": False, "error": "Khong the luu file anh len server"}, status_code=500)
+        image_url = f"/static/images/products/{filename}"
     else:
         image_url = form.get("image_url", "").strip()
 

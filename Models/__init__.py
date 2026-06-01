@@ -19,6 +19,7 @@ from Models.Chat import (
 )
 from Models.AI import AIResponse, RAGContext, ProductContext
 from Models.Payment import Payment, PaymentStatus
+from Models.Wishlist import Wishlist
 
 __all__ = [
     # Base
@@ -69,4 +70,7 @@ __all__ = [
     # Payment
     "Payment",
     "PaymentStatus",
+
+    # Wishlist
+    "Wishlist",
 ]
