@@ -1,4 +1,4 @@
-﻿
+
 
 <button class="cb-toggle" id="cb-toggle" title="Chat với AI">
   <i class="fas fa-comments"></i>
@@ -26,7 +26,8 @@
           Tôi có thể giúp bạn:<br>
           • Tìm và tư vấn sản phẩm công nghệ<br>
           • So sánh giá, thông số kỹ thuật<br>
-          • Tra cứu đơn hàng, khuyến mãi<br><br>
+          • Tra cứu đơn hàng, khuyến mãi<br>
+          • <strong>Đặt mua sản phẩm ngay trong chat!</strong> 🛍️<br><br>
           Bạn cần hỗ trợ gì?
         </div>
         <div class="cb-time">Vừa xong</div>
@@ -183,6 +184,10 @@
         if(d.live_chat&&d.conversation_id){
           enterLiveChatMode(d.conversation_id);
           addMsg(d.response,'bot');
+        } else if(d.action==='add_to_cart'&&d.products&&d.products.length){
+          // — BUY INTENT: hiện response AI + nút mua ngay —
+          addMsg(d.response,'bot');
+          cbShowBuyButtons(d.products);
         } else {
           addMsg(d.response,'bot');
         }
@@ -195,6 +200,51 @@
       addMsg('Không thể kết nối server.','bot');
     }
     sending=false;sendBtn.disabled=false;input.focus();
+  };
+
+  // ═══ BUY BUTTONS ═══
+
+  window.cbShowBuyButtons=function(products){
+    var div=document.createElement('div');
+    div.className='cb-msg bot';
+    var btnsHtml=products.map(function(p){
+      var priceStr=p.price?new Intl.NumberFormat('vi-VN').format(p.price)+'₫':'';
+      var label='🛒 Mua ngay — '+escHtml(p.product_name)+(priceStr?' ('+priceStr+')':'');
+      return '<button class="cb-buy-btn" onclick="cbAddToCartAndCheckout('+p.product_id+',this)">'+label+'</button>';
+    }).join('');
+    div.innerHTML=
+      '<div class="cb-avatar"><i class="fas fa-robot"></i></div>'
+      +'<div><div class="cb-bubble cb-buy-bubble">'
+      +'<div class="cb-buy-title"><i class="fas fa-bolt" style="color:#facc15"></i> Chọn sản phẩm để mua ngay:</div>'
+      +btnsHtml
+      +'</div><div class="cb-time">'+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})+'</div></div>';
+    msgs.appendChild(div);
+    msgs.scrollTop=msgs.scrollHeight;
+  };
+
+  window.cbAddToCartAndCheckout=async function(productId,btn){
+    if(btn){btn.disabled=true;btn.textContent='Đang thêm vào giỏ...⏳';}
+    try{
+      var fd=new FormData();
+      fd.append('product_id',productId);
+      fd.append('quantity','1');
+      var r=await fetch('/Cart/add',{method:'POST',body:fd});
+      if(r.status===401||r.redirected&&r.url.includes('/Auth/Login')){
+        window.location.href='/Auth/Login?returnUrl=/Checkout/';
+        return;
+      }
+      var d=await r.json().catch(function(){return null;});
+      if(d&&d.success===false){
+        if(btn){btn.disabled=false;btn.textContent='❌ '+escHtml(d.message||'Không thể thêm');}
+        addSystemMsg('⚠️ '+escHtml(d.message||'Không thể thêm sản phẩm này vào giỏ hàng.'));
+        return;
+      }
+      // Thành công → chuyển đến trang thanh toán
+      window.location.href='/Checkout/';
+    } catch(err){
+      if(btn){btn.disabled=false;btn.innerHTML='🛒 Mua ngay';}
+      addSystemMsg('⚠️ Lỗi kết nối. Vui lòng thử lại!');
+    }
   };
 
   // ═══ LIVE CHAT MODE ═══
@@ -308,6 +358,51 @@
     h=h.replace(/\n/g,'<br>');
     h=h.replace(/(<br>){3,}/g,'<br><br>');
     return h;
+  }
+
+  // --- Restore State & History on Page Load ---
+  async function loadChatHistory(){
+    if(!sessionUuid)return;
+    try{
+      var r=await fetch('/Chat/History/'+sessionUuid);
+      if(r.ok){
+        var d=await r.json();
+        if(d.messages&&d.messages.length>0){
+          msgs.innerHTML='';
+          d.messages.forEach(function(msg){
+            var sender=msg.sender==='user'?'user':'bot';
+            addMsg(msg.content,sender);
+          });
+          var quick=document.getElementById('cb-quick');
+          if(quick)quick.style.display='none';
+        }
+      }
+    }catch(err){
+      console.error("Lỗi tải lịch sử chat:",err);
+    }
+  }
+
+  async function checkLiveChatStatus(){
+    if(!sessionUuid)return;
+    try{
+      var r=await fetch('/Chat/LiveChat/Status?session_uuid='+sessionUuid);
+      var d=await r.json();
+      if(d.success&&d.active){
+        try {
+          var rMsg=await fetch('/Chat/LiveChat/Messages/'+d.conversation_id+'?after_id=0');
+          var dMsg=await rMsg.json();
+          if(dMsg.success&&dMsg.messages.length>0){
+            liveChatLastId=dMsg.messages[dMsg.messages.length-1].message_id;
+          }
+        } catch(err){}
+        enterLiveChatMode(d.conversation_id);
+      }
+    }catch(e){}
+  }
+
+  if(sessionUuid){
+    loadChatHistory();
+    checkLiveChatStatus();
   }
 })();
 </script>

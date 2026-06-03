@@ -1615,7 +1615,7 @@ async def api_delete_product(request: Request, product_id: int, db: Session = De
     try:
         db.delete(prod)
         db.commit()
-    except IntegrityError:
+    except Exception:
         db.rollback()
         prod = db.query(Product).filter(Product.product_id == product_id).first()
         if prod:
@@ -1624,7 +1624,7 @@ async def api_delete_product(request: Request, product_id: int, db: Session = De
         return JSONResponse({
             "success": True,
             "soft_deleted": True,
-            "message": "San pham co rang buoc du lieu nen da an khoi ban thay vi xoa."
+            "message": "Sản phẩm có ràng buộc dữ liệu nên đã ẩn khỏi bán thay vì xóa cứng."
         })
     return JSONResponse({"success": True})
 

@@ -16,7 +16,7 @@ class KnowledgeService:
         self.db = db
 
     def search_products(self, query: str, limit: int = 5) -> List[Dict]:
-        """Tìm sản phẩm — eager load category, tránh N+1"""
+        """Tìm sản phẩm — eager load category, tránh N+1. Dùng AND cho tất cả keywords."""
         keywords = [kw for kw in query.lower().split() if len(kw) > 1]
         if not keywords:
             return []
@@ -36,6 +36,46 @@ class KnowledgeService:
             .all()
         )
         return [self._fmt(p) for p in products]
+
+    def search_products_any(self, query: str, limit: int = 5) -> List[Dict]:
+        """
+        Tìm sản phẩm với OR giữa các keyword — rộng hơn search_products.
+        Dùng làm fallback khi AND search không tìm thấy gì.
+        Ưu tiên sản phẩm khớp NHIỀU keyword nhất (score-based ordering).
+        """
+        keywords = [kw for kw in query.lower().split() if len(kw) > 1]
+        if not keywords:
+            return []
+
+        # Dùng OR: sản phẩm khớp ÍT NHẤT 1 keyword
+        or_conditions = []
+        for kw in keywords:
+            pat = f"%{kw}%"
+            or_conditions.append(or_(
+                func.lower(Product.name).like(pat),
+                func.lower(Product.description).like(pat)
+            ))
+
+        products = (
+            self.db.query(Product)
+            .options(joinedload(Product.category))
+            .filter(or_(*or_conditions))
+            .filter(Product.is_available == True)
+            .order_by(Product.is_hot.desc(), Product.rating.desc())
+            .limit(limit * 2)  # Lấy nhiều hơn để re-rank
+            .all()
+        )
+
+        if not products:
+            return []
+
+        # Re-rank: đếm số keyword khớp trong tên sản phẩm
+        def score(p):
+            name_lower = (p.name or "").lower()
+            return sum(1 for kw in keywords if kw in name_lower)
+
+        products.sort(key=score, reverse=True)
+        return [self._fmt(p) for p in products[:limit]]
 
     def get_products_by_category(self, category_name: str, limit: int = 5) -> List[Dict]:
         cat = self.db.query(Category).filter(func.lower(Category.name).like(f"%{category_name.lower()}%")).first()

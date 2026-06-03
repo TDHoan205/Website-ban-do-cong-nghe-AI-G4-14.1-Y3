@@ -18,6 +18,24 @@ STOP_WORDS = {
     "ở", "từ", "đến", "về", "trong", "ngoài", "trên", "dưới",
     "rất", "lắm", "quá", "nhất", "nhé", "ạ", "nha", "hả",
     "the", "a", "an", "is", "are", "what", "how", "which",
+    # Từ giao tiếp bổ sung
+    "tư", "vấn", "cần", "tìm", "kiếm", "giúp", "hỗ", "trợ", "xem",
+    "hỏi", "xin", "chào", "hello", "hi", "alo", "ad", "admin",
+    "shop", "cửa", "hàng", "sản", "phẩm", "muốn", "mua", "bán",
+    "lấy", "đặt", "ngay", "luôn", "chốt", "thêm", "vào", "giỏ",
+}
+
+# Từ cần loại khi tìm sản phẩm theo buy intent
+BUY_STRIP_WORDS = {
+    # Tiếng Việt (có dấu)
+    "muốn", "mua", "cần", "cho", "tôi", "mình", "lấy", "đặt",
+    "ngay", "luôn", "chốt", "thêm", "vào", "giỏ", "hàng",
+    "chiếc", "cái", "máy", "một", "order", "điện", "thoại",
+    # Tiếng Việt (không dấu — khách hay gõ tắt)
+    "muon", "can", "lay", "dat", "them", "vao", "gio",
+    "chiec", "mot", "dien", "thoai", "luu", "luon", "chot",
+    # Tiếng Anh
+    "add", "cart", "buy", "want", "need", "please", "get", "want",
 }
 
 
@@ -57,10 +75,18 @@ class RAGEngine:
             max_tokens=max_tokens,
         )
 
+        # 5. Lấy product_ids nếu có intent mua hàng hoặc sản phẩm
+        product_ids = []
+        buy_products = []
+        if intent in ("buy_intent", "product_query", "price_query"):
+            buy_products = self._get_buy_products(user_message, intent)
+            product_ids = self._extract_product_ids(buy_products)
+
         return {
             "response": response,
             "intent": intent,
-            "product_ids": [],
+            "product_ids": product_ids,
+            "buy_products": buy_products,  # [{id, name, price}, ...]
         }
 
     # ─────────────── VECTOR SEARCH ───────────────
@@ -143,11 +169,22 @@ class RAGEngine:
         if any(kw in msg for kw in cat_kws):
             return "category_browse"
 
+        # ── BUY INTENT — ưu tiên trước product_query ──
+        buy_kws = [
+            "mua ngay", "cho mình mua", "cho tôi mua", "tôi muốn mua", "mình muốn mua",
+            "tôi cần mua", "mình cần mua", "đặt hàng", "tôi lấy", "mình lấy",
+            "mua cái", "mua chiếc", "mua máy", "mua điện thoại", "order ngay",
+            "thêm vào giỏ", "add to cart", "muốn đặt", "mình đặt", "tôi đặt",
+            "mua luôn", "chốt đơn", "mua cái này", "lấy cái này",
+        ]
+        if any(kw in msg for kw in buy_kws):
+            return "buy_intent"
+
         product_kws = [
             "iphone", "samsung", "laptop", "macbook", "airpods", "ipad",
             "tablet", "tai nghe", "sạc", "ốp lưng", "chuột", "bàn phím",
             "màn hình", "điện thoại", "phone", "tư vấn", "gợi ý", "recommend",
-            "tìm", "search", "sản phẩm", "mua", "muốn mua", "cần mua",
+            "tìm", "search", "sản phẩm", "mua",
             "oppo", "xiaomi", "vivo", "dell", "asus", "acer", "hp", "lenovo",
             "apple", "galaxy",
         ]
@@ -234,12 +271,24 @@ class RAGEngine:
                 context_parts.append(cat_text)
             clean_q = self._clean_search_query(message)
             products = self.knowledge.search_products(clean_q, 5)
+            if not products:
+                products = self.knowledge.search_products_any(clean_q, 5)
+            if products:
+                context_parts.append(self.knowledge.build_product_context(products))
+
+        elif intent == "buy_intent":
+            product_q = self._extract_product_name_from_buy(message)
+            products = self.knowledge.search_products(product_q, 3) if product_q else []
+            if not products:
+                products = self.knowledge.search_products_any(product_q or message, limit=3)
             if products:
                 context_parts.append(self.knowledge.build_product_context(products))
 
         elif intent == "product_query":
             clean_q = self._clean_search_query(message)
             products = self.knowledge.search_products(clean_q, 5)
+            if not products:
+                products = self.knowledge.search_products_any(clean_q, 5)
             if products:
                 context_parts.append(self.knowledge.build_product_context(products))
 
@@ -257,10 +306,54 @@ class RAGEngine:
             clean_q = self._clean_search_query(message)
             if len(clean_q) > 2:
                 products = self.knowledge.search_products(clean_q, 3)
+                if not products:
+                    products = self.knowledge.search_products_any(clean_q, 3)
                 if products:
                     context_parts.append(self.knowledge.build_product_context(products))
 
         return "\n\n".join(filter(None, context_parts))
+
+    # ─────────────── BUY INTENT HELPERS ───────────────
+
+    def _get_buy_products(self, message: str, intent: str) -> List[Dict]:
+        """
+        Tìm sản phẩm liên quan đến ý định mua.
+        Bước 1: Strip buy-intent keywords khỏi message → lấy tên sản phẩm
+        Bước 2: Tìm bằng từng keyword riêng lẻ (OR logic) nếu AND không có kết quả
+        """
+        # Bước 1: Tách tên sản phẩm khỏi câu mua hàng
+        product_query = self._extract_product_name_from_buy(message)
+
+        products = []
+
+        # Bước 2: Tìm với query sạch (AND các keyword sản phẩm)
+        if product_query and len(product_query.strip()) > 1:
+            products = self.knowledge.search_products(product_query, 3)
+
+        # Bước 3: Nếu AND không ra → tìm từng keyword riêng lẻ (OR fallback)
+        if not products:
+            products = self.knowledge.search_products_any(
+                product_query or message, limit=3
+            )
+
+        return products[:3]
+
+    def _extract_product_name_from_buy(self, message: str) -> str:
+        """
+        Loại bỏ các từ mua-bán khỏi message, giữ lại tên sản phẩm.
+        Ví dụ: "tôi muốn mua iPhone 15 Pro Max" → "iphone 15 pro max"
+        """
+        all_strip = STOP_WORDS | BUY_STRIP_WORDS
+        words = message.lower().split()
+        filtered = [
+            w for w in words
+            if w not in all_strip and len(w) > 1
+        ]
+        return " ".join(filtered)
+
+    def _extract_product_ids(self, products: List[Dict]) -> List[int]:
+        """Trích xuất product_id từ danh sách dict sản phẩm"""
+        return [p["id"] for p in products if p.get("id")]
 
     # ─────────────── HANDLERS ───────────────
 
@@ -362,6 +455,8 @@ class RAGEngine:
 
         clean_q = self._clean_search_query(message)
         products = self.knowledge.search_products(clean_q, 5)
+        if not products:
+            products = self.knowledge.search_products_any(clean_q, 5)
         if products:
             return self.knowledge.build_product_context(products)
         return ""

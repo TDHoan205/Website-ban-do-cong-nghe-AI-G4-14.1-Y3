@@ -90,9 +90,12 @@ async def widget_send_message(
         session_uuid = session.session_uuid
 
     try:
-        response = chat_service.process_user_message(
+        result = chat_service.process_user_message_full(
             session_uuid, body.message, account_id
         )
+        response = result["response"]
+        intent = result.get("intent", "general")
+        buy_products = result.get("buy_products", [])
 
         # Kiểm tra nếu response là live chat request
         if response.startswith("__LIVECHAT__"):
@@ -105,6 +108,25 @@ async def widget_send_message(
                 "session_uuid": session_uuid,
                 "live_chat": True,
                 "conversation_id": conversation_id,
+            })
+
+        # Nếu có intent mua hàng + tìm thấy sản phẩm → trả action buy
+        if intent == "buy_intent" and buy_products:
+            in_stock = [p for p in buy_products if p.get("stock", 0) > 0]
+            products_payload = [
+                {
+                    "product_id": p["id"],
+                    "product_name": p["name"],
+                    "price": p.get("price", 0),
+                }
+                for p in (in_stock or buy_products)[:3]
+            ]
+            return JSONResponse({
+                "success": True,
+                "response": response,
+                "session_uuid": session_uuid,
+                "action": "add_to_cart",
+                "products": products_payload,
             })
 
         return JSONResponse({

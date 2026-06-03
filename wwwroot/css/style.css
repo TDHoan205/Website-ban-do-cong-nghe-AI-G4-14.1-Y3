@@ -1602,6 +1602,41 @@ body.admin-page .cb-popup { width: 320px; max-height: 480px; bottom: 100px; righ
   .cb-popup { width: calc(100vw - 20px); right: 10px; bottom: 96px; height: min(620px, calc(100vh - 116px)); }
 }
 
+/* ── CHATBOT BUY INTENT BUTTONS ── */
+.cb-buy-bubble {
+  background: linear-gradient(135deg, rgba(34,197,94,.12), rgba(16,185,129,.08)) !important;
+  border: 1px solid rgba(34,197,94,.3) !important;
+  padding: 14px 16px !important;
+  min-width: 0 !important;
+}
+.cb-buy-title {
+  font-size: .78rem; font-weight: 700;
+  color: #86efac; margin-bottom: 10px;
+  letter-spacing: .3px;
+}
+.cb-buy-btn {
+  display: block; width: 100%;
+  margin-bottom: 8px; padding: 10px 16px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none; border-radius: 10px;
+  color: #fff; font-size: .82rem; font-weight: 700;
+  font-family: inherit; text-align: left;
+  cursor: pointer; line-height: 1.4;
+  transition: all .2s;
+  box-shadow: 0 4px 12px rgba(34,197,94,.3);
+}
+.cb-buy-btn:last-child { margin-bottom: 0; }
+.cb-buy-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34,197,94,.45);
+}
+.cb-buy-btn:disabled {
+  opacity: .7; cursor: not-allowed; transform: none;
+  background: rgba(34,197,94,.4);
+}
+
+
 /* =====================================================
    PRODUCTS GRID — handled by inline styles in Products/index.html
    All product grid/card styles are defined inline in each view.

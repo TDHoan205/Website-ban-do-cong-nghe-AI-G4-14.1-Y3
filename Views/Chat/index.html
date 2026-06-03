@@ -1,4 +1,4 @@
-﻿{% extends "Shared/base.html" %}
+{% extends "Shared/base.html" %}
 
 {% block title %}Chat với AI - Tech Store AI{% endblock %}
 
@@ -78,6 +78,7 @@
 <script>
       const messageInput = document.getElementById("message-input");
       const sendBtnEl = document.getElementById("send-btn");
+      const chatMessages = document.getElementById("chat-messages");
       let sessionUuid = document.getElementById("session-uuid").value;
       let isSending = false;
 
@@ -252,8 +253,14 @@
           const r = await fetch('/Chat/LiveChat/Status?session_uuid=' + sessionUuid);
           const d = await r.json();
           if (d.success && d.active) {
+            try {
+              const rMsg = await fetch('/Chat/LiveChat/Messages/' + d.conversation_id + '?after_id=0');
+              const dMsg = await rMsg.json();
+              if (dMsg.success && dMsg.messages.length > 0) {
+                liveChatLastId = dMsg.messages[dMsg.messages.length - 1].message_id;
+              }
+            } catch (err) {}
             enterLiveChatMode(d.conversation_id);
-            pollLiveChatMessages();
           }
         } catch (e) {}
       }
