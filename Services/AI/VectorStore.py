@@ -1,17 +1,26 @@
 """
 Vector Store — lưu & tìm kiếm vector trong KnowledgeChunks table.
-Cosine similarity thuần Python, in-memory cache cho tốc độ.
+FIX #1/#4: Class-level shared cache — dùng chung cho tất cả requests, không reload mỗi request.
+FIX #2:    Numpy vectorized search — nhanh hơn 10-50x so với pure Python.
 """
 import json
 import math
 import threading
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Any, Tuple
 from sqlalchemy.orm import Session
 from Models.Chat import KnowledgeChunk
 
+# ─── Numpy optional ───────────────────────────────────────────────────
+try:
+    import numpy as np
+    _HAS_NUMPY = True
+except ImportError:
+    _HAS_NUMPY = False
+    print("[VectorStore] numpy không tìm thấy — dùng pure Python fallback")
 
-def cosine_similarity(a: List[float], b: List[float]) -> float:
-    """Cosine similarity thuần Python — không cần numpy"""
+
+def _cosine_python(a: List[float], b: List[float]) -> float:
+    """Cosine similarity thuần Python — fallback khi không có numpy"""
     if len(a) != len(b):
         return 0.0
     dot = sum(x * y for x, y in zip(a, b))
@@ -22,19 +31,29 @@ def cosine_similarity(a: List[float], b: List[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
+# Giữ alias backward-compat
+cosine_similarity = _cosine_python
+
+
 class VectorStore:
     """
     In-memory vector search trên KnowledgeChunks.
-    Load vectors 1 lần từ DB → cache trong RAM → cosine search nhanh.
+    Class-level cache chia sẻ giữa mọi instance/request → chỉ load DB 1 lần.
+    Numpy matrix search cho tốc độ tối đa khi có thể.
     """
+
+    # ═══ Class-level shared state ═══
+    _class_cache: Optional[List[Dict]] = None
+    _class_matrix: Optional[Any] = None   # numpy matrix (n_chunks × dim) đã normalize
+    _class_lock = threading.Lock()
 
     def __init__(self, db: Session):
         self.db = db
-        self._cache: Optional[List[Dict]] = None
-        self._lock = threading.Lock()
+
+    # ─────────────── CACHE MANAGEMENT ───────────────
 
     def _load_cache(self):
-        """Load tất cả chunks có embedding từ DB vào memory"""
+        """Load tất cả chunks có embedding từ DB vào class-level memory"""
         chunks = (
             self.db.query(KnowledgeChunk)
             .filter(KnowledgeChunk.embedding_vector.isnot(None))
@@ -57,20 +76,39 @@ class VectorStore:
                     })
             except (json.JSONDecodeError, TypeError):
                 continue
-        self._cache = cache
-        print(f"[VectorStore] Loaded {len(cache)} chunks vào cache")
+
+        VectorStore._class_cache = cache
+
+        # Pre-compute numpy normalized matrix — cosine = dot product với normalized vectors
+        if _HAS_NUMPY and cache:
+            try:
+                matrix = np.array([item["vector"] for item in cache], dtype=np.float32)
+                norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+                norms[norms == 0] = 1.0
+                VectorStore._class_matrix = matrix / norms
+            except Exception as e:
+                print(f"[VectorStore] Không tạo được numpy matrix: {e}")
+                VectorStore._class_matrix = None
+        else:
+            VectorStore._class_matrix = None
+
+        print(f"[VectorStore] Loaded {len(cache)} chunks | numpy={'yes' if _HAS_NUMPY else 'no'}")
 
     def _ensure_cache(self):
-        """Lazy load cache khi cần"""
-        if self._cache is None:
-            with self._lock:
-                if self._cache is None:
+        """Lazy load class-level cache khi cần (thread-safe)"""
+        if VectorStore._class_cache is None:
+            with VectorStore._class_lock:
+                if VectorStore._class_cache is None:
                     self._load_cache()
 
     def invalidate_cache(self):
         """Xóa cache — gọi sau khi ETL cập nhật chunks"""
-        with self._lock:
-            self._cache = None
+        with VectorStore._class_lock:
+            VectorStore._class_cache = None
+            VectorStore._class_matrix = None
+        print("[VectorStore] Cache invalidated")
+
+    # ─────────────── SEARCH ───────────────
 
     def search(
         self,
@@ -81,42 +119,63 @@ class VectorStore:
     ) -> List[Dict]:
         """
         Tìm top-k chunks tương đồng nhất với query_embedding.
-
-        Args:
-            query_embedding: vector embedding của câu hỏi user
-            top_k: số kết quả tối đa
-            threshold: ngưỡng similarity tối thiểu (0.35 cho 256-dim)
-            content_type: filter theo loại (product_info, faq, category_info)
-
-        Returns:
-            List[{content, content_type, similarity, metadata}] sắp xếp giảm dần
+        - Numpy vectorized (fast path) khi không filter content_type
+        - Pure Python fallback khi có filter hoặc numpy không cài
         """
         self._ensure_cache()
-        if not self._cache or not query_embedding:
+        cache = VectorStore._class_cache
+        if not cache or not query_embedding:
             return []
 
+        # ── Fast path: numpy, không filter content_type ──
+        if _HAS_NUMPY and VectorStore._class_matrix is not None and content_type is None:
+            try:
+                q = np.array(query_embedding, dtype=np.float32)
+                q_norm = np.linalg.norm(q)
+                if q_norm == 0:
+                    return []
+                q = q / q_norm
+                sims = VectorStore._class_matrix @ q  # (n_chunks,)
+
+                indices = np.where(sims >= threshold)[0]
+                if len(indices) == 0:
+                    return []
+                top_indices = indices[np.argsort(-sims[indices])[:top_k]]
+
+                return [
+                    {
+                        "content": cache[int(idx)]["content"],
+                        "content_type": cache[int(idx)]["content_type"],
+                        "source_id": cache[int(idx)]["source_id"],
+                        "similarity": round(float(sims[idx]), 4),
+                        "metadata": cache[int(idx)]["metadata"],
+                    }
+                    for idx in top_indices
+                ]
+            except Exception as e:
+                print(f"[VectorStore] Numpy search error: {e} — fallback Python")
+
+        # ── Slow path: pure Python (hoặc có filter content_type) ──
+        items = cache if not content_type else [i for i in cache if i["content_type"] == content_type]
         scored: List[Tuple[float, Dict]] = []
-        for item in self._cache:
-            # Filter theo content_type nếu cần
-            if content_type and item["content_type"] != content_type:
-                continue
-            sim = cosine_similarity(query_embedding, item["vector"])
+        for item in items:
+            sim = _cosine_python(query_embedding, item["vector"])
             if sim >= threshold:
                 scored.append((sim, item))
 
-        # Sắp xếp giảm dần theo similarity
         scored.sort(key=lambda x: x[0], reverse=True)
-
-        results = []
-        for sim, item in scored[:top_k]:
-            results.append({
+        return [
+            {
                 "content": item["content"],
                 "content_type": item["content_type"],
                 "source_id": item["source_id"],
                 "similarity": round(sim, 4),
                 "metadata": item["metadata"],
-            })
-        return results
+            }
+            for sim, item in scored[:top_k]
+        ]
+
+    # ─────────────── ETL HELPERS ───────────────
 
     def upsert_chunk(
         self,
@@ -128,7 +187,6 @@ class VectorStore:
         metadata: dict = None,
     ) -> KnowledgeChunk:
         """Tạo hoặc cập nhật chunk — dùng trong ETL"""
-        # Tìm chunk cũ theo source
         existing = (
             self.db.query(KnowledgeChunk)
             .filter(

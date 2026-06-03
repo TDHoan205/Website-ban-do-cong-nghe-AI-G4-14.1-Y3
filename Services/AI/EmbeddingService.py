@@ -94,11 +94,23 @@ class EmbeddingService:
 
     def embed_batch(self, texts: List[str]) -> List[Optional[List[float]]]:
         """
-        Embed nhiều text cùng lúc — gọi từng cái (Gemini free tier giới hạn batch).
-        Trả về list tương ứng, None nếu lỗi từng item.
+        FIX #5: Embed nhiều text trong 1 API call (nhanh hơn cho ETL).
+        Fallback về sequential nếu batch API lỗi.
         """
-        results = []
-        for text in texts:
-            vec = self.embed_text(text)
-            results.append(vec)
-        return results
+        if not self.is_available() or not texts:
+            return [None] * len(texts)
+        try:
+            from google.genai import types
+            # Gửi toàn bộ batch trong 1 request
+            response = self.client.models.embed_content(
+                model=self.model,
+                contents=texts,
+                config=types.EmbedContentConfig(
+                    output_dimensionality=self.DIMENSION,
+                ),
+            )
+            return [emb.values for emb in response.embeddings]
+        except Exception as e:
+            print(f"[EmbeddingService] embed_batch error: {e} — fallback sequential")
+            # Fallback: gọi từng cái
+            return [self.embed_text(t) for t in texts]

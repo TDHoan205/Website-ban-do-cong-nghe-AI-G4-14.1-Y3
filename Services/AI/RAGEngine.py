@@ -102,8 +102,17 @@ class RAGEngine:
     def _detect_intent(self, message: str) -> str:
         """Phân loại intent bằng keyword matching"""
         msg = message.lower()
+        msg_stripped = msg.strip()
 
-        # Order lookup (ưu tiên cao nhất)
+        # ── FIX #3: Exact match greeting — thoát nhanh, tránh false positive ──
+        EXACT_GREETINGS = {
+            "hi", "hello", "helo", "hey", "alo", "chào", "xin chào",
+            "hi!", "hello!", "chào bạn", "xin chào bạn",
+        }
+        if msg_stripped in EXACT_GREETINGS:
+            return "greeting"
+
+        # Order lookup (ưu tiên cao)
         order_patterns = [
             r"đơn\s*hàng", r"đơn\s*#?\d+", r"mã\s*đơn", r"tra\s*cứu\s*đơn",
             r"kiểm\s*tra\s*đơn", r"trạng\s*thái\s*đơn", r"order",
@@ -117,10 +126,12 @@ class RAGEngine:
         if any(kw in msg for kw in compare_kws):
             return "product_compare"
 
-        # Dùng regex để phát hiện giá tiền chính xác hơn (xử lý “20 tr” cuối câu không có space)
         HAS_PRICE_RE = r"\d+\s*(?:triệu|trieu|tr\b|củ|cu\b|lít|lit\b|nghìn|ngàn|k\b)"
-        price_kws_strict = ["giá", "bao nhiêu", "price", "cost", "rẻ", "đắt", "tầm giá", "khoảng giá",
-                            "budget", "tầm tiền", "trong khoảng", "dưới", "muốn mua", "cần mua"]
+        # FIX #3b: Bỏ "muốn mua"/"cần mua" khỏi price_kws — chuyển sang product_kws
+        price_kws_strict = [
+            "giá", "bao nhiêu", "price", "cost", "rẻ", "đắt",
+            "tầm giá", "khoảng giá", "budget", "tầm tiền", "trong khoảng", "dưới",
+        ]
         if re.search(HAS_PRICE_RE, msg) or any(kw in msg for kw in price_kws_strict):
             return "price_query"
 
@@ -136,17 +147,18 @@ class RAGEngine:
             "iphone", "samsung", "laptop", "macbook", "airpods", "ipad",
             "tablet", "tai nghe", "sạc", "ốp lưng", "chuột", "bàn phím",
             "màn hình", "điện thoại", "phone", "tư vấn", "gợi ý", "recommend",
-            "tìm", "search", "sản phẩm", "mua", "oppo", "xiaomi", "vivo",
-            "dell", "asus", "acer", "hp", "lenovo", "apple", "galaxy",
+            "tìm", "search", "sản phẩm", "mua", "muốn mua", "cần mua",
+            "oppo", "xiaomi", "vivo", "dell", "asus", "acer", "hp", "lenovo",
+            "apple", "galaxy",
         ]
         if any(kw in msg for kw in product_kws):
             return "product_query"
 
         greet_kws = [
             "xin chào", "hello", "helo", "hela", "hola", "hi ", "hi!", "chào", "hey",
-            "alo", "olà", "good morning", "good afternoon", "sớm", "tối",
+            "alo", "good morning", "good afternoon",
         ]
-        if any(kw in msg for kw in greet_kws) or msg.strip() in ["hi", "helo", "hello", "alo", "hey"]:
+        if any(kw in msg for kw in greet_kws):
             return "greeting"
 
         policy_kws = ["bảo hành", "đổi trả", "hoàn tiền", "chính sách", "ship", "vận chuyển", "thanh toán", "trả góp"]
@@ -168,26 +180,31 @@ class RAGEngine:
         Truy vấn context — ƯU TIÊN vector search, fallback keyword search.
         Với order_lookup/policy: dùng logic đặc biệt, không cần vector.
         """
-        # Intent đặc biệt — không cần vector search
         if intent == "order_lookup":
             return self._handle_order_lookup(message, account_id)
         if intent == "policy":
             return self._get_policy_context()
 
-        # ═══ BƯỚC 1: Vector search (ưu tiên) ═══
         vector_context = self._vector_search(message, top_k=5)
-
-        # ═══ BƯỚC 2: Keyword search bổ sung ═══
         keyword_context = self._keyword_search(message, intent)
 
-        # ═══ Merge: vector + keyword (loại trùng) ═══
-        context_parts = []
-        if vector_context:
-            context_parts.append(vector_context)
-        if keyword_context:
-            context_parts.append(keyword_context)
+        # FIX #6: Merge + dedup trước khi gửi LLM — tiết kiệm tokens
+        merged = "\n\n".join(filter(None, [vector_context, keyword_context]))
+        return self._dedup_context(merged)
 
-        return "\n\n".join(filter(None, context_parts))
+    def _dedup_context(self, context: str) -> str:
+        """FIX #6: Loại bỏ dòng trùng lặp trong context — tiết kiệm tokens"""
+        if not context:
+            return context
+        seen: set = set()
+        lines = []
+        for line in context.split("\n"):
+            key = line.strip()
+            if key and key in seen:
+                continue
+            seen.add(key)
+            lines.append(line)
+        return "\n".join(lines)
 
     def _keyword_search(self, message: str, intent: str) -> str:
         """Keyword search truyền thống — fallback khi vector search không đủ"""
