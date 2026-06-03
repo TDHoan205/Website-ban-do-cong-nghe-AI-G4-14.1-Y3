@@ -125,6 +125,52 @@ class ChatService:
 
         return response
 
+    def process_user_message_full(
+        self, session_uuid: str, user_message: str, account_id: int = None
+    ) -> dict:
+        """
+        Phiên bản mở rộng của process_user_message — trả dict đầy đủ.
+        Bao gồm: response (str), intent (str), buy_products (list).
+        Dùng cho Widget/Send để hiện nút mua ngay.
+        """
+        session = self.get_or_create_session(session_uuid, account_id)
+
+        if self._is_live_chat_request(user_message):
+            live_response = self._handle_live_chat_request(session, account_id)
+            return {"response": live_response, "intent": "live_chat", "buy_products": []}
+
+        self.add_message(session.session_id, "user", user_message)
+
+        faq_response = self._find_direct_faq_answer(user_message)
+        if faq_response:
+            self.add_message(session.session_id, "bot", faq_response, intent="faq")
+            return {"response": faq_response, "intent": "faq", "buy_products": []}
+
+        history_msgs = self.get_session_messages(session.session_id)
+        conversation_history = [
+            {"sender": msg.sender_type, "content": msg.message_content}
+            for msg in history_msgs[-6:]
+        ]
+
+        try:
+            result = self.rag_engine.get_response(
+                user_message=user_message,
+                conversation_history=conversation_history,
+                account_id=account_id,
+            )
+            response = result["response"]
+            intent = result.get("intent", "general")
+            buy_products = result.get("buy_products", [])
+        except Exception as e:
+            print(f"[ChatService] RAG Error: {e}")
+            response = "Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau! 🙏"
+            intent = "error"
+            buy_products = []
+
+        self.add_message(session.session_id, "bot", response, intent=intent)
+
+        return {"response": response, "intent": intent, "buy_products": buy_products}
+
     def _normalize_text(self, text: str) -> str:
         text = (text or "").lower().strip()
         text = unicodedata.normalize("NFD", text)

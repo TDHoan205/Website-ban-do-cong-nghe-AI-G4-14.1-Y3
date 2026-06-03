@@ -1,68 +1,83 @@
-﻿{% extends "Shared/base.html" %}
-{{% block extra_head %}}
+﻿{% extends "Shared/base.html" %} {% block extra_head %}
 <link rel="stylesheet" href="/static/css/order_detail.css" />
-{{% endblock %}}
-
-{% block content %}
-
-{% set status_class = 'status-pending' %}
-{% set status_text = order.status %}
-{% set status_icon = 'fa-clock' %}
-{% if order.status == 'Pending' %}
-  {% set status_text = 'Chờ xác nhận' %}
-{% elif order.status == 'Confirmed' %}
-  {% set status_class = 'status-confirmed' %}{% set status_text = 'Đã xác nhận' %}{% set status_icon = 'fa-check-circle' %}
-{% elif order.status == 'Processing' %}
-  {% set status_class = 'status-processing' %}{% set status_text = 'Đang xử lý' %}{% set status_icon = 'fa-cog' %}
-{% elif order.status == 'Shipped' %}
-  {% set status_class = 'status-shipped' %}{% set status_text = 'Đang giao' %}{% set status_icon = 'fa-truck' %}
-{% elif order.status == 'Delivered' %}
-  {% set status_class = 'status-delivered' %}{% set status_text = 'Đã giao' %}{% set status_icon = 'fa-check-double' %}
-{% elif order.status == 'Cancelled' %}
-  {% set status_class = 'status-cancelled' %}{% set status_text = 'Đã hủy' %}{% set status_icon = 'fa-xmark-circle' %}
-{% endif %}
+{% endblock %} {% block content %} {% set status_class = 'status-pending' %} {%
+set status_text = order.status %} {% set status_icon = 'fa-clock' %} {% if
+order.status == 'Pending' %} {% set status_text = 'Chờ xác nhận' %} {% elif
+order.status == 'Confirmed' %} {% set status_class = 'status-confirmed' %}{% set
+status_text = 'Đã xác nhận' %}{% set status_icon = 'fa-check-circle' %} {% elif
+order.status == 'Processing' %} {% set status_class = 'status-processing' %}{%
+set status_text = 'Đang xử lý' %}{% set status_icon = 'fa-cog' %} {% elif
+order.status == 'Shipped' %} {% set status_class = 'status-shipped' %}{% set
+status_text = 'Đang giao' %}{% set status_icon = 'fa-truck' %} {% elif
+order.status == 'Delivered' %} {% set status_class = 'status-delivered' %}{% set
+status_text = 'Đã giao' %}{% set status_icon = 'fa-check-double' %} {% elif
+order.status == 'Cancelled' %} {% set status_class = 'status-cancelled' %}{% set
+status_text = 'Đã hủy' %}{% set status_icon = 'fa-xmark-circle' %} {% endif %}
 
 <div class="order-detail-page">
   <div class="order-detail-wrap">
     <div class="order-detail-head">
-      <h1 class="order-detail-title"><i class="fas fa-receipt text-primary"></i> Chi tiết đơn hàng #{{ order.order_id }}</h1>
-      <a href="/Orders/" class="back-link"><i class="fas fa-arrow-left"></i> Quay lại đơn hàng</a>
+      <h1 class="order-detail-title">
+        <i class="fas fa-receipt text-primary"></i> Chi tiết đơn hàng #{{
+        order.order_id }}
+      </h1>
+      <a href="/Orders/" class="back-link"
+        ><i class="fas fa-arrow-left"></i> Quay lại đơn hàng</a
+      >
     </div>
 
     <section class="detail-card">
       <div class="detail-card-header">
-        <div class="detail-card-title"><i class="fas fa-info-circle text-primary"></i> Thông tin đơn hàng</div>
-        <span class="status-badge {{ status_class }}"><i class="fas {{ status_icon }}"></i> {{ status_text }}</span>
+        <div class="detail-card-title">
+          <i class="fas fa-info-circle text-primary"></i> Thông tin đơn hàng
+        </div>
+        <span class="status-badge {{ status_class }}"
+          ><i class="fas {{ status_icon }}"></i> {{ status_text }}</span
+        >
       </div>
       <div class="detail-grid">
         <div class="info-box">
           <div class="info-label">Ngày đặt</div>
-          <div class="info-value">{{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date else '-' }}</div>
+          <div class="info-value">
+            {{ order.order_date.strftime('%d/%m/%Y %H:%M') if order.order_date
+            else '-' }}
+          </div>
         </div>
         <div class="info-box">
           <div class="info-label">Tổng tiền</div>
-          <div class="info-value money">{{ "{:,.0f}".format(order.total_amount | float) }} đ</div>
+          <div class="info-value money">
+            {{ "{:,.0f}".format(order.total_amount | float) }} đ
+          </div>
         </div>
         <div class="info-box">
           <div class="info-label">Người nhận</div>
-          <div class="info-value">{{ order.customer_name or current_user.full_name or current_user.username }}</div>
+          <div class="info-value">
+            {{ order.customer_name or current_user.full_name or
+            current_user.username }}
+          </div>
         </div>
         <div class="info-box">
           <div class="info-label">Số điện thoại</div>
-          <div class="info-value">{{ order.customer_phone or current_user.phone or '-' }}</div>
+          <div class="info-value">
+            {{ order.customer_phone or current_user.phone or '-' }}
+          </div>
         </div>
-        <div class="info-box" style="grid-column:1/-1;">
+        <div class="info-box" style="grid-column: 1/-1">
           <div class="info-label">Địa chỉ</div>
-          <div class="info-value">{{ order.customer_address or current_user.address or '-' }}</div>
+          <div class="info-value">
+            {{ order.customer_address or current_user.address or '-' }}
+          </div>
         </div>
       </div>
     </section>
 
     <section class="detail-card">
       <div class="detail-card-header">
-        <div class="detail-card-title"><i class="fas fa-box-open text-primary"></i> Sản phẩm</div>
+        <div class="detail-card-title">
+          <i class="fas fa-box-open text-primary"></i> Sản phẩm
+        </div>
       </div>
-      <div style="overflow-x:auto;">
+      <div style="overflow-x: auto">
         <table class="items-table">
           <thead>
             <tr>
@@ -77,14 +92,27 @@
             <tr>
               <td>
                 <div class="product-name">{{ item.product_name }}</div>
-                {% if item.variant_name %}<div class="product-variant">{{ item.variant_name }}</div>{% endif %}
+                {% if item.variant_name %}
+                <div class="product-variant">{{ item.variant_name }}</div>
+                {% endif %}
               </td>
               <td>x{{ item.quantity }}</td>
-              <td class="money">{{ "{:,.0f}".format(item.unit_price | float) }} đ</td>
-              <td class="money">{{ "{:,.0f}".format(item.subtotal | float) }} đ</td>
+              <td class="money">
+                {{ "{:,.0f}".format(item.unit_price | float) }} đ
+              </td>
+              <td class="money">
+                {{ "{:,.0f}".format(item.subtotal | float) }} đ
+              </td>
             </tr>
             {% else %}
-            <tr><td colspan="4" style="text-align:center;color:#6b7280;padding:28px;">Không có sản phẩm trong đơn.</td></tr>
+            <tr>
+              <td
+                colspan="4"
+                style="text-align: center; color: #6b7280; padding: 28px"
+              >
+                Không có sản phẩm trong đơn.
+              </td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -92,7 +120,9 @@
       <div class="total-row">
         <div class="total-box">
           <span>Tổng cộng</span>
-          <span class="money">{{ "{:,.0f}".format(order.total_amount | float) }} đ</span>
+          <span class="money"
+            >{{ "{:,.0f}".format(order.total_amount | float) }} đ</span
+          >
         </div>
       </div>
     </section>

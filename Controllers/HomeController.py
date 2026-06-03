@@ -66,18 +66,11 @@ async def home_index(request: Request, db: Session = Depends(get_db)):
     cart_count = _get_cart_count(request, db)
     current_user = _get_current_user(request, db)
 
-    # Query banner products (prefer ID 1 first, then other hot products up to 5)
-    banner_products = []
-    prod_1 = db.query(Product).filter(Product.product_id == 1).first()
-    if prod_1:
-        banner_products.append(prod_1)
-    
-    other_products = db.query(Product).filter(
-        Product.product_id != 1,
+    # Query banner products (only iPhone products)
+    banner_products = db.query(Product).filter(
         Product.is_available == True,
-        Product.image_url != None
-    ).order_by(Product.is_hot.desc(), Product.created_at.desc()).limit(4).all()
-    banner_products.extend(other_products)
+        Product.name.ilike("%iphone%")
+    ).order_by(Product.is_hot.desc(), Product.created_at.desc()).limit(5).all()
 
     _debug_log("ed9600", "H2", "HomeController.home_index:rendering",
         "Home page rendering - products passed to template",
